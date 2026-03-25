@@ -1,7 +1,6 @@
 name: Deploy to EC2 Server ATLAS-RECRUITMENT
 run-name: Deploy by @${{ github.actor }} → ${{ github.ref_name }}
 
-
 on:
   push:
     branches:
@@ -10,27 +9,24 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Deploy to EC2
         env:
-          EC2_HOST: ${{ secrets.EC2_HOST }}   # EC2 Public IP
-          EC2_USER: ${{ secrets.EC2_USER }}   # ubuntu
-          EC2_KEY: ${{ secrets.EC2_SSH_KEY }} # PEM key
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_USER: ${{ secrets.EC2_USER }}
+          EC2_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
           echo "$EC2_KEY" > ~/.ssh/key.pem
           chmod 600 ~/.ssh/key.pem
-
           ssh -i ~/.ssh/key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
-            cd /home/ubuntu/atlas-recruitment-portol
+            cd /home/ubuntu/atlas-recruitment-portal
             git pull origin main
-            npm ci
-            pm2 restart atlas-recruitment-portol  || pm2 start src/app.js --name atlas-recruitment-portal
+            npm install
+            pm2 restart atlas-recruitment-portal || pm2 start src/app.js --name atlas-recruitment-portal
             pm2 save
           EOF
-
           rm -f ~/.ssh/key.pem
