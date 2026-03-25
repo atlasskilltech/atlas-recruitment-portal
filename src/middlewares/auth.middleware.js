@@ -11,6 +11,8 @@ function isAuthenticated(req, res, next) {
     return next();
   }
 
+  console.log(`[AUTH] Not authenticated for ${req.originalUrl}, session ID: ${req.sessionID}, cookie: ${req.headers.cookie || 'none'}`);
+
   // Store the originally requested URL so we can redirect back after login
   req.session.returnTo = req.originalUrl;
 
