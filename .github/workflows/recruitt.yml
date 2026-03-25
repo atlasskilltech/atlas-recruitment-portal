@@ -1,4 +1,6 @@
 name: Deploy to EC2 Server ATLAS-RECRUITMENT
+run-name: Deploy by @${{ github.actor }} → ${{ github.ref_name }}
+
 
 on:
   push:
