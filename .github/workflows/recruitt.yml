@@ -24,7 +24,9 @@ jobs:
           chmod 600 ~/.ssh/key.pem
           ssh -i ~/.ssh/key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
             cd /home/ubuntu/atlas-recruitment-portal
-            git pull origin main
+            git fetch origin
+            git reset --hard origin/main
+            git clean -fd
             npm install
             pm2 restart atlas-recruitment-portal || pm2 start src/app.js --name atlas-recruitment-portal
             pm2 save
