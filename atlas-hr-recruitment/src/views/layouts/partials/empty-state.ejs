@@ -1,0 +1,21 @@
+<%
+  const esIcon = typeof icon !== 'undefined' ? icon : 'inbox';
+  const esTitle = typeof title !== 'undefined' ? title : 'No data found';
+  const esDescription = typeof description !== 'undefined' ? description : 'There are no items to display at this time.';
+  const esActionUrl = typeof actionUrl !== 'undefined' ? actionUrl : '';
+  const esActionLabel = typeof actionLabel !== 'undefined' ? actionLabel : '';
+%>
+
+<div class="empty-state">
+  <div class="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-5">
+    <i data-lucide="<%= esIcon %>" class="empty-state-icon w-10 h-10"></i>
+  </div>
+  <h3 class="text-lg font-semibold text-foreground mb-1"><%= esTitle %></h3>
+  <p class="text-sm text-muted-foreground max-w-sm mb-6"><%= esDescription %></p>
+  <% if (esActionUrl && esActionLabel) { %>
+    <a href="<%= esActionUrl %>" class="btn-primary">
+      <i data-lucide="plus" class="w-4 h-4"></i>
+      <%= esActionLabel %>
+    </a>
+  <% } %>
+</div>

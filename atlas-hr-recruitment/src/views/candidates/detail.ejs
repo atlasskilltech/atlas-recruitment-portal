@@ -1,0 +1,554 @@
+<% locals.title = 'Candidate - ' + ((candidate && candidate.appln_full_name) || 'Detail') %>
+
+<!-- Header Card -->
+<div class="bg-gradient-brand rounded-2xl p-6 text-white mb-6 animate-fade-in">
+  <div class="flex items-center gap-2 mb-4">
+    <a href="/candidates" class="text-white/70 hover:text-white transition-colors">
+      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+    </a>
+    <span class="text-white/50 text-sm">Back to Candidates</span>
+  </div>
+
+  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+    <!-- Left: Name & Info -->
+    <div class="flex-1">
+      <div class="flex items-center gap-4 mb-3">
+        <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-2xl font-bold">
+          <%= helpers.getInitials(candidate.appln_full_name || 'NA') %>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold"><%= candidate.appln_full_name || 'N/A' %></h1>
+          <p class="text-white/70"><%= candidate.applied_job_short_desc_new || 'Position not specified' %></p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 mt-4">
+        <% if (candidate.applied_location) { %>
+          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
+            <i data-lucide="map-pin" class="w-3 h-3"></i> <%= candidate.applied_location %>
+          </span>
+        <% } %>
+        <% if (candidate.appln_total_experience) { %>
+          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
+            <i data-lucide="briefcase" class="w-3 h-3"></i> <%= candidate.appln_total_experience %> yrs exp
+          </span>
+        <% } %>
+        <% if (candidate.appln_high_qualification) { %>
+          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
+            <i data-lucide="graduation-cap" class="w-3 h-3"></i> <%= candidate.appln_high_qualification %>
+          </span>
+        <% } %>
+        <% if (candidate.appln_category) { %>
+          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
+            <%= candidate.appln_category %>
+          </span>
+        <% } %>
+        <% if (candidate.appln_net_set) { %>
+          <span class="inline-flex items-center gap-1 text-sm bg-accent/30 px-3 py-1 rounded-full">
+            NET/SET: <%= candidate.appln_net_set %>
+          </span>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Right: Scores & Actions -->
+    <div class="flex flex-col items-end gap-4">
+      <div class="flex items-center gap-6">
+        <% if (candidate.ai_match_score != null) { %>
+          <div class="text-center">
+            <div class="w-16 h-16" data-score="<%= candidate.ai_match_score %>" data-size="64" data-stroke="4"></div>
+            <p class="text-xs text-white/70 mt-1">AI Match</p>
+          </div>
+        <% } %>
+        <% if (candidate.total_score != null) { %>
+          <div class="text-center">
+            <div class="w-16 h-16" data-score="<%= candidate.total_score %>" data-size="64" data-stroke="4"></div>
+            <p class="text-xs text-white/70 mt-1">Interview</p>
+          </div>
+        <% } %>
+        <% if (candidate.ai_recommendation_tag) { %>
+          <span class="badge-<%= candidate.ai_recommendation_tag %> text-sm px-4 py-1.5">
+            <%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+          </span>
+        <% } %>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <form method="POST" action="/candidates/<%= candidate.id %>/run-ai-match" class="inline">
+          <button type="submit" class="btn btn-sm bg-accent text-white hover:bg-accent-600">
+            <i data-lucide="brain" class="w-3 h-3"></i> Run AI Match
+          </button>
+        </form>
+        <form method="POST" action="/ai/interviews/<%= candidate.id %>/invite" class="inline">
+          <input type="hidden" name="candidate_id" value="<%= candidate.id %>">
+          <input type="hidden" name="interview_type" value="hr">
+          <button type="submit" class="btn btn-sm bg-white/20 text-white hover:bg-white/30">
+            <i data-lucide="message-square" class="w-3 h-3"></i> Invite Interview
+          </button>
+        </form>
+        <form method="POST" action="/shortlist/<%= candidate.id %>/shortlist" class="inline">
+          <button type="submit" class="btn btn-sm bg-white/20 text-white hover:bg-white/30">
+            <i data-lucide="check-circle" class="w-3 h-3"></i> Shortlist
+          </button>
+        </form>
+        <a href="/schedules/create/<%= candidate.id %>" class="btn btn-sm bg-white/20 text-white hover:bg-white/30">
+          <i data-lucide="calendar" class="w-3 h-3"></i> Schedule
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div x-data="{ activeTab: 'overview' }" class="animate-slide-up">
+  <!-- Tab Navigation -->
+  <div class="tabs mb-6 overflow-x-auto">
+    <% const tabs = [
+      { key: 'overview', label: 'Overview', icon: 'user' },
+      { key: 'education', label: 'Education', icon: 'graduation-cap' },
+      { key: 'experience', label: 'Experience', icon: 'briefcase' },
+      { key: 'research', label: 'Research', icon: 'book-open' },
+      { key: 'references', label: 'References', icon: 'users' },
+      { key: 'documents', label: 'Documents', icon: 'file-text' },
+      { key: 'screening', label: 'AI Screening', icon: 'brain' },
+      { key: 'interview', label: 'AI Interview', icon: 'message-square' },
+      { key: 'notes', label: 'HR Notes', icon: 'sticky-note' },
+      { key: 'timeline', label: 'Timeline', icon: 'clock' },
+    ]; %>
+    <% tabs.forEach(t => { %>
+      <button class="tab" :class="{ 'active': activeTab === '<%= t.key %>' }"
+              @click="activeTab = '<%= t.key %>'">
+        <i data-lucide="<%= t.icon %>" class="w-4 h-4 inline mr-1"></i> <%= t.label %>
+      </button>
+    <% }) %>
+  </div>
+
+  <!-- Tab: Overview -->
+  <div x-show="activeTab === 'overview'" x-transition>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Personal Info -->
+      <div class="card p-5">
+        <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between"><span class="text-muted-foreground">Full Name</span><span class="font-medium"><%= candidate.appln_full_name || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Email</span><span class="font-medium"><%= candidate.appln_email || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Mobile</span><span class="font-medium"><%= candidate.appln_mobile_no || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Date of Birth</span><span class="font-medium"><%= candidate.appln_dob ? dateUtils.formatDate(candidate.appln_dob) : '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Age</span><span class="font-medium"><%= candidate.appln_age || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Marital Status</span><span class="font-medium"><%= candidate.appln_marital_status || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Category</span><span class="font-medium"><%= candidate.appln_category || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Specialization</span><span class="font-medium"><%= candidate.appln_specialization || '-' %></span></div>
+        </div>
+      </div>
+
+      <!-- Current Employment -->
+      <div class="card p-5">
+        <h3 class="text-lg font-semibold mb-4">Current Employment</h3>
+        <div class="space-y-3">
+          <div class="flex justify-between"><span class="text-muted-foreground">Organization</span><span class="font-medium"><%= candidate.appln_current_organisation || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Designation</span><span class="font-medium"><%= candidate.appln_current_designation || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Current Salary</span><span class="font-medium"><%= candidate.appln_current_salary || '-' %></span></div>
+          <div class="flex justify-between"><span class="text-muted-foreground">Notice Period</span><span class="font-medium"><%= candidate.appln_current_notice_period || '-' %></span></div>
+        </div>
+
+        <h3 class="text-lg font-semibold mt-6 mb-4">Experience Summary</h3>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-muted/50 rounded-xl p-3 text-center">
+            <p class="text-2xl font-bold text-primary-800 dark:text-accent"><%= candidate.appln_total_experience || '0' %></p>
+            <p class="text-xs text-muted-foreground">Total Years</p>
+          </div>
+          <div class="bg-muted/50 rounded-xl p-3 text-center">
+            <p class="text-2xl font-bold"><%= candidate.appln_total_ug_experience || '0' %></p>
+            <p class="text-xs text-muted-foreground">UG Teaching</p>
+          </div>
+          <div class="bg-muted/50 rounded-xl p-3 text-center">
+            <p class="text-2xl font-bold"><%= candidate.appln_total_pg_experience || '0' %></p>
+            <p class="text-xs text-muted-foreground">PG Teaching</p>
+          </div>
+          <div class="bg-muted/50 rounded-xl p-3 text-center">
+            <p class="text-2xl font-bold"><%= candidate.appln_total_research_experience || '0' %></p>
+            <p class="text-xs text-muted-foreground">Research</p>
+          </div>
+          <div class="bg-muted/50 rounded-xl p-3 text-center">
+            <p class="text-2xl font-bold"><%= candidate.appln_total_industry_experience || '0' %></p>
+            <p class="text-xs text-muted-foreground">Industry</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Education -->
+  <div x-show="activeTab === 'education'" x-transition>
+    <div class="space-y-4">
+      <% const eduLevels = [
+        { title: 'PhD / Doctorate', degree: candidate.appln_phd, college: candidate.appln_phd_collage, grade: candidate.appln_phd_grade, spec: candidate.appln_phd_specilzation, year: candidate.appln_phd_passing_year, extra: candidate.appln_phd_title, color: 'border-purple-500' },
+        { title: 'Post Graduate (PG)', degree: candidate.appln_pg, college: candidate.appln_pg_collage, grade: candidate.appln_pg_grade, spec: candidate.appln_pg_specilzation, year: candidate.appln_pg_passing_year, color: 'border-blue-500' },
+        { title: 'Under Graduate (UG)', degree: candidate.appln_ug, college: candidate.appln_ug_collage, grade: candidate.appln_ug_grade, spec: candidate.appln_ug_specilzation, year: candidate.appln_ug_passing_year, color: 'border-green-500' },
+        { title: 'HSC / 12th', degree: candidate.appln_hsc, college: candidate.appln_hsc_collage, grade: candidate.appln_hsc_grade, spec: candidate.appln_hsc_specilzation, year: candidate.appln_hsc_passing_year, color: 'border-amber-500' },
+        { title: 'SSC / 10th', degree: candidate.appln_ssc, college: candidate.appln_ssc_collage, grade: candidate.appln_ssc_grade, spec: candidate.appln_ssc_specilzation, year: candidate.appln_ssc_passing_year, color: 'border-orange-500' },
+      ]; %>
+
+      <% eduLevels.forEach(edu => { if (edu.degree) { %>
+        <div class="card p-5 border-l-4 <%= edu.color %>">
+          <div class="flex items-start justify-between">
+            <div>
+              <h4 class="font-semibold text-lg"><%= edu.title %></h4>
+              <p class="text-muted-foreground"><%= edu.degree %></p>
+            </div>
+            <% if (edu.year) { %>
+              <span class="badge-primary"><%= edu.year %></span>
+            <% } %>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+            <div><span class="text-xs text-muted-foreground">College/University</span><p class="text-sm font-medium"><%= edu.college || '-' %></p></div>
+            <div><span class="text-xs text-muted-foreground">Grade/Percentage</span><p class="text-sm font-medium"><%= edu.grade || '-' %></p></div>
+            <div><span class="text-xs text-muted-foreground">Specialization</span><p class="text-sm font-medium"><%= edu.spec || '-' %></p></div>
+          </div>
+          <% if (edu.extra) { %>
+            <div class="mt-3"><span class="text-xs text-muted-foreground">PhD Title</span><p class="text-sm font-medium"><%= edu.extra %></p></div>
+          <% } %>
+        </div>
+      <% }}) %>
+
+      <% if (candidate.appln_qualified || candidate.appln_net_set) { %>
+        <div class="card p-5 border-l-4 border-accent">
+          <h4 class="font-semibold">Qualifying Exams</h4>
+          <div class="flex gap-4 mt-2">
+            <% if (candidate.appln_net_set) { %><span class="badge-accent">NET/SET: <%= candidate.appln_net_set %></span><% } %>
+            <% if (candidate.appln_qualified) { %><span class="badge-success">Qualified: <%= candidate.appln_qualified %></span><% } %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (!eduLevels.some(e => e.degree)) { %>
+        <div class="empty-state"><i data-lucide="graduation-cap" class="empty-state-icon"></i><p class="text-muted-foreground">No education data available</p></div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Tab: Experience -->
+  <div x-show="activeTab === 'experience'" x-transition>
+    <div class="space-y-4">
+      <% const exps = [
+        { designation: candidate.appln_prev_designation, company: candidate.appln_prev_company, experience: candidate.appln_prev_experience, from: candidate.appln_prev_from_date, to: candidate.appln_prev_to_date },
+        { designation: candidate.appln_prev_designation_second, company: candidate.appln_prev_company_second, experience: candidate.appln_prev_experience_second, from: candidate.appln_prev_from_date_second, to: candidate.appln_prev_to_date_second },
+        { designation: candidate.appln_prev_designation_third, company: candidate.appln_prev_company_third, experience: candidate.appln_prev_experience_third, from: candidate.appln_prev_from_date_third, to: candidate.appln_prev_to_date_third },
+      ]; %>
+
+      <% let hasExp = false; exps.forEach((exp, idx) => { if (exp.company) { hasExp = true; %>
+        <div class="card p-5 border-l-4 border-primary-500">
+          <div class="flex items-start justify-between">
+            <div>
+              <h4 class="font-semibold"><%= exp.designation || 'Position' %></h4>
+              <p class="text-muted-foreground"><%= exp.company %></p>
+            </div>
+            <% if (exp.experience) { %><span class="badge-primary"><%= exp.experience %> yrs</span><% } %>
+          </div>
+          <% if (exp.from || exp.to) { %>
+            <p class="text-sm text-muted-foreground mt-2">
+              <%= exp.from ? dateUtils.formatDate(exp.from) : 'N/A' %> - <%= exp.to ? dateUtils.formatDate(exp.to) : 'Present' %>
+            </p>
+          <% } %>
+        </div>
+      <% }}) %>
+
+      <% if (!hasExp) { %>
+        <div class="empty-state"><i data-lucide="briefcase" class="empty-state-icon"></i><p class="text-muted-foreground">No previous experience data available</p></div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Tab: Research -->
+  <div x-show="activeTab === 'research'" x-transition>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="card p-4 text-center">
+        <p class="text-3xl font-bold text-primary-800 dark:text-accent"><%= candidate.appln_total_journal || '0' %></p>
+        <p class="text-sm text-muted-foreground">Journal Papers</p>
+      </div>
+      <div class="card p-4 text-center">
+        <p class="text-3xl font-bold"><%= candidate.appln_total_book || '0' %></p>
+        <p class="text-sm text-muted-foreground">Books</p>
+      </div>
+      <div class="card p-4 text-center">
+        <p class="text-3xl font-bold"><%= candidate.appln_impact || '0' %></p>
+        <p class="text-sm text-muted-foreground">Impact Factor</p>
+      </div>
+      <div class="card p-4 text-center">
+        <p class="text-3xl font-bold"><%= candidate.appln_patents || '0' %></p>
+        <p class="text-sm text-muted-foreground">Patents</p>
+      </div>
+    </div>
+    <% if (candidate.appln_guide_phd_students) { %>
+      <div class="card p-5 mb-4">
+        <h4 class="font-semibold">PhD Students Guided</h4>
+        <p class="mt-1"><%= candidate.appln_guide_phd_students %></p>
+      </div>
+    <% } %>
+    <% if (candidate.appln_phd_title) { %>
+      <div class="card p-5">
+        <h4 class="font-semibold">PhD Thesis Title</h4>
+        <p class="mt-1 text-muted-foreground"><%= candidate.appln_phd_title %></p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Tab: References -->
+  <div x-show="activeTab === 'references'" x-transition>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <% const refs = [
+        { name: candidate.appln_ref_name, org: candidate.appln_ref_org, designation: candidate.appln_ref_designation, phone: candidate.appln_ref_phone, email: candidate.appln_ref_email },
+        { name: candidate.appln_ref_name1, org: candidate.appln_ref_org1, designation: candidate.appln_ref_designation1, phone: candidate.appln_ref_phone1, email: candidate.appln_ref_email1 },
+      ]; %>
+      <% refs.forEach((ref, idx) => { if (ref.name) { %>
+        <div class="card p-5">
+          <h4 class="font-semibold mb-3">Reference <%= idx + 1 %></h4>
+          <div class="space-y-2">
+            <div><span class="text-xs text-muted-foreground">Name</span><p class="font-medium"><%= ref.name %></p></div>
+            <div><span class="text-xs text-muted-foreground">Organization</span><p><%= ref.org || '-' %></p></div>
+            <div><span class="text-xs text-muted-foreground">Designation</span><p><%= ref.designation || '-' %></p></div>
+            <div><span class="text-xs text-muted-foreground">Phone</span><p><%= ref.phone || '-' %></p></div>
+            <div><span class="text-xs text-muted-foreground">Email</span><p><%= ref.email || '-' %></p></div>
+          </div>
+        </div>
+      <% }}) %>
+      <% if (!refs.some(r => r.name)) { %>
+        <div class="col-span-2 empty-state"><i data-lucide="users" class="empty-state-icon"></i><p class="text-muted-foreground">No references provided</p></div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Tab: Documents -->
+  <div x-show="activeTab === 'documents'" x-transition>
+    <% const docs = fileUrlService.getCandidateFiles(candidate); %>
+    <% if (docs.length > 0) { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <% docs.forEach(doc => { %>
+          <div class="file-card">
+            <div class="file-icon">
+              <i data-lucide="file-text" class="w-6 h-6"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-sm truncate"><%= doc.label %></p>
+              <p class="text-xs text-muted-foreground truncate"><%= doc.fileName %></p>
+            </div>
+            <div class="flex items-center gap-1">
+              <a href="<%= doc.url %>" target="_blank" class="btn-ghost btn-sm p-1" title="View">
+                <i data-lucide="external-link" class="w-4 h-4"></i>
+              </a>
+              <a href="<%= doc.url %>" download class="btn-ghost btn-sm p-1" title="Download">
+                <i data-lucide="download" class="w-4 h-4"></i>
+              </a>
+              <button onclick="copyToClipboard('<%= doc.url %>')" class="btn-ghost btn-sm p-1" title="Copy URL">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state"><i data-lucide="file-x" class="empty-state-icon"></i><h3 class="text-lg font-medium text-muted-foreground">No documents uploaded</h3></div>
+    <% } %>
+  </div>
+
+  <!-- Tab: AI Screening -->
+  <div x-show="activeTab === 'screening'" x-transition>
+    <% if (candidate.screening_id) { %>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="card p-6 text-center">
+          <div class="w-24 h-24 mx-auto" data-score="<%= candidate.ai_match_score || 0 %>" data-size="96" data-stroke="6"></div>
+          <p class="text-sm text-muted-foreground mt-2">AI Match Score</p>
+          <% if (candidate.ai_recommendation_tag) { %>
+            <span class="badge-<%= candidate.ai_recommendation_tag %> mt-2"><%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+          <% } %>
+          <% if (candidate.ai_status) { %>
+            <span class="badge-<%= candidate.ai_status %> mt-1"><%= candidate.ai_status.replace(/\b\w/g, l => l.toUpperCase()) %></span>
+          <% } %>
+        </div>
+        <div class="lg:col-span-2 space-y-4">
+          <% if (candidate.extracted_skills) { %>
+            <div class="card p-5">
+              <h4 class="font-semibold mb-2">Extracted Skills</h4>
+              <div class="flex flex-wrap gap-2">
+                <% const skills = typeof candidate.extracted_skills === 'string' ? JSON.parse(candidate.extracted_skills || '[]') : (candidate.extracted_skills || []); %>
+                <% skills.forEach(s => { %><span class="badge-primary"><%= s %></span><% }) %>
+                <% if (skills.length === 0) { %><span class="text-muted-foreground text-sm">None extracted</span><% } %>
+              </div>
+            </div>
+          <% } %>
+          <% if (candidate.extracted_keywords) { %>
+            <div class="card p-5">
+              <h4 class="font-semibold mb-2">Keywords</h4>
+              <div class="flex flex-wrap gap-2">
+                <% const keywords = typeof candidate.extracted_keywords === 'string' ? JSON.parse(candidate.extracted_keywords || '[]') : (candidate.extracted_keywords || []); %>
+                <% keywords.forEach(k => { %><span class="badge-muted"><%= k %></span><% }) %>
+              </div>
+            </div>
+          <% } %>
+          <% if (candidate.extracted_education_summary) { %>
+            <div class="card p-5">
+              <h4 class="font-semibold mb-2">Education Summary</h4>
+              <p class="text-sm text-muted-foreground"><%= candidate.extracted_education_summary %></p>
+            </div>
+          <% } %>
+          <% if (candidate.extracted_experience_summary) { %>
+            <div class="card p-5">
+              <h4 class="font-semibold mb-2">Experience Summary</h4>
+              <p class="text-sm text-muted-foreground"><%= candidate.extracted_experience_summary %></p>
+            </div>
+          <% } %>
+          <% if (candidate.skill_gap_analysis) { %>
+            <div class="card p-5">
+              <h4 class="font-semibold mb-2">Skill Gap Analysis</h4>
+              <p class="text-sm text-muted-foreground"><%= candidate.skill_gap_analysis %></p>
+            </div>
+          <% } %>
+          <% if (candidate.role_fit_summary) { %>
+            <div class="card p-5">
+              <h4 class="font-semibold mb-2">Role Fit Summary</h4>
+              <p class="text-sm text-muted-foreground"><%= candidate.role_fit_summary %></p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <i data-lucide="brain" class="empty-state-icon"></i>
+        <h3 class="text-lg font-medium text-muted-foreground">No AI screening results yet</h3>
+        <p class="text-sm text-muted-foreground mt-1">Run AI Match to analyze this candidate against the job description.</p>
+        <form method="POST" action="/candidates/<%= candidate.id %>/run-ai-match" class="mt-4">
+          <button type="submit" class="btn-accent">
+            <i data-lucide="brain" class="w-4 h-4"></i> Run AI Match
+          </button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Tab: AI Interview -->
+  <div x-show="activeTab === 'interview'" x-transition>
+    <% if (candidate.interviews && candidate.interviews.length > 0) { %>
+      <% candidate.interviews.forEach(interview => { %>
+        <div class="card p-6 mb-4">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <span class="badge-primary"><%= (interview.interview_type || 'HR').toUpperCase() %></span>
+              <span class="badge-<%= interview.status || 'pending' %>"><%= (interview.status || 'pending').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+            </div>
+            <span class="text-sm text-muted-foreground"><%= interview.started_at ? dateUtils.formatDateTime(interview.started_at) : '-' %></span>
+          </div>
+
+          <% if (interview.total_score != null) { %>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+              <div class="text-center">
+                <div class="w-14 h-14 mx-auto" data-score="<%= interview.total_score %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted-foreground mt-1">Total</p>
+              </div>
+              <div class="text-center">
+                <div class="w-14 h-14 mx-auto" data-score="<%= interview.communication_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted-foreground mt-1">Communication</p>
+              </div>
+              <div class="text-center">
+                <div class="w-14 h-14 mx-auto" data-score="<%= interview.domain_knowledge_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted-foreground mt-1">Domain</p>
+              </div>
+              <div class="text-center">
+                <div class="w-14 h-14 mx-auto" data-score="<%= interview.problem_solving_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted-foreground mt-1">Problem Solving</p>
+              </div>
+              <div class="text-center">
+                <div class="w-14 h-14 mx-auto" data-score="<%= interview.confidence_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted-foreground mt-1">Confidence</p>
+              </div>
+            </div>
+          <% } %>
+
+          <% if (interview.ai_feedback) { %>
+            <div class="bg-muted/50 rounded-xl p-4">
+              <h5 class="font-semibold text-sm mb-1">AI Feedback</h5>
+              <p class="text-sm text-muted-foreground"><%= interview.ai_feedback %></p>
+            </div>
+          <% } %>
+
+          <a href="/ai/interviews/<%= interview.id %>" class="btn-outline btn-sm mt-3">View Full Details</a>
+        </div>
+      <% }) %>
+    <% } else { %>
+      <div class="empty-state">
+        <i data-lucide="message-square" class="empty-state-icon"></i>
+        <h3 class="text-lg font-medium text-muted-foreground">No AI interviews yet</h3>
+        <form method="POST" action="/ai/interviews/<%= candidate.id %>/invite" class="mt-4">
+          <input type="hidden" name="candidate_id" value="<%= candidate.id %>">
+          <input type="hidden" name="interview_type" value="hr">
+          <button type="submit" class="btn-primary"><i data-lucide="message-square" class="w-4 h-4"></i> Invite to AI Interview</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Tab: HR Notes -->
+  <div x-show="activeTab === 'notes'" x-transition>
+    <div class="space-y-4 mb-6">
+      <% if (locals.notes && notes.length > 0) { %>
+        <% notes.forEach(note => { %>
+          <div class="card p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="badge-<%= note.note_type || 'general' %>"><%= (note.note_type || 'general').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+              <span class="text-xs text-muted-foreground"><%= note.created_at ? dateUtils.formatDateTime(note.created_at) : '' %></span>
+            </div>
+            <p class="text-sm"><%= note.note_text %></p>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p class="text-muted-foreground text-sm">No notes yet.</p>
+      <% } %>
+    </div>
+
+    <!-- Add Note Form -->
+    <div class="card p-5">
+      <h4 class="font-semibold mb-3">Add Note</h4>
+      <form method="POST" action="/candidates/<%= candidate.id %>/add-note">
+        <div class="form-group mb-3">
+          <select name="note_type" class="form-select">
+            <option value="general">General</option>
+            <option value="screening">Screening</option>
+            <option value="interview">Interview</option>
+            <option value="decision">Decision</option>
+          </select>
+        </div>
+        <div class="form-group mb-3">
+          <textarea name="note_text" class="form-input" rows="3" placeholder="Write your note..." required data-max-chars="2000"></textarea>
+        </div>
+        <button type="submit" class="btn-primary btn-sm">
+          <i data-lucide="plus" class="w-4 h-4"></i> Add Note
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tab: Timeline -->
+  <div x-show="activeTab === 'timeline'" x-transition>
+    <% if ((locals.activityLogs && activityLogs.length > 0) || (locals.statusHistory && statusHistory.length > 0)) { %>
+      <div class="timeline">
+        <% const allEvents = [
+          ...(activityLogs || []).map(l => ({ type: 'activity', date: l.created_at, label: l.action_label || l.action_key, meta: l.metadata })),
+          ...(statusHistory || []).map(s => ({ type: 'status', date: s.created_at, label: `Status changed: ${s.old_status || 'none'} → ${s.new_status}`, meta: s.remarks })),
+        ].sort((a, b) => new Date(b.date) - new Date(a.date)); %>
+
+        <% allEvents.forEach(event => { %>
+          <div class="timeline-item">
+            <div class="flex items-start justify-between">
+              <div>
+                <p class="font-medium text-sm"><%= event.label %></p>
+                <% if (event.meta) { %><p class="text-xs text-muted-foreground mt-0.5"><%= typeof event.meta === 'string' ? event.meta : '' %></p><% } %>
+              </div>
+              <span class="text-xs text-muted-foreground whitespace-nowrap ml-4"><%= event.date ? dateUtils.formatDateTime(event.date) : '' %></span>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="empty-state"><i data-lucide="clock" class="empty-state-icon"></i><p class="text-muted-foreground">No activity recorded yet</p></div>
+    <% } %>
+  </div>
+</div>

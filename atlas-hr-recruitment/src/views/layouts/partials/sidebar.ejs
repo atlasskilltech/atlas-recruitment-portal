@@ -1,0 +1,89 @@
+<%
+  const navItems = [
+    { path: '/dashboard', icon: 'layout-dashboard', label: 'Dashboard' },
+    { path: '/candidates', icon: 'users', label: 'Candidates' },
+    { path: '/ai-screening', icon: 'brain', label: 'AI Screening' },
+    { path: '/ai-interviews', icon: 'message-square', label: 'AI Interviews' },
+    { path: '/shortlist', icon: 'check-circle', label: 'Shortlist' },
+    { path: '/schedules', icon: 'calendar', label: 'Schedules' },
+    { path: '/reports', icon: 'bar-chart-3', label: 'Reports' },
+    { path: '/notifications', icon: 'bell', label: 'Notifications' },
+  ];
+
+  const isActive = (itemPath) => {
+    if (!currentPath) return false;
+    if (itemPath === '/dashboard') return currentPath === '/' || currentPath === '/dashboard';
+    return currentPath.startsWith(itemPath);
+  };
+%>
+
+<!-- Mobile overlay -->
+<div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
+     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+     x-transition:leave="transition-opacity ease-linear duration-300"
+     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+     @click="sidebarOpen = false">
+</div>
+
+<!-- Sidebar -->
+<aside class="sidebar custom-scrollbar -translate-x-full lg:translate-x-0"
+       :class="sidebarOpen && '!translate-x-0'"
+       x-cloak>
+  <div class="flex flex-col h-full">
+
+    <!-- Logo / Brand -->
+    <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+      <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+        <i data-lucide="graduation-cap" class="w-6 h-6 text-accent"></i>
+      </div>
+      <div class="overflow-hidden">
+        <h1 class="text-base font-bold tracking-tight text-white truncate">Atlas University</h1>
+        <p class="text-xxs text-white/50 uppercase tracking-widest">HR Recruitment</p>
+      </div>
+      <!-- Mobile close button -->
+      <button @click="sidebarOpen = false" class="ml-auto lg:hidden text-white/50 hover:text-white transition-colors">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 py-4 space-y-1">
+      <p class="px-6 mb-2 text-xxs font-semibold text-white/30 uppercase tracking-widest">Main Menu</p>
+
+      <% navItems.forEach(function(item) { %>
+        <a href="<%= item.path %>"
+           class="sidebar-link<%= isActive(item.path) ? ' active' : '' %>">
+          <i data-lucide="<%= item.icon %>" class="w-5 h-5 flex-shrink-0"></i>
+          <span><%= item.label %></span>
+          <% if (item.path === '/notifications' && typeof notificationCount !== 'undefined' && notificationCount > 0) { %>
+            <span class="ml-auto bg-destructive text-white text-xxs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              <%= notificationCount > 99 ? '99+' : notificationCount %>
+            </span>
+          <% } %>
+        </a>
+      <% }); %>
+    </nav>
+
+    <!-- User Info -->
+    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+      <div class="border-t border-white/10 p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+            <span class="text-sm font-semibold text-accent">
+              <%= currentUser.first_name ? currentUser.first_name.charAt(0).toUpperCase() : 'U' %><%= currentUser.last_name ? currentUser.last_name.charAt(0).toUpperCase() : '' %>
+            </span>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-sm font-medium text-white truncate">
+              <%= currentUser.first_name %> <%= currentUser.last_name %>
+            </p>
+            <span class="badge bg-white/10 text-white/70 text-xxs mt-0.5">
+              <%= currentUser.role ? currentUser.role.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'User' %>
+            </span>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</aside>

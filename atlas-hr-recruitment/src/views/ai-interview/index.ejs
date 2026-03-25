@@ -1,0 +1,337 @@
+<%
+  const interviews = typeof locals.interviews !== 'undefined' ? locals.interviews : [];
+  const stats = typeof locals.stats !== 'undefined' ? locals.stats : {};
+  const pagination = typeof locals.pagination !== 'undefined' ? locals.pagination : {};
+  const filters = typeof locals.filters !== 'undefined' ? locals.filters : {};
+%>
+
+<!-- Page Header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground tracking-tight">AI Interviews</h1>
+    <p class="text-sm text-muted-foreground mt-1">Manage and review AI-powered candidate interviews</p>
+  </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+  <!-- Total -->
+  <div class="stat-card">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="stat-value text-foreground"><%= stats.total || 0 %></p>
+        <p class="stat-label">Total</p>
+      </div>
+      <div class="stat-icon bg-primary-800">
+        <i data-lucide="monitor" class="w-5 h-5"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending -->
+  <div class="stat-card">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="stat-value text-warning"><%= stats.pending || 0 %></p>
+        <p class="stat-label">Pending</p>
+      </div>
+      <div class="stat-icon bg-warning">
+        <i data-lucide="clock" class="w-5 h-5"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- In Progress -->
+  <div class="stat-card">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="stat-value text-info"><%= stats.in_progress || 0 %></p>
+        <p class="stat-label">In Progress</p>
+      </div>
+      <div class="stat-icon bg-info">
+        <i data-lucide="loader" class="w-5 h-5"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed -->
+  <div class="stat-card">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="stat-value text-muted-foreground"><%= stats.completed || 0 %></p>
+        <p class="stat-label">Completed</p>
+      </div>
+      <div class="stat-icon bg-muted">
+        <i data-lucide="check-square" class="w-5 h-5"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Passed -->
+  <div class="stat-card">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="stat-value text-success"><%= stats.passed || 0 %></p>
+        <p class="stat-label">Passed</p>
+      </div>
+      <div class="stat-icon bg-success">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Failed -->
+  <div class="stat-card">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="stat-value text-destructive"><%= stats.failed || 0 %></p>
+        <p class="stat-label">Failed</p>
+      </div>
+      <div class="stat-icon bg-destructive">
+        <i data-lucide="x-circle" class="w-5 h-5"></i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-panel">
+  <form method="GET" action="/ai-interview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <!-- Status -->
+    <div class="form-group">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="pending" <%= filters.status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="in_progress" <%= filters.status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
+        <option value="completed" <%= filters.status === 'completed' ? 'selected' : '' %>>Completed</option>
+        <option value="passed" <%= filters.status === 'passed' ? 'selected' : '' %>>Passed</option>
+        <option value="failed" <%= filters.status === 'failed' ? 'selected' : '' %>>Failed</option>
+      </select>
+    </div>
+
+    <!-- Interview Type -->
+    <div class="form-group">
+      <label class="form-label">Interview Type</label>
+      <select name="type" class="form-select">
+        <option value="">All Types</option>
+        <option value="technical" <%= filters.type === 'technical' ? 'selected' : '' %>>Technical</option>
+        <option value="behavioral" <%= filters.type === 'behavioral' ? 'selected' : '' %>>Behavioral</option>
+        <option value="general" <%= filters.type === 'general' ? 'selected' : '' %>>General</option>
+        <option value="domain" <%= filters.type === 'domain' ? 'selected' : '' %>>Domain</option>
+      </select>
+    </div>
+
+    <!-- Min Score -->
+    <div class="form-group">
+      <label class="form-label">Min Score</label>
+      <input type="number" name="minScore" min="0" max="100" placeholder="0"
+             class="form-input" value="<%= filters.minScore || '' %>">
+    </div>
+
+    <!-- Max Score -->
+    <div class="form-group">
+      <label class="form-label">Max Score</label>
+      <input type="number" name="maxScore" min="0" max="100" placeholder="100"
+             class="form-input" value="<%= filters.maxScore || '' %>">
+    </div>
+
+    <!-- Actions -->
+    <div class="form-group flex items-end gap-2">
+      <button type="submit" class="btn-primary btn-sm flex-1">
+        <i data-lucide="search" class="w-4 h-4"></i>
+        Filter
+      </button>
+      <a href="/ai-interview" class="btn-outline btn-sm">
+        <i data-lucide="x" class="w-4 h-4"></i>
+        Clear
+      </a>
+    </div>
+  </form>
+</div>
+
+<!-- Interviews Table -->
+<div class="card overflow-hidden">
+  <% if (interviews.length > 0) { %>
+    <div class="overflow-x-auto">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Candidate Name</th>
+            <th>Job Role</th>
+            <th>Interview Type</th>
+            <th>Status</th>
+            <th>Total Score</th>
+            <th>Communication</th>
+            <th>Domain</th>
+            <th>Problem Solving</th>
+            <th>Started At</th>
+            <th>Completed At</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% interviews.forEach(function(iv) { %>
+            <%
+              const candidateName = iv.candidate_name || (iv.candidate ? (iv.candidate.first_name + ' ' + (iv.candidate.last_name || '')) : 'Unknown');
+              const jobTitle = iv.job_title || (iv.job ? iv.job.title : 'N/A');
+
+              const ivType = iv.interview_type || iv.type || 'general';
+              const typeBadgeClass = ivType === 'technical' ? 'badge-info'
+                : ivType === 'behavioral' ? 'badge-warning'
+                : ivType === 'domain' ? 'badge-success'
+                : 'badge-muted';
+
+              const ivStatus = iv.status || 'pending';
+              const ivStatusBadge = ivStatus === 'completed' ? 'badge-success'
+                : ivStatus === 'passed' ? 'badge-success'
+                : ivStatus === 'failed' ? 'badge-danger'
+                : ivStatus === 'in_progress' ? 'badge-info'
+                : 'badge-warning';
+
+              const totalScore = iv.total_score || iv.overall_score || 0;
+              const commScore = iv.communication_score || 0;
+              const domainScore = iv.domain_score || 0;
+              const problemScore = iv.problem_solving_score || 0;
+
+              const totalScoreColor = totalScore >= 75 ? 'text-success' : totalScore >= 50 ? 'text-warning' : 'text-destructive';
+            %>
+            <tr>
+              <!-- Candidate Name -->
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center flex-shrink-0">
+                    <span class="text-xs font-semibold text-primary-800 dark:text-primary-200">
+                      <%= candidateName.charAt(0).toUpperCase() %>
+                    </span>
+                  </div>
+                  <span class="font-medium text-foreground"><%= candidateName %></span>
+                </div>
+              </td>
+
+              <!-- Job Role -->
+              <td class="text-muted-foreground"><%= jobTitle %></td>
+
+              <!-- Interview Type -->
+              <td>
+                <span class="<%= typeBadgeClass %>">
+                  <%= ivType.charAt(0).toUpperCase() + ivType.slice(1) %>
+                </span>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <span class="<%= ivStatusBadge %>">
+                  <% if (ivStatus === 'completed' || ivStatus === 'passed') { %>
+                    <i data-lucide="check" class="w-3 h-3"></i>
+                  <% } else if (ivStatus === 'in_progress') { %>
+                    <i data-lucide="loader" class="w-3 h-3 animate-spin-slow"></i>
+                  <% } else if (ivStatus === 'failed') { %>
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                  <% } else { %>
+                    <i data-lucide="clock" class="w-3 h-3"></i>
+                  <% } %>
+                  <%= ivStatus.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) %>
+                </span>
+              </td>
+
+              <!-- Total Score -->
+              <td>
+                <span class="text-sm font-bold <%= totalScoreColor %>"><%= totalScore %>%</span>
+              </td>
+
+              <!-- Communication -->
+              <td class="text-sm text-muted-foreground"><%= commScore %>%</td>
+
+              <!-- Domain -->
+              <td class="text-sm text-muted-foreground"><%= domainScore %>%</td>
+
+              <!-- Problem Solving -->
+              <td class="text-sm text-muted-foreground"><%= problemScore %>%</td>
+
+              <!-- Started At -->
+              <td class="text-muted-foreground text-sm">
+                <% if (iv.started_at) { %>
+                  <%= new Date(iv.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                <% } else { %>
+                  &mdash;
+                <% } %>
+              </td>
+
+              <!-- Completed At -->
+              <td class="text-muted-foreground text-sm">
+                <% if (iv.completed_at) { %>
+                  <%= new Date(iv.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                <% } else { %>
+                  &mdash;
+                <% } %>
+              </td>
+
+              <!-- Actions -->
+              <td>
+                <a href="/ai-interview/<%= iv.id %>" class="btn-ghost btn-sm text-primary-800 dark:text-primary-200" title="View Details">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </a>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pagination.totalPages > 1) { %>
+      <div class="flex items-center justify-between px-4 py-3 border-t border-border">
+        <p class="text-sm text-muted-foreground">
+          Showing <span class="font-medium"><%= ((pagination.page - 1) * pagination.limit) + 1 %></span>
+          to <span class="font-medium"><%= Math.min(pagination.page * pagination.limit, pagination.total) %></span>
+          of <span class="font-medium"><%= pagination.total %></span> results
+        </p>
+        <div class="flex items-center gap-1">
+          <% if (pagination.page > 1) { %>
+            <a href="?page=<%= pagination.page - 1 %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>"
+               class="btn-outline btn-sm">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+              Prev
+            </a>
+          <% } %>
+
+          <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+            <% if (i === pagination.page) { %>
+              <span class="btn-primary btn-sm"><%= i %></span>
+            <% } else if (Math.abs(i - pagination.page) <= 2 || i === 1 || i === pagination.totalPages) { %>
+              <a href="?page=<%= i %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>"
+                 class="btn-outline btn-sm"><%= i %></a>
+            <% } else if (Math.abs(i - pagination.page) === 3) { %>
+              <span class="px-1 text-muted-foreground">&hellip;</span>
+            <% } %>
+          <% } %>
+
+          <% if (pagination.page < pagination.totalPages) { %>
+            <a href="?page=<%= pagination.page + 1 %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>"
+               class="btn-outline btn-sm">
+              Next
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+
+  <% } else { %>
+    <!-- Empty State -->
+    <div class="empty-state py-20">
+      <div class="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-5">
+        <i data-lucide="monitor" class="w-10 h-10 text-muted-foreground/30"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-foreground mb-1">No AI Interviews</h3>
+      <p class="text-sm text-muted-foreground max-w-sm mb-6">
+        No AI interviews found. Interviews will appear here once candidates are invited.
+      </p>
+      <a href="/ai-screening" class="btn-primary">
+        <i data-lucide="brain" class="w-4 h-4"></i>
+        View Screenings
+      </a>
+    </div>
+  <% } %>
+</div>
