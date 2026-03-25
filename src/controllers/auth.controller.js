@@ -80,7 +80,13 @@ const login = asyncHandler(async (req, res) => {
   delete req.session.returnTo;
 
   req.flash('success', `Welcome back, ${user.full_name}!`);
-  return res.redirect(returnTo);
+
+  // Explicitly save session before redirecting to ensure the session
+  // is persisted before the browser follows the redirect
+  return req.session.save((err) => {
+    if (err) logger.error('Session save error:', err);
+    return res.redirect(returnTo);
+  });
 });
 
 /**
