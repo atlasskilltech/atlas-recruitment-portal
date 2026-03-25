@@ -15,7 +15,7 @@ function buildSessionConfig() {
     name: 'atlas.sid',
     cookie: {
       httpOnly: true,
-      secure: env.NODE_ENV === 'production',
+      secure: 'auto',
       sameSite: 'lax',
       maxAge: env.SESSION_MAX_AGE,
     },
