@@ -7,8 +7,6 @@
   .timer-warning { color: #f59e0b; }
   .timer-danger { color: #ef4444; animation: pulse-ring 1s infinite; }
 </style>
-<% layout('layouts/auth') %>
-
 <%
   const interview = typeof locals.interview !== 'undefined' ? locals.interview : {};
   const questions = typeof locals.questions !== 'undefined' ? locals.questions : [];
