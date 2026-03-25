@@ -9,7 +9,7 @@ const { validate } = require('../middlewares/validation.middleware');
 const { loginRules } = require('../validations/auth.validation');
 
 router.get('/login', isGuest, authController.showLogin);
-router.post('/login', isGuest, loginRules, validate, authController.login);
+router.post('/login', isGuest, validate(loginRules), authController.login);
 router.post('/logout', isAuthenticated, authController.logout);
 
 module.exports = router;
