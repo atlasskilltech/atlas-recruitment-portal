@@ -15,7 +15,7 @@ function buildSessionConfig() {
     name: 'atlas.sid',
     cookie: {
       httpOnly: true,
-      secure: 'auto',
+      secure: false, // TODO: enable when proxy sends X-Forwarded-Proto
       sameSite: 'lax',
       maxAge: env.SESSION_MAX_AGE,
     },

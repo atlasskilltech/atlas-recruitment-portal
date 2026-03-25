@@ -25,9 +25,11 @@ const showLogin = (req, res) => {
  */
 const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  logger.info(`[LOGIN] Attempt with email: ${email}`);
 
   // Basic validation
   if (!email || !password) {
+    logger.warn('[LOGIN] Missing email or password');
     req.flash('error', 'Please provide both email and password.');
     return res.redirect('/login');
   }
@@ -39,6 +41,7 @@ const login = asyncHandler(async (req, res) => {
   );
 
   if (users.length === 0) {
+    logger.warn(`[LOGIN] No user found for email: ${email.trim().toLowerCase()}`);
     req.flash('error', 'Invalid email or password.');
     return res.redirect('/login');
   }
@@ -47,6 +50,7 @@ const login = asyncHandler(async (req, res) => {
 
   // Check if account is active
   if (!user.status) {
+    logger.warn(`[LOGIN] Inactive account: ${user.email}`);
     req.flash('error', 'Your account has been deactivated. Please contact the administrator.');
     return res.redirect('/login');
   }
@@ -55,9 +59,12 @@ const login = asyncHandler(async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password_hash);
 
   if (!isMatch) {
+    logger.warn(`[LOGIN] Wrong password for: ${user.email}`);
     req.flash('error', 'Invalid email or password.');
     return res.redirect('/login');
   }
+
+  logger.info(`[LOGIN] Credentials valid for: ${user.email}, setting session`);
 
   // Update last login timestamp
   await pool.query(
