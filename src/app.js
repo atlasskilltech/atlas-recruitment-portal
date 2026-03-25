@@ -21,6 +21,9 @@ const webRoutes = require('./routes/web.routes');
 
 const app = express();
 
+// ─── Proxy Trust ────────────────────────────────────────
+app.set('trust proxy', 1);
+
 // ─── Security ───────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: {

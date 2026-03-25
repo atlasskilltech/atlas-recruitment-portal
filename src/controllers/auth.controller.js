@@ -12,6 +12,7 @@ const logger = require('../utils/logger');
  */
 const showLogin = (req, res) => {
   res.render('auth/login', {
+    layout: 'layouts/auth',
     title: 'Login',
     error: req.flash('error'),
     success: req.flash('success'),
