@@ -1,35 +1,62 @@
-<div class="text-center mb-6">
-  <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-50 dark:bg-blue-900/20 rounded-full mb-3">
-    <i data-lucide="shield-check" class="w-6 h-6 text-blue-600 dark:text-blue-400"></i>
+<style>
+  @keyframes cardEntrance {
+    0% { opacity: 0; transform: translateY(20px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .login-card-animate {
+    animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+</style>
+
+<div class="login-card-animate">
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-brand rounded-2xl mb-4 shadow-brand">
+      <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-foreground tracking-tight">Verify OTP</h1>
+    <p class="text-muted-foreground text-sm mt-1">Enter the 6-digit code sent to</p>
+    <p class="text-sm font-semibold text-foreground mt-1"><%= typeof email !== 'undefined' ? email : '' %></p>
   </div>
-  <h2 class="text-xl font-bold text-foreground">Verify OTP</h2>
-  <p class="text-sm text-muted-foreground mt-1">Enter the 6-digit code sent to</p>
-  <p class="text-sm font-medium text-foreground"><%= typeof email !== 'undefined' ? email : '' %></p>
-</div>
 
-<form action="/candidate/verify-otp" method="POST" class="space-y-5">
-  <div class="form-group">
-    <label for="otp" class="form-label">One-Time Password</label>
-    <input type="text" id="otp" name="otp" required maxlength="6" pattern="[0-9]{6}"
-      class="form-input text-center text-2xl tracking-[0.5em] font-mono"
-      placeholder="000000" autocomplete="one-time-code" inputmode="numeric">
-  </div>
+  <!-- OTP Form -->
+  <form action="/candidate/verify-otp" method="POST" class="space-y-5">
+    <div class="form-group">
+      <label for="otp" class="form-label">One-Time Password</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+        </div>
+        <input type="text" id="otp" name="otp" required maxlength="6" pattern="[0-9]{6}"
+          class="form-input pl-11 text-center text-2xl tracking-[0.5em] font-mono"
+          placeholder="000000" autocomplete="one-time-code" inputmode="numeric">
+      </div>
+    </div>
 
-  <button type="submit" class="btn-primary w-full py-3 text-base font-semibold">
-    <i data-lucide="check" class="w-5 h-5"></i>
-    Verify & Login
-  </button>
-</form>
-
-<div class="mt-5 text-center space-y-2">
-  <form action="/candidate/send-otp" method="POST" class="inline">
-    <input type="hidden" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>">
-    <button type="submit" class="text-sm text-primary-800 dark:text-primary-200 hover:underline">
-      Resend OTP
+    <!-- Submit Button -->
+    <button type="submit" class="btn-primary w-full py-3 text-base font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      </svg>
+      Verify & Login
     </button>
   </form>
-  <p class="text-xs text-muted-foreground">OTP is valid for 10 minutes</p>
-  <a href="/candidate/login" class="text-xs text-muted-foreground hover:text-foreground transition-colors block">
-    Use a different email
-  </a>
+
+  <!-- Footer -->
+  <div class="mt-8 pt-6 border-t border-border text-center space-y-3">
+    <form action="/candidate/send-otp" method="POST" class="inline">
+      <input type="hidden" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>">
+      <button type="submit" class="text-sm text-primary-800 dark:text-primary-200 font-medium hover:underline">
+        Resend OTP
+      </button>
+    </form>
+    <p class="text-xs text-muted-foreground">OTP is valid for 10 minutes</p>
+    <a href="/candidate/login" class="text-xs text-muted-foreground hover:text-foreground transition-colors block mt-2">
+      &larr; Use a different email
+    </a>
+  </div>
 </div>

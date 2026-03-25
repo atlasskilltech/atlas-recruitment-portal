@@ -1,66 +1,112 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %>ATLAS Skilltech University - Candidate Portal</title>
+  <%- include('../../layouts/partials/header') %>
+
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
   <link rel="stylesheet" href="/css/output.css">
+
+  <!-- Page-specific styles -->
   <%- style %>
 </head>
-<body class="min-h-screen">
-  <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950">
+<body x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }"
+      x-init="if (darkMode) document.documentElement.classList.add('dark')"
+      class="min-h-screen">
+
+  <!-- Full-screen gradient background -->
+  <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-hero">
+
+    <!-- Decorative background elements -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl"></div>
-      <div class="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-indigo-400/10 blur-3xl"></div>
+      <div class="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-accent/10 blur-3xl"></div>
+      <div class="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-primary-400/10 blur-3xl"></div>
+      <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-white/5 blur-3xl"></div>
     </div>
+
+    <!-- Auth card container -->
     <div class="relative z-10 w-full max-w-md">
+
+      <!-- Brand header -->
       <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm mb-4">
-          <i data-lucide="graduation-cap" class="w-8 h-8 text-blue-300"></i>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm mb-4 shadow-glow-sm">
+          <i data-lucide="user-circle" class="w-8 h-8 text-accent"></i>
         </div>
-        <h1 class="text-2xl font-bold text-white">Candidate Portal</h1>
-        <p class="text-sm text-white/60 mt-1">ATLAS Skilltech University</p>
+        <h1 class="text-2xl font-bold text-white">ATLAS Skilltech University</h1>
+        <p class="text-sm text-white/60 mt-1">Candidate Portal</p>
       </div>
 
-      <% if (typeof error !== 'undefined') { %>
-        <% const errs = Array.isArray(error) ? error : [error]; %>
-        <% errs.forEach(function(msg) { %>
-          <% if (msg && msg.length > 0) { %>
-            <div class="mb-3 p-3 rounded-xl bg-red-500/20 border border-red-500/30 text-red-200 text-sm flex items-center gap-2">
-              <i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i>
-              <span><%= msg %></span>
-            </div>
-          <% } %>
-        <% }); %>
-      <% } %>
-      <% if (typeof success !== 'undefined') { %>
-        <% const succs = Array.isArray(success) ? success : [success]; %>
-        <% succs.forEach(function(msg) { %>
-          <% if (msg && msg.length > 0) { %>
-            <div class="mb-3 p-3 rounded-xl bg-green-500/20 border border-green-500/30 text-green-200 text-sm flex items-center gap-2">
-              <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i>
-              <span><%= msg %></span>
-            </div>
-          <% } %>
-        <% }); %>
+      <!-- Flash messages -->
+      <% if (typeof success !== 'undefined' || typeof error !== 'undefined') { %>
+        <div class="mb-4">
+          <%
+            const authAlertTypes = [
+              { key: 'success', icon: 'check-circle', cls: 'bg-green-500/20 border-green-500/30 text-green-200' },
+              { key: 'error',   icon: 'x-circle',     cls: 'bg-red-500/20 border-red-500/30 text-red-200' },
+            ];
+          %>
+          <% authAlertTypes.forEach(function(alert) { %>
+            <% const msgs = typeof locals[alert.key] !== 'undefined' ? (Array.isArray(locals[alert.key]) ? locals[alert.key] : [locals[alert.key]]) : []; %>
+            <% msgs.forEach(function(msg) { %>
+              <% if (msg && msg.length > 0) { %>
+                <div class="flex items-center gap-2 p-3 rounded-xl border text-sm mb-2 <%= alert.cls %>"
+                     x-data="{ show: true }" x-show="show"
+                     x-init="setTimeout(() => show = false, 5000)">
+                  <i data-lucide="<%= alert.icon %>" class="w-4 h-4 flex-shrink-0"></i>
+                  <span class="flex-1"><%= msg %></span>
+                  <button @click="show = false" class="hover:opacity-70"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                </div>
+              <% } %>
+            <% }); %>
+          <% }); %>
+        </div>
       <% } %>
 
-      <div class="card shadow-2xl">
+      <!-- Page content -->
+      <div class="card shadow-brand-lg">
         <%- body %>
       </div>
 
-      <div class="mt-6 text-center">
+      <!-- Footer links -->
+      <div class="mt-6 text-center space-y-2">
         <a href="/login" class="text-xs text-white/40 hover:text-white/60 transition-colors">HR Portal Login</a>
+        <p class="text-xs text-white/40">
+          &copy; <%= new Date().getFullYear() %> ATLAS Skilltech University. All rights reserved.
+        </p>
       </div>
-      <p class="text-center text-xs text-white/40 mt-4">&copy; <%= new Date().getFullYear() %> ATLAS Skilltech University. All rights reserved.</p>
     </div>
   </div>
+
+  <!-- Lucide Icons -->
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- Alpine.js -->
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script>document.addEventListener('DOMContentLoaded', function() { lucide.createIcons(); });</script>
+
+  <!-- Initialize Lucide icons -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      lucide.createIcons();
+    });
+  </script>
+
+  <!-- Dark mode initialization -->
+  <script>
+    (function () {
+      var darkMode = localStorage.getItem('darkMode') === 'true';
+      if (darkMode) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
+
+  <!-- Page-specific scripts -->
   <%- script %>
 </body>
 </html>
