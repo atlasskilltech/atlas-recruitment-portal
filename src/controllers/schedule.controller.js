@@ -20,7 +20,7 @@ const index = asyncHandler(async (req, res) => {
 
   // Build filters
   const filters = {};
-  if (req.query.schedule_status) filters.schedule_status = req.query.schedule_status;
+  if (req.query.status) filters.status = req.query.status;
   if (req.query.candidate_id) filters.candidate_id = parseInt(req.query.candidate_id, 10);
   if (req.query.job_id) filters.job_id = parseInt(req.query.job_id, 10);
   if (req.query.interview_type) filters.interview_type = req.query.interview_type;
@@ -131,7 +131,7 @@ const store = asyncHandler(async (req, res) => {
       duration_minutes: duration_minutes ? parseInt(duration_minutes, 10) : 60,
       meeting_link: meeting_link || null,
       location: location || null,
-      schedule_status: 'scheduled',
+      status: 'scheduled',
       notes: notes || null,
       created_by: req.session.user ? req.session.user.id : null,
     });
@@ -205,7 +205,7 @@ const reschedule = asyncHandler(async (req, res) => {
     if (location !== undefined) updateData.location = location;
     if (interview_type) updateData.interview_type = interview_type;
     if (notes !== undefined) updateData.notes = notes;
-    updateData.schedule_status = 'rescheduled';
+    updateData.status = 'rescheduled';
 
     await scheduleRepository.update(scheduleId, updateData);
 
@@ -234,7 +234,7 @@ const cancel = asyncHandler(async (req, res) => {
 
   try {
     await scheduleRepository.update(scheduleId, {
-      schedule_status: 'cancelled',
+      status: 'cancelled',
       notes: notes || undefined,
     });
 

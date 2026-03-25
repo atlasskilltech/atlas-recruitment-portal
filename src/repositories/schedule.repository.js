@@ -10,7 +10,7 @@ class ScheduleRepository {
         INSERT INTO atlas_rec_interview_schedules
         (candidate_id, job_id, interview_id, scheduled_date, scheduled_time,
          duration_minutes, interview_type, interviewer_name, interviewer_email,
-         location, meeting_link, schedule_status, notes, created_by, created_at)
+         location, meeting_link, status, notes, created_by, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `;
 
@@ -26,7 +26,7 @@ class ScheduleRepository {
         data.interviewer_email || null,
         data.location || null,
         data.meeting_link || null,
-        data.schedule_status || 'scheduled',
+        data.status || 'scheduled',
         data.notes || null,
         data.created_by || null,
       ];
@@ -78,9 +78,9 @@ class ScheduleRepository {
       params.push(filters.job_id);
     }
 
-    if (filters.schedule_status) {
-      conditions.push('sch.schedule_status = ?');
-      params.push(filters.schedule_status);
+    if (filters.status) {
+      conditions.push('sch.status = ?');
+      params.push(filters.status);
     }
 
     if (filters.interview_type) {
@@ -157,7 +157,7 @@ class ScheduleRepository {
       const allowedFields = [
         'scheduled_date', 'scheduled_time', 'duration_minutes',
         'interview_type', 'interviewer_name', 'interviewer_email',
-        'location', 'meeting_link', 'schedule_status', 'notes',
+        'location', 'meeting_link', 'status', 'notes',
         'cancellation_reason',
       ];
 
@@ -201,7 +201,7 @@ class ScheduleRepository {
         LEFT JOIN dice_staff_recruitment dsr ON sch.candidate_id = dsr.id
         LEFT JOIN isdi_admsn_applied_for job ON sch.job_id = job.id
         WHERE sch.scheduled_date >= CURDATE()
-          AND sch.schedule_status IN ('scheduled', 'confirmed')
+          AND sch.status IN ('scheduled', 'confirmed')
         ORDER BY sch.scheduled_date ASC, sch.scheduled_time ASC
         LIMIT 50
       `;
