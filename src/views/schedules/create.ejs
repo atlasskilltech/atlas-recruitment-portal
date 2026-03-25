@@ -1,6 +1,6 @@
 <%
-  const candidate = typeof locals.candidate !== 'undefined' ? locals.candidate : {};
-  const job = typeof locals.job !== 'undefined' ? locals.job : {};
+  const candidate = locals.candidate || {};
+  const job = locals.job || {};
 
   const candidateName = candidate.first_name
     ? candidate.first_name + ' ' + (candidate.last_name || '')
