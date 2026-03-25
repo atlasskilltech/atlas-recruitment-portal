@@ -25,6 +25,7 @@ const sendOTP = asyncHandler(async (req, res) => {
   }
 
   req.session.candidateOTPEmail = email.trim().toLowerCase();
+  req.session.candidateOTPCode = result.otp; // Store for dev bypass display
   req.flash('success', result.message);
   return res.redirect('/candidate/verify-otp');
 });
@@ -37,6 +38,7 @@ const showVerifyOTP = (req, res) => {
     layout: 'candidate/layouts/candidate-auth',
     title: 'Verify OTP',
     email: req.session.candidateOTPEmail,
+    devOTP: req.session.candidateOTPCode || null,
     error: req.flash('error'),
     success: req.flash('success'),
   });
