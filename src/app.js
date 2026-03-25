@@ -43,10 +43,11 @@ app.use(helmet({
 // ─── Rate Limiting ──────────────────────────────────────
 const authLimiter = rateLimit({
   windowMs: parseInt(env.RATE_LIMIT_WINDOW_MS) || 900000,
-  max: parseInt(env.AUTH_RATE_LIMIT_MAX) || 5,
+  max: parseInt(env.AUTH_RATE_LIMIT_MAX) || 20,
   message: 'Too many login attempts. Please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skipSuccessfulRequests: true,
 });
 
 // ─── Logging ────────────────────────────────────────────
@@ -101,7 +102,7 @@ app.use((req, res, next) => {
 });
 
 // ─── Rate limit on auth routes ──────────────────────────
-app.use('/login', authLimiter);
+app.post('/login', authLimiter);
 
 // ─── Routes ─────────────────────────────────────────────
 app.use('/', webRoutes);
