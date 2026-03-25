@@ -219,7 +219,7 @@
                 </td>
                 <td>
                   <span class="<%= statusBadge(a.appln_status_new) %>">
-                    <%= a.appln_status_new ? a.appln_status_new.charAt(0).toUpperCase() + a.appln_status_new.slice(1) : 'New' %>
+                    <%= a.appln_status_new ? String(a.appln_status_new).charAt(0).toUpperCase() + String(a.appln_status_new).slice(1) : 'New' %>
                   </span>
                 </td>
                 <td class="hidden sm:table-cell">
