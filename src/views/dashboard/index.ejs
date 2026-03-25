@@ -44,7 +44,7 @@
       'passed':     'badge-success',
       'failed':     'badge-danger',
     };
-    return map[(status || '').toLowerCase()] || 'badge-muted';
+    return map[String(status || '').toLowerCase()] || 'badge-muted';
   };
 %>
 
