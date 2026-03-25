@@ -7,6 +7,9 @@ const profileController = require('../controllers/candidateProfile.controller');
 const notificationsController = require('../controllers/candidateNotifications.controller');
 const supportController = require('../controllers/candidateSupport.controller');
 
+// Root redirect
+router.get('/', (req, res) => res.redirect('/candidate/dashboard'));
+
 // Dashboard
 router.get('/dashboard', isCandidateAuthenticated, dashboardController.index);
 
