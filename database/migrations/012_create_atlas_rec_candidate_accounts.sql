@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS `atlas_rec_candidate_accounts` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `candidate_id` INT NOT NULL,
+    `email` VARCHAR(255) NOT NULL,
+    `mobile` VARCHAR(20) DEFAULT NULL,
+    `password_hash` VARCHAR(255) DEFAULT NULL,
+    `otp_code` VARCHAR(10) DEFAULT NULL,
+    `otp_expires_at` DATETIME DEFAULT NULL,
+    `otp_attempts` INT DEFAULT 0,
+    `otp_last_sent_at` DATETIME DEFAULT NULL,
+    `email_verified` TINYINT DEFAULT 0,
+    `mobile_verified` TINYINT DEFAULT 0,
+    `last_login_at` DATETIME DEFAULT NULL,
+    `login_method` ENUM('password','otp','magic_link') DEFAULT 'otp',
+    `status` ENUM('active','inactive','blocked') DEFAULT 'active',
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_email` (`email`),
+    INDEX `idx_candidate_id` (`candidate_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

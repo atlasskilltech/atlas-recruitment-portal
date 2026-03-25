@@ -1,0 +1,32 @@
+<%
+  const notifs = typeof notifications !== 'undefined' ? notifications : [];
+%>
+
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-foreground">Notifications</h1>
+  <p class="text-sm text-muted-foreground mt-1"><%= notifs.length %> notification(s)</p>
+</div>
+
+<% if (notifs.length === 0) { %>
+  <div class="card p-12 text-center">
+    <i data-lucide="bell-off" class="w-12 h-12 text-muted-foreground mx-auto mb-4"></i>
+    <h3 class="text-lg font-semibold text-foreground mb-1">No Notifications</h3>
+    <p class="text-sm text-muted-foreground">You'll be notified about updates to your applications.</p>
+  </div>
+<% } else { %>
+  <div class="space-y-3">
+    <% notifs.forEach(function(n) { %>
+      <div class="card p-4 flex gap-3">
+        <div class="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center flex-shrink-0">
+          <i data-lucide="<%= n.type === 'interview' ? 'message-square' : n.type === 'schedule' ? 'calendar' : 'bell' %>"
+             class="w-5 h-5 text-blue-600"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-foreground"><%= n.title || 'Notification' %></p>
+          <p class="text-sm text-muted-foreground mt-0.5"><%= n.message %></p>
+          <p class="text-xs text-muted-foreground mt-1"><%= n.created_at ? new Date(n.created_at).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric', hour:'2-digit', minute:'2-digit'}) : '' %></p>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } %>

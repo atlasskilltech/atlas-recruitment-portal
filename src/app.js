@@ -104,6 +104,13 @@ app.use((req, res, next) => {
 // ─── Rate limit on auth routes ──────────────────────────
 app.post('/login', authLimiter);
 
+// ─── Candidate Portal Routes ────────────────────────────
+const { attachCandidate } = require('./middlewares/candidateAuth.middleware');
+const candidateAuthRoutes = require('./routes/candidateAuth.routes');
+const candidatePortalRoutes = require('./routes/candidatePortal.routes');
+app.use('/candidate', attachCandidate, candidateAuthRoutes);
+app.use('/candidate', attachCandidate, candidatePortalRoutes);
+
 // ─── Routes ─────────────────────────────────────────────
 app.use('/', webRoutes);
 

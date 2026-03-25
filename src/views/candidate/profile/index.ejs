@@ -1,0 +1,58 @@
+<%
+  const p = typeof profile !== 'undefined' ? profile : {};
+%>
+
+<div class="mb-6">
+  <h1 class="text-2xl font-bold text-foreground">My Profile</h1>
+  <p class="text-sm text-muted-foreground mt-1">Your application profile information</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <!-- Personal Info -->
+  <div class="card p-5">
+    <h2 class="font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="user" class="w-4 h-4 text-blue-600"></i> Personal Information
+    </h2>
+    <div class="space-y-3">
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Full Name</span><span class="font-medium text-foreground"><%= p.appln_full_name || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Email</span><span class="font-medium text-foreground"><%= p.appln_email || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Mobile</span><span class="font-medium text-foreground"><%= p.appln_mobile_no || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Application ID</span><span class="font-medium text-foreground"><%= p.appln_id || '--' %></span></div>
+    </div>
+  </div>
+
+  <!-- Education -->
+  <div class="card p-5">
+    <h2 class="font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="graduation-cap" class="w-4 h-4 text-purple-600"></i> Education
+    </h2>
+    <div class="space-y-3">
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Qualification</span><span class="font-medium text-foreground"><%= p.appln_high_qualification || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Specialization</span><span class="font-medium text-foreground"><%= p.appln_specialization || '--' %></span></div>
+    </div>
+  </div>
+
+  <!-- Experience -->
+  <div class="card p-5">
+    <h2 class="font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="briefcase" class="w-4 h-4 text-amber-600"></i> Experience
+    </h2>
+    <div class="space-y-3">
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Total Experience</span><span class="font-medium text-foreground"><%= p.appln_total_experience || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Current Organisation</span><span class="font-medium text-foreground"><%= p.appln_current_organisation || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Current Designation</span><span class="font-medium text-foreground"><%= p.appln_current_designation || '--' %></span></div>
+    </div>
+  </div>
+
+  <!-- Applied Position -->
+  <div class="card p-5">
+    <h2 class="font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="target" class="w-4 h-4 text-green-600"></i> Applied Position
+    </h2>
+    <div class="space-y-3">
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Job Title</span><span class="font-medium text-foreground"><%= p.job_title || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Location</span><span class="font-medium text-foreground"><%= p.job_location || '--' %></span></div>
+      <div class="flex justify-between text-sm"><span class="text-muted-foreground">Applied Date</span><span class="font-medium text-foreground"><%= p.appln_date ? new Date(p.appln_date).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '--' %></span></div>
+    </div>
+  </div>
+</div>
