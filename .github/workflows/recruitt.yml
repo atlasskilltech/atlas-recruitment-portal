@@ -28,7 +28,7 @@ jobs:
           ssh -i ~/.ssh/key.pem -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST << 'EOF'
             cd /home/ubuntu/atlas-recruitment-portol
             git pull origin main
-            npm ci --only=production
+            npm ci
             pm2 restart atlas-recruitment-portol  || pm2 start app.js --name atlas-recruitment-portol
             pm2 save
           EOF
