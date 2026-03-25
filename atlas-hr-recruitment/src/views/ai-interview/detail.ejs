@@ -1,0 +1,286 @@
+<%
+  const interview = typeof locals.interview !== 'undefined' ? locals.interview : {};
+  const questions = typeof locals.questions !== 'undefined' ? locals.questions : [];
+  const answers = typeof locals.answers !== 'undefined' ? locals.answers : [];
+  const candidate = typeof locals.candidate !== 'undefined' ? locals.candidate : {};
+  const job = typeof locals.job !== 'undefined' ? locals.job : {};
+
+  const candidateName = candidate.first_name
+    ? candidate.first_name + ' ' + (candidate.last_name || '')
+    : 'Unknown Candidate';
+  const jobTitle = job.title || 'N/A';
+
+  const ivStatus = interview.status || 'pending';
+  const ivStatusBadge = ivStatus === 'completed' ? 'badge-success'
+    : ivStatus === 'passed' ? 'badge-success'
+    : ivStatus === 'failed' ? 'badge-danger'
+    : ivStatus === 'in_progress' ? 'badge-info'
+    : 'badge-warning';
+
+  const ivType = interview.interview_type || interview.type || 'general';
+  const typeBadgeClass = ivType === 'technical' ? 'badge-info'
+    : ivType === 'behavioral' ? 'badge-warning'
+    : ivType === 'domain' ? 'badge-success'
+    : 'badge-muted';
+
+  const totalScore = interview.total_score || interview.overall_score || 0;
+  const commScore = interview.communication_score || 0;
+  const domainScore = interview.domain_score || 0;
+  const problemScore = interview.problem_solving_score || 0;
+  const confidenceScore = interview.confidence_score || 0;
+
+  const aiFeedback = interview.ai_feedback || '';
+  const aiSummary = interview.ai_summary || '';
+
+  function scoreColor(s) {
+    return s >= 75 ? 'text-success' : s >= 50 ? 'text-warning' : 'text-destructive';
+  }
+  function strokeColor(s) {
+    return s >= 75 ? 'stroke-success' : s >= 50 ? 'stroke-warning' : 'stroke-destructive';
+  }
+  function bgColor(s) {
+    return s >= 75 ? 'bg-success' : s >= 50 ? 'bg-warning' : 'bg-destructive';
+  }
+
+  const circumference = 2 * Math.PI * 40;
+  function ringOffset(s) {
+    return circumference - (s / 100) * circumference;
+  }
+%>
+
+<!-- Back Button -->
+<div class="mb-6">
+  <a href="/ai-interview" class="btn-outline btn-sm inline-flex items-center gap-2">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+    Back to Interviews
+  </a>
+</div>
+
+<!-- Candidate Info Header -->
+<div class="card p-6 mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div class="flex items-center gap-4">
+      <div class="w-14 h-14 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center flex-shrink-0">
+        <span class="text-xl font-bold text-primary-800 dark:text-primary-200">
+          <%= candidateName.charAt(0).toUpperCase() %>
+        </span>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold text-foreground tracking-tight"><%= candidateName %></h1>
+        <p class="text-sm text-muted-foreground mt-0.5">
+          <i data-lucide="briefcase" class="w-3.5 h-3.5 inline-block mr-1"></i>
+          <%= jobTitle %>
+        </p>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="<%= ivStatusBadge %>">
+            <%= ivStatus.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) %>
+          </span>
+          <span class="<%= typeBadgeClass %>">
+            <%= ivType.charAt(0).toUpperCase() + ivType.slice(1) %>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Score Rings Row -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+  <%
+    const scoreRings = [
+      { label: 'Total Score', value: totalScore },
+      { label: 'Communication', value: commScore },
+      { label: 'Domain Knowledge', value: domainScore },
+      { label: 'Problem Solving', value: problemScore },
+      { label: 'Confidence', value: confidenceScore },
+    ];
+  %>
+  <% scoreRings.forEach(function(ring) { %>
+    <div class="card p-4 flex flex-col items-center">
+      <div class="relative w-24 h-24 mb-2">
+        <svg class="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" class="stroke-muted" opacity="0.2"></circle>
+          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" class="<%= strokeColor(ring.value) %>"
+                  stroke-linecap="round"
+                  stroke-dasharray="<%= circumference %>"
+                  stroke-dashoffset="<%= ringOffset(ring.value) %>"></circle>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center">
+          <span class="text-xl font-bold <%= scoreColor(ring.value) %>"><%= ring.value %>%</span>
+        </div>
+      </div>
+      <p class="text-xs text-muted-foreground text-center font-medium"><%= ring.label %></p>
+    </div>
+  <% }); %>
+</div>
+
+<!-- Score Breakdown Progress Bars -->
+<div class="card p-6 mb-6">
+  <h2 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+    <i data-lucide="bar-chart-3" class="w-5 h-5 text-primary-800 dark:text-primary-200"></i>
+    Score Breakdown
+  </h2>
+  <div class="space-y-4">
+    <%
+      const breakdowns = [
+        { label: 'Communication', value: commScore },
+        { label: 'Domain Knowledge', value: domainScore },
+        { label: 'Problem Solving', value: problemScore },
+        { label: 'Confidence', value: confidenceScore },
+      ];
+    %>
+    <% breakdowns.forEach(function(b) { %>
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-sm font-medium text-foreground"><%= b.label %></span>
+          <span class="text-sm font-semibold <%= scoreColor(b.value) %>"><%= b.value %>%</span>
+        </div>
+        <div class="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+          <div class="h-full rounded-full <%= bgColor(b.value) %> transition-all duration-500" style="width: <%= b.value %>%"></div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<!-- AI Feedback & Summary -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+  <!-- AI Feedback -->
+  <div class="card p-6">
+    <h2 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="message-square" class="w-5 h-5 text-info"></i>
+      AI Feedback
+    </h2>
+    <% if (aiFeedback) { %>
+      <div class="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"><%= aiFeedback %></div>
+    <% } else { %>
+      <p class="text-sm text-muted-foreground">No AI feedback available yet.</p>
+    <% } %>
+  </div>
+
+  <!-- AI Summary -->
+  <div class="card p-6">
+    <h2 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="file-text" class="w-5 h-5 text-accent"></i>
+      AI Summary
+    </h2>
+    <% if (aiSummary) { %>
+      <div class="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"><%= aiSummary %></div>
+    <% } else { %>
+      <p class="text-sm text-muted-foreground">No AI summary available yet.</p>
+    <% } %>
+  </div>
+</div>
+
+<!-- Questions & Answers -->
+<div class="card p-6 mb-6">
+  <h2 class="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
+    <i data-lucide="help-circle" class="w-5 h-5 text-primary-800 dark:text-primary-200"></i>
+    Questions & Answers
+  </h2>
+
+  <% if (questions.length > 0) { %>
+    <div class="space-y-6">
+      <% questions.forEach(function(q, idx) { %>
+        <%
+          const answer = answers.find(function(a) {
+            return a.question_id === q.id || a.questionId === q.id;
+          }) || {};
+          const answerText = answer.answer_text || answer.answer || '';
+          const answerScore = answer.score || answer.answer_score || 0;
+          const answerFeedback = answer.ai_feedback || answer.feedback || '';
+          const keywordRelevance = answer.keyword_relevance || answer.keyword_relevance_score || 0;
+        %>
+        <div class="border border-border rounded-xl overflow-hidden">
+          <!-- Question Header -->
+          <div class="bg-muted/30 px-5 py-4 border-b border-border">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900 text-xs font-bold text-primary-800 dark:text-primary-200">
+                  <%= idx + 1 %>
+                </span>
+                <h3 class="text-sm font-semibold text-foreground"><%= q.question_text || q.question || q.text || '' %></h3>
+              </div>
+              <% if (answerScore > 0) { %>
+                <span class="text-sm font-bold <%= scoreColor(answerScore) %>"><%= answerScore %>%</span>
+              <% } %>
+            </div>
+          </div>
+
+          <!-- Answer -->
+          <div class="px-5 py-4">
+            <% if (answerText) { %>
+              <div class="mb-4">
+                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Candidate's Answer</p>
+                <div class="text-sm text-foreground leading-relaxed bg-muted/20 rounded-lg p-4 whitespace-pre-line"><%= answerText %></div>
+              </div>
+            <% } else { %>
+              <p class="text-sm text-muted-foreground italic mb-4">No answer provided.</p>
+            <% } %>
+
+            <!-- Score & Keyword Relevance -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <div>
+                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-medium">Answer Score</p>
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div class="h-full rounded-full <%= bgColor(answerScore) %>" style="width: <%= answerScore %>%"></div>
+                  </div>
+                  <span class="text-sm font-semibold <%= scoreColor(answerScore) %>"><%= answerScore %>%</span>
+                </div>
+              </div>
+              <div>
+                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-medium">Keyword Relevance</p>
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                    <div class="h-full rounded-full <%= bgColor(keywordRelevance) %>" style="width: <%= keywordRelevance %>%"></div>
+                  </div>
+                  <span class="text-sm font-semibold <%= scoreColor(keywordRelevance) %>"><%= keywordRelevance %>%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Feedback for Answer -->
+            <% if (answerFeedback) { %>
+              <div>
+                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-medium">AI Feedback</p>
+                <div class="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"><%= answerFeedback %></div>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <p class="text-sm text-muted-foreground text-center py-8">No questions available for this interview.</p>
+  <% } %>
+</div>
+
+<!-- Action Buttons -->
+<div class="flex flex-wrap items-center gap-3">
+  <form action="/ai-interview/<%= interview.id %>/shortlist" method="POST" class="inline">
+    <button type="submit" class="btn-primary">
+      <i data-lucide="star" class="w-4 h-4"></i>
+      Shortlist
+    </button>
+  </form>
+  <form action="/ai-interview/<%= interview.id %>/schedule" method="POST" class="inline">
+    <button type="submit" class="btn-outline">
+      <i data-lucide="calendar" class="w-4 h-4"></i>
+      Schedule Interview
+    </button>
+  </form>
+  <form action="/ai-interview/<%= interview.id %>/reject" method="POST" class="inline"
+        onsubmit="return confirm('Are you sure you want to reject this candidate?')">
+    <button type="submit" class="btn-outline text-destructive border-destructive hover:bg-destructive hover:text-white">
+      <i data-lucide="x-circle" class="w-4 h-4"></i>
+      Reject
+    </button>
+  </form>
+  <form action="/ai-interview/<%= interview.id %>/pool" method="POST" class="inline">
+    <button type="submit" class="btn-outline">
+      <i data-lucide="archive" class="w-4 h-4"></i>
+      Keep in Pool
+    </button>
+  </form>
+</div>

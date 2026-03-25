@@ -1,0 +1,105 @@
+<!-- Top Bar -->
+<header class="sticky top-0 z-20 bg-card/80 backdrop-blur-md border-b border-border">
+  <div class="flex items-center justify-between h-16 px-4 sm:px-6">
+
+    <!-- Left: Mobile menu toggle + Breadcrumbs -->
+    <div class="flex items-center gap-4">
+      <!-- Mobile menu toggle -->
+      <button @click="sidebarOpen = !sidebarOpen"
+              class="btn-icon text-muted-foreground hover:text-foreground lg:hidden">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Breadcrumbs -->
+      <%- include('./breadcrumbs') %>
+    </div>
+
+    <!-- Right: Actions -->
+    <div class="flex items-center gap-2">
+
+      <!-- Search -->
+      <div class="hidden md:block relative" x-data="{ searchOpen: false }">
+        <div class="relative">
+          <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
+          <input type="text"
+                 placeholder="Search candidates, jobs..."
+                 class="form-input pl-10 pr-4 py-2 w-64 focus:w-80 transition-all duration-300 text-sm"
+                 @focus="searchOpen = true"
+                 @blur="setTimeout(() => searchOpen = false, 200)">
+        </div>
+      </div>
+
+      <!-- Dark Mode Toggle -->
+      <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode); darkMode ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')"
+              class="btn-icon text-muted-foreground hover:text-foreground">
+        <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+        <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+      </button>
+
+      <!-- Notifications -->
+      <a href="/notifications" class="btn-icon text-muted-foreground hover:text-foreground relative">
+        <i data-lucide="bell" class="w-5 h-5"></i>
+        <% if (typeof notificationCount !== 'undefined' && notificationCount > 0) { %>
+          <span class="absolute -top-0.5 -right-0.5 bg-destructive text-white text-xxs font-bold rounded-full w-4 h-4 flex items-center justify-center animate-pulse-soft">
+            <%= notificationCount > 9 ? '9+' : notificationCount %>
+          </span>
+        <% } %>
+      </a>
+
+      <!-- User Dropdown -->
+      <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+        <div class="relative" x-data="{ userMenuOpen: false }">
+          <button @click="userMenuOpen = !userMenuOpen"
+                  @click.outside="userMenuOpen = false"
+                  class="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-xl hover:bg-muted transition-colors">
+            <div class="hidden sm:block text-right">
+              <p class="text-sm font-medium text-foreground leading-tight">
+                <%= currentUser.first_name %> <%= currentUser.last_name %>
+              </p>
+              <p class="text-xxs text-muted-foreground leading-tight">
+                <%= currentUser.role ? currentUser.role.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'User' %>
+              </p>
+            </div>
+            <div class="w-8 h-8 rounded-full bg-gradient-brand flex items-center justify-center flex-shrink-0">
+              <span class="text-xs font-semibold text-white">
+                <%= currentUser.first_name ? currentUser.first_name.charAt(0).toUpperCase() : 'U' %>
+              </span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-muted-foreground transition-transform" :class="{ 'rotate-180': userMenuOpen }"></i>
+          </button>
+
+          <!-- Dropdown menu -->
+          <div x-show="userMenuOpen"
+               x-transition:enter="transition ease-out duration-200"
+               x-transition:enter-start="opacity-0 scale-95 -translate-y-1"
+               x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+               x-transition:leave="transition ease-in duration-150"
+               x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+               x-transition:leave-end="opacity-0 scale-95 -translate-y-1"
+               class="absolute right-0 mt-2 w-56 card shadow-brand-lg py-1 z-50"
+               x-cloak>
+            <div class="px-4 py-3 border-b border-border">
+              <p class="text-sm font-medium text-foreground"><%= currentUser.first_name %> <%= currentUser.last_name %></p>
+              <p class="text-xs text-muted-foreground truncate"><%= currentUser.email %></p>
+            </div>
+            <a href="/profile" class="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
+              <i data-lucide="user" class="w-4 h-4 text-muted-foreground"></i>
+              Profile
+            </a>
+            <a href="/settings" class="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors">
+              <i data-lucide="settings" class="w-4 h-4 text-muted-foreground"></i>
+              Settings
+            </a>
+            <div class="border-t border-border my-1"></div>
+            <form action="/logout" method="POST">
+              <button type="submit" class="flex items-center gap-2 px-4 py-2.5 text-sm text-destructive hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors w-full text-left">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                Sign out
+              </button>
+            </form>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</header>

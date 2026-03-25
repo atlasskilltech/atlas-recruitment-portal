@@ -1,0 +1,112 @@
+<% layout('layouts/auth') %>
+
+<style>
+  @keyframes cardEntrance {
+    0% { opacity: 0; transform: translateY(20px) scale(0.97); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .login-card-animate {
+    animation: cardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+</style>
+
+<div class="login-card-animate">
+  <!-- Logo & Branding -->
+  <div class="text-center mb-8">
+    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-brand rounded-2xl mb-4 shadow-brand">
+      <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5" />
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-foreground tracking-tight">Atlas University</h1>
+    <p class="text-muted-foreground text-sm mt-1">HR Recruitment Portal</p>
+  </div>
+
+  <!-- Error Messages -->
+  <% if (typeof messages !== 'undefined' && messages) { %>
+    <% if (messages.error) { %>
+      <div class="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300 flex items-start gap-3 animate-fade-in">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+        </svg>
+        <span><%= Array.isArray(messages.error) ? messages.error[0] : messages.error %></span>
+      </div>
+    <% } %>
+    <% if (messages.success) { %>
+      <div class="mb-6 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-sm text-green-700 dark:text-green-300 flex items-start gap-3 animate-fade-in">
+        <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+        <span><%= Array.isArray(messages.success) ? messages.success[0] : messages.success %></span>
+      </div>
+    <% } %>
+  <% } %>
+
+  <!-- Login Form -->
+  <form action="/auth/login" method="POST" class="space-y-5">
+    <!-- Email -->
+    <div class="form-group">
+      <label for="email" class="form-label">Email Address</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+          </svg>
+        </div>
+        <input type="email" id="email" name="email" required autocomplete="email"
+          class="form-input pl-11" placeholder="you@atlas.edu"
+          value="<%= typeof email !== 'undefined' ? email : '' %>">
+      </div>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group" x-data="{ showPassword: false }">
+      <label for="password" class="form-label">Password</label>
+      <div class="relative">
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+          </svg>
+        </div>
+        <input :type="showPassword ? 'text' : 'password'" id="password" name="password" required autocomplete="current-password"
+          class="form-input pl-11 pr-11" placeholder="Enter your password">
+        <button type="button" @click="showPassword = !showPassword"
+          class="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-foreground transition-colors">
+          <!-- Eye open icon -->
+          <svg x-show="!showPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+          </svg>
+          <!-- Eye closed icon -->
+          <svg x-show="showPassword" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Remember Me -->
+    <div class="flex items-center justify-between">
+      <label class="flex items-center gap-2 cursor-pointer group">
+        <input type="checkbox" name="rememberMe"
+          class="w-4 h-4 rounded border-border text-primary-800 focus:ring-primary-400 focus:ring-2 transition-colors">
+        <span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Remember me</span>
+      </label>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn-primary w-full py-3 text-base font-semibold">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+      </svg>
+      Sign In
+    </button>
+  </form>
+
+  <!-- Footer -->
+  <div class="mt-8 pt-6 border-t border-border text-center">
+    <p class="text-xs text-muted-foreground">
+      Secure access for authorized HR personnel only.
+    </p>
+  </div>
+</div>

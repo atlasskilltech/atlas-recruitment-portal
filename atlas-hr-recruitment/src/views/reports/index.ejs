@@ -1,0 +1,357 @@
+<%
+  const reportData = typeof locals.reportData !== 'undefined' ? locals.reportData : {};
+  const applicantsByRole = reportData.applicantsByRole || [];
+  const aiMatchPassRate = reportData.aiMatchPassRate || 0;
+  const interviewCompletionRate = reportData.interviewCompletionRate || 0;
+  const monthlyTrend = reportData.monthlyTrend || [];
+  const hiringFunnel = reportData.hiringFunnel || [];
+  const topJobPosts = reportData.topJobPosts || [];
+
+  /* Brand palette */
+  const brandPrimary = '#001B3D';
+  const brandAccent = '#5A9A0C';
+  const chartPalette = ['#001B3D', '#5A9A0C', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+
+  /* Funnel defaults */
+  const funnelStages = ['Applied', 'AI Eligible', 'Interviewed', 'Shortlisted', 'Scheduled', 'Selected', 'Hired'];
+  const funnelGradient = ['#001B3D', '#0E3A6E', '#1D5AA0', '#3B82F6', '#5A9A0C', '#7BBF2A', '#A3D94E'];
+%>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Page Header
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground tracking-tight">Reports & Analytics</h1>
+    <p class="text-sm text-muted-foreground mt-1">Recruitment insights and performance metrics</p>
+  </div>
+  <div class="flex items-center gap-2 self-start sm:self-auto">
+    <a href="/reports/export/csv" class="btn-outline btn-sm">
+      <i data-lucide="file-down" class="w-4 h-4"></i>
+      Export CSV
+    </a>
+    <a href="/reports/export/pdf" class="btn-outline btn-sm">
+      <i data-lucide="file-text" class="w-4 h-4"></i>
+      Export PDF
+    </a>
+    <a href="/reports/export/excel" class="btn-primary btn-sm">
+      <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+      Export Excel
+    </a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Charts Row 1: Applicants by Role & AI Match Pass Rate
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+  <!-- Applicants by Job Role (Horizontal Bar Chart) -->
+  <div class="card p-5">
+    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="bar-chart-3" class="w-5 h-5 text-primary-400"></i>
+      Applicants by Job Role
+    </h2>
+    <% if (applicantsByRole.length > 0) { %>
+      <div id="chart-role" class="min-h-[320px]"></div>
+    <% } else { %>
+      <div class="empty-state py-12">
+        <i data-lucide="bar-chart-3" class="empty-state-icon"></i>
+        <p class="text-sm text-muted-foreground">No role data available yet.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- AI Match Pass Rate (Radial Bar) -->
+  <div class="card p-5">
+    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="brain" class="w-5 h-5 text-emerald-500"></i>
+      AI Match Pass Rate
+    </h2>
+    <div id="chart-passrate" class="min-h-[320px] flex items-center justify-center"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Charts Row 2: Monthly Trend & Interview Completion Rate
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+  <!-- Monthly Applications Trend (Area Chart) -->
+  <div class="card p-5">
+    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="trending-up" class="w-5 h-5 text-blue-500"></i>
+      Monthly Applications Trend
+    </h2>
+    <% if (monthlyTrend.length > 0) { %>
+      <div id="chart-trend" class="min-h-[320px]"></div>
+    <% } else { %>
+      <div class="empty-state py-12">
+        <i data-lucide="trending-up" class="empty-state-icon"></i>
+        <p class="text-sm text-muted-foreground">No trend data available yet.</p>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Interview Completion Rate Card -->
+  <div class="card p-5">
+    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="check-square" class="w-5 h-5 text-blue-500"></i>
+      Interview Completion Rate
+    </h2>
+    <div class="flex flex-col items-center justify-center py-8">
+      <%
+        const compRate = interviewCompletionRate;
+        const compColor = compRate >= 70 ? 'text-green-600 dark:text-green-400' : compRate >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400';
+        const compStrokeHex = compRate >= 70 ? '#5A9A0C' : compRate >= 40 ? '#F59E0B' : '#EF4444';
+        const compCircum = 2 * Math.PI * 54;
+        const compOffset = compCircum - (compRate / 100) * compCircum;
+      %>
+      <div class="relative w-44 h-44 mb-4">
+        <svg class="w-44 h-44 -rotate-90" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="54" fill="none" stroke-width="10" class="stroke-muted" opacity="0.15"></circle>
+          <circle cx="60" cy="60" r="54" fill="none" stroke-width="10"
+                  stroke="<%= compStrokeHex %>"
+                  stroke-linecap="round"
+                  stroke-dasharray="<%= compCircum %>"
+                  stroke-dashoffset="<%= compOffset %>"></circle>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-4xl font-bold <%= compColor %>"><%= compRate %>%</span>
+          <span class="text-xs text-muted-foreground mt-1">Completed</span>
+        </div>
+      </div>
+      <p class="text-sm text-muted-foreground text-center max-w-xs">
+        Interviews completed out of total scheduled interviews
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Charts Row 3: Hiring Funnel (Full Width)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="card p-5 mb-6">
+  <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+    <i data-lucide="filter" class="w-5 h-5 text-purple-500"></i>
+    Hiring Funnel
+  </h2>
+  <% if (hiringFunnel.length > 0) { %>
+    <%
+      const funnelMax = Math.max(...hiringFunnel.map(function(f) { return f.value || 0; }), 1);
+    %>
+    <div class="space-y-3 py-4">
+      <% hiringFunnel.forEach(function(stage, idx) { %>
+        <%
+          const stageLabel = stage.label || funnelStages[idx] || 'Stage ' + (idx + 1);
+          const stageValue = stage.value || 0;
+          const widthPct = funnelMax > 0 ? Math.max((stageValue / funnelMax) * 100, 4) : 4;
+          const bgColor = funnelGradient[idx] || funnelGradient[funnelGradient.length - 1];
+        %>
+        <div class="flex items-center gap-3">
+          <div class="w-28 text-right flex-shrink-0">
+            <span class="text-xs font-medium text-muted-foreground"><%= stageLabel %></span>
+          </div>
+          <div class="flex-1">
+            <div class="h-9 rounded-lg flex items-center px-3 text-white text-xs font-bold shadow-sm transition-all duration-500"
+                 style="width: <%= widthPct %>%; background: linear-gradient(135deg, <%= bgColor %>, <%= bgColor %>cc); min-width: 48px;">
+              <%= stageValue.toLocaleString() %>
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } else { %>
+    <!-- Default empty funnel with stage labels -->
+    <div class="space-y-3 py-4">
+      <% funnelStages.forEach(function(label, idx) { %>
+        <div class="flex items-center gap-3">
+          <div class="w-28 text-right flex-shrink-0">
+            <span class="text-xs font-medium text-muted-foreground"><%= label %></span>
+          </div>
+          <div class="flex-1">
+            <div class="h-9 rounded-lg flex items-center px-3 text-white/60 text-xs font-bold bg-muted/30"
+                 style="width: <%= Math.max(100 - (idx * 14), 6) %>%; min-width: 48px;">
+              0
+            </div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  <% } %>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Stats Table: Top Performing Job Posts
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="card overflow-hidden mb-6">
+  <div class="px-5 py-4 border-b border-border">
+    <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
+      <i data-lucide="trophy" class="w-5 h-5 text-accent"></i>
+      Top Performing Job Posts
+    </h2>
+  </div>
+  <% if (topJobPosts.length > 0) { %>
+    <div class="overflow-x-auto custom-scrollbar">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Job Title</th>
+            <th>Applicants</th>
+            <th>AI Eligible</th>
+            <th>Shortlisted</th>
+            <th>Hired</th>
+            <th>Conversion</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% topJobPosts.forEach(function(jp, idx) { %>
+            <%
+              const jpApplicants = jp.applicants || jp.applicant_count || 0;
+              const jpHired = jp.hired || jp.hired_count || 0;
+              const jpConversion = jpApplicants > 0 ? ((jpHired / jpApplicants) * 100).toFixed(1) : 0;
+            %>
+            <tr>
+              <td>
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold
+                  <%= idx === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                       idx === 1 ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' :
+                       idx === 2 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
+                       'bg-muted text-muted-foreground' %>">
+                  <%= idx + 1 %>
+                </span>
+              </td>
+              <td class="font-medium text-foreground"><%= jp.title || jp.job_title || 'N/A' %></td>
+              <td class="text-muted-foreground"><%= jpApplicants %></td>
+              <td class="text-muted-foreground"><%= jp.ai_eligible || jp.eligible_count || 0 %></td>
+              <td class="text-muted-foreground"><%= jp.shortlisted || jp.shortlisted_count || 0 %></td>
+              <td class="text-muted-foreground"><%= jpHired %></td>
+              <td>
+                <span class="text-sm font-semibold <%= jpConversion >= 10 ? 'text-green-600 dark:text-green-400' : jpConversion >= 5 ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground' %>">
+                  <%= jpConversion %>%
+                </span>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state py-12">
+      <i data-lucide="trophy" class="empty-state-icon"></i>
+      <p class="text-sm text-muted-foreground">No job post data available yet.</p>
+    </div>
+  <% } %>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     ApexCharts Initialization
+     ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var chartData = <%- JSON.stringify(locals.reportData || {}) %>;
+
+  var brandPrimary = '#001B3D';
+  var brandAccent = '#5A9A0C';
+  var chartPalette = ['#001B3D', '#5A9A0C', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+
+  var isDark = document.documentElement.classList.contains('dark');
+  var textColor = isDark ? '#94a3b8' : '#64748b';
+  var gridColor = isDark ? 'rgba(148,163,184,0.08)' : 'rgba(0,0,0,0.06)';
+
+  var baseOptions = {
+    chart: { fontFamily: 'Inter, system-ui, sans-serif', toolbar: { show: false }, background: 'transparent' },
+    theme: { mode: isDark ? 'dark' : 'light' },
+    grid: { borderColor: gridColor, strokeDashArray: 4 }
+  };
+
+  /* ── 1. Applicants by Job Role (Horizontal Bar) ─────────────────────── */
+  var roleData = chartData.applicantsByRole || [];
+  if (roleData.length > 0) {
+    new window.ApexCharts(document.querySelector('#chart-role'), Object.assign({}, baseOptions, {
+      chart: Object.assign({}, baseOptions.chart, { type: 'bar', height: 320 }),
+      series: [{ name: 'Applicants', data: roleData.map(function(d) { return d.value; }) }],
+      plotOptions: { bar: { horizontal: true, barHeight: '60%', borderRadius: 4, distributed: true } },
+      colors: chartPalette,
+      dataLabels: { enabled: true, style: { fontSize: '11px', fontWeight: 600 } },
+      xaxis: {
+        categories: roleData.map(function(d) { return d.label || 'Unknown'; }),
+        labels: { style: { colors: textColor, fontSize: '12px' } }
+      },
+      yaxis: { labels: { style: { colors: textColor, fontSize: '12px' }, maxWidth: 160 } },
+      legend: { show: false },
+      tooltip: { theme: isDark ? 'dark' : 'light' }
+    })).render();
+  }
+
+  /* ── 2. AI Match Pass Rate (Radial Bar) ─────────────────────────────── */
+  var passRate = chartData.aiMatchPassRate || 0;
+  new window.ApexCharts(document.querySelector('#chart-passrate'), {
+    chart: Object.assign({}, baseOptions.chart, { type: 'radialBar', height: 320 }),
+    series: [passRate],
+    plotOptions: {
+      radialBar: {
+        startAngle: -135,
+        endAngle: 135,
+        hollow: { size: '65%', background: 'transparent' },
+        track: {
+          background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(0,0,0,0.06)',
+          strokeWidth: '100%'
+        },
+        dataLabels: {
+          name: { show: true, fontSize: '14px', color: textColor, offsetY: -10 },
+          value: {
+            show: true, fontSize: '36px', fontWeight: 700,
+            color: passRate >= 70 ? brandAccent : passRate >= 40 ? '#F59E0B' : '#EF4444',
+            offsetY: 5,
+            formatter: function(val) { return val + '%'; }
+          }
+        }
+      }
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: 'dark', type: 'horizontal',
+        shadeIntensity: 0.5,
+        gradientToColors: [brandAccent],
+        stops: [0, 100]
+      }
+    },
+    colors: [brandPrimary],
+    labels: ['Pass Rate'],
+    stroke: { lineCap: 'round' }
+  }).render();
+
+  /* ── 3. Monthly Applications Trend (Area) ───────────────────────────── */
+  var trendData = chartData.monthlyTrend || [];
+  if (trendData.length > 0) {
+    var trendLabels = trendData.map(function(d) {
+      var parts = (d.label || '').split('-');
+      if (parts.length >= 2) {
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return months[parseInt(parts[1], 10) - 1] + ' ' + parts[0].slice(2);
+      }
+      return d.label;
+    });
+    new window.ApexCharts(document.querySelector('#chart-trend'), Object.assign({}, baseOptions, {
+      chart: Object.assign({}, baseOptions.chart, { type: 'area', height: 320 }),
+      series: [{ name: 'Applications', data: trendData.map(function(d) { return d.value; }) }],
+      xaxis: {
+        categories: trendLabels,
+        labels: { style: { colors: textColor, fontSize: '11px' }, rotate: -45 }
+      },
+      yaxis: { labels: { style: { colors: textColor, fontSize: '12px' } } },
+      colors: [brandPrimary],
+      fill: {
+        type: 'gradient',
+        gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05, stops: [0, 100] }
+      },
+      stroke: { curve: 'smooth', width: 2.5 },
+      dataLabels: { enabled: false },
+      tooltip: { theme: isDark ? 'dark' : 'light' }
+    })).render();
+  }
+});
+</script>

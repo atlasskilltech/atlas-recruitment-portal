@@ -1,0 +1,205 @@
+<%
+  const notifications = typeof locals.notifications !== 'undefined' ? locals.notifications : [];
+  const pagination = typeof locals.pagination !== 'undefined' ? locals.pagination : {};
+  const filters = typeof locals.filters !== 'undefined' ? locals.filters : {};
+
+  const currentChannel = filters.channel || 'all';
+
+  const tabs = [
+    { key: 'all',      label: 'All',      icon: 'inbox' },
+    { key: 'email',    label: 'Email',    icon: 'mail' },
+    { key: 'sms',      label: 'SMS',      icon: 'smartphone' },
+    { key: 'whatsapp', label: 'WhatsApp', icon: 'message-circle' },
+    { key: 'system',   label: 'System',   icon: 'bell' },
+  ];
+
+  function buildQuery(overrides) {
+    const params = Object.assign({}, filters, overrides);
+    if (params.channel === 'all') delete params.channel;
+    if (params.page == 1) delete params.page;
+    const qs = Object.keys(params).filter(k => params[k]).map(k => k + '=' + encodeURIComponent(params[k])).join('&');
+    return qs ? '?' + qs : '';
+  }
+%>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Page Header
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground tracking-tight">Notifications</h1>
+    <p class="text-sm text-muted-foreground mt-1">View and manage all sent notifications</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Filter Tabs (Alpine.js)
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div x-data="{ activeTab: '<%= currentChannel %>' }" class="mb-6">
+  <div class="flex items-center gap-1 p-1 bg-muted/40 rounded-xl border border-border overflow-x-auto custom-scrollbar">
+    <% tabs.forEach(function(tab) { %>
+      <a href="/notifications<%= buildQuery({ channel: tab.key, page: 1 }) %>"
+         @click="activeTab = '<%= tab.key %>'"
+         class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap"
+         :class="activeTab === '<%= tab.key %>'
+           ? 'bg-white dark:bg-card text-foreground shadow-sm'
+           : 'text-muted-foreground hover:text-foreground hover:bg-white/50 dark:hover:bg-card/50'">
+        <i data-lucide="<%= tab.icon %>" class="w-4 h-4"></i>
+        <%= tab.label %>
+      </a>
+    <% }); %>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     Notifications Table
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="card overflow-hidden">
+  <% if (notifications.length > 0) { %>
+    <div class="overflow-x-auto custom-scrollbar">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Recipient</th>
+            <th>Channel</th>
+            <th>Subject</th>
+            <th class="hidden lg:table-cell">Message</th>
+            <th>Status</th>
+            <th>Sent At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% notifications.forEach(function(n) { %>
+            <%
+              const recipient = n.recipient || n.recipient_email || n.recipient_name || 'Unknown';
+              const channel = (n.channel || n.type || 'system').toLowerCase();
+
+              /* Channel badge styling */
+              const channelConfig = {
+                email:    { badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',    icon: 'mail' },
+                sms:      { badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', icon: 'smartphone' },
+                whatsapp: { badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: 'message-circle' },
+                system:   { badge: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300',       icon: 'bell' },
+              };
+              const chCfg = channelConfig[channel] || channelConfig.system;
+
+              /* Status badge styling */
+              const nStatus = (n.status || 'queued').toLowerCase();
+              const statusConfig = {
+                queued: { badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', icon: 'clock' },
+                sent:   { badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300', icon: 'check-circle' },
+                failed: { badge: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',         icon: 'x-circle' },
+              };
+              const stCfg = statusConfig[nStatus] || statusConfig.queued;
+
+              const subject = n.subject || n.title || 'No Subject';
+              const message = n.message || n.body || '';
+              const truncatedMsg = message.length > 60 ? message.substring(0, 60) + '...' : message;
+            %>
+            <tr>
+              <!-- Recipient -->
+              <td>
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center flex-shrink-0">
+                    <span class="text-xs font-semibold text-primary-800 dark:text-primary-200">
+                      <%= recipient.charAt(0).toUpperCase() %>
+                    </span>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-foreground truncate max-w-[200px]"><%= recipient %></p>
+                    <% if (n.recipient_email && n.recipient_name) { %>
+                      <p class="text-xxs text-muted-foreground truncate max-w-[200px]"><%= n.recipient_email %></p>
+                    <% } %>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Channel -->
+              <td>
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium <%= chCfg.badge %>">
+                  <i data-lucide="<%= chCfg.icon %>" class="w-3 h-3"></i>
+                  <%= channel.charAt(0).toUpperCase() + channel.slice(1) %>
+                </span>
+              </td>
+
+              <!-- Subject -->
+              <td>
+                <p class="text-sm text-foreground truncate max-w-[250px]"><%= subject %></p>
+              </td>
+
+              <!-- Message (truncated) -->
+              <td class="hidden lg:table-cell">
+                <p class="text-sm text-muted-foreground truncate max-w-[280px]" title="<%= message %>">
+                  <%= truncatedMsg || '&mdash;' %>
+                </p>
+              </td>
+
+              <!-- Status -->
+              <td>
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium <%= stCfg.badge %>">
+                  <i data-lucide="<%= stCfg.icon %>" class="w-3 h-3"></i>
+                  <%= nStatus.charAt(0).toUpperCase() + nStatus.slice(1) %>
+                </span>
+              </td>
+
+              <!-- Sent At -->
+              <td class="text-muted-foreground text-sm whitespace-nowrap">
+                <% if (n.sent_at || n.created_at) { %>
+                  <%= new Date(n.sent_at || n.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                <% } else { %>
+                  &mdash;
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <% if (pagination.totalPages > 1) { %>
+      <div class="flex items-center justify-between px-4 py-3 border-t border-border">
+        <p class="text-sm text-muted-foreground">
+          Showing <span class="font-medium"><%= ((pagination.page - 1) * pagination.limit) + 1 %></span>
+          to <span class="font-medium"><%= Math.min(pagination.page * pagination.limit, pagination.total) %></span>
+          of <span class="font-medium"><%= pagination.total %></span> results
+        </p>
+        <div class="flex items-center gap-1">
+          <% if (pagination.page > 1) { %>
+            <a href="/notifications<%= buildQuery({ page: pagination.page - 1 }) %>" class="btn-outline btn-sm">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i> Prev
+            </a>
+          <% } %>
+
+          <% for (let i = 1; i <= pagination.totalPages; i++) { %>
+            <% if (i === pagination.page) { %>
+              <span class="btn-primary btn-sm"><%= i %></span>
+            <% } else if (Math.abs(i - pagination.page) <= 2 || i === 1 || i === pagination.totalPages) { %>
+              <a href="/notifications<%= buildQuery({ page: i }) %>" class="btn-outline btn-sm"><%= i %></a>
+            <% } else if (Math.abs(i - pagination.page) === 3) { %>
+              <span class="px-1 text-muted-foreground">&hellip;</span>
+            <% } %>
+          <% } %>
+
+          <% if (pagination.page < pagination.totalPages) { %>
+            <a href="/notifications<%= buildQuery({ page: pagination.page + 1 }) %>" class="btn-outline btn-sm">
+              Next <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </a>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+
+  <% } else { %>
+    <!-- Empty State -->
+    <div class="empty-state py-20">
+      <div class="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-5">
+        <i data-lucide="bell-off" class="w-10 h-10 text-muted-foreground/30"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-foreground mb-1">No Notifications</h3>
+      <p class="text-sm text-muted-foreground max-w-sm mb-6">
+        No notifications found. Notifications will appear here as emails, SMS, WhatsApp messages, and system alerts are sent.
+      </p>
+    </div>
+  <% } %>
+</div>
