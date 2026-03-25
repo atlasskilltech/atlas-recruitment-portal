@@ -8,7 +8,8 @@ const scheduleController = require('../controllers/schedule.controller');
 // GET /schedules – list all schedules
 router.get('/', scheduleController.index);
 
-// GET /schedules/create/:candidateId – show create schedule form for a candidate
+// GET /schedules/create – show create schedule form
+router.get('/create', scheduleController.create);
 router.get('/create/:candidateId', scheduleController.create);
 
 // POST /schedules – store a new schedule
