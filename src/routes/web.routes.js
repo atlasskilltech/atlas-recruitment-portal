@@ -13,6 +13,8 @@ const authRoutes = require('./auth.routes');
 const candidateRoutes = require('./candidate.routes');
 const aiRoutes = require('./ai.routes');
 const { publicRouter: aiPublicRoutes } = require('./ai.routes');
+const aiScreeningRoutes = require('./aiScreening.routes');
+const aiInterviewRoutes = require('./aiInterview.routes');
 const shortlistRoutes = require('./shortlist.routes');
 const scheduleRoutes = require('./schedule.routes');
 const notificationRoutes = require('./notification.routes');
@@ -34,6 +36,8 @@ router.use('/ai', aiPublicRoutes);
 // ---- Protected routes -----------------------------------------------------
 router.use('/candidates', isAuthenticated, candidateRoutes);
 router.use('/ai', isAuthenticated, aiRoutes);
+router.use('/ai-screening', isAuthenticated, aiScreeningRoutes);
+router.use('/ai-interviews', isAuthenticated, aiInterviewRoutes);
 router.use('/shortlist', isAuthenticated, shortlistRoutes);
 router.use('/schedules', isAuthenticated, scheduleRoutes);
 router.use('/notifications', isAuthenticated, notificationRoutes);
