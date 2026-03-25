@@ -61,7 +61,7 @@ async function requestOTP(email) {
   await sendOTPEmail(email, otp);
   logger.info(`[CANDIDATE_AUTH] OTP sent to ${email}`);
 
-  return { success: true, message: 'OTP has been sent to your email.', candidateName: candidates[0].appln_full_name };
+  return { success: true, message: 'OTP has been sent to your email.', candidateName: candidates[0].appln_full_name, otp };
 }
 
 async function verifyOTP(email, otp) {
