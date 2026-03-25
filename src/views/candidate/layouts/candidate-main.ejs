@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %>Candidate Portal - ATLAS Skilltech University</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/output.css">
+  <%- style %>
+</head>
+<body x-data="{ sidebarOpen: false, darkMode: localStorage.getItem('darkMode') === 'true' }"
+      x-init="if (darkMode) document.documentElement.classList.add('dark')"
+      class="min-h-screen bg-background">
+
+  <%
+    const candidateNav = [
+      { path: '/candidate/dashboard', icon: 'layout-dashboard', label: 'Dashboard' },
+      { path: '/candidate/applications', icon: 'file-text', label: 'My Applications' },
+      { path: '/candidate/profile', icon: 'user', label: 'My Profile' },
+      { path: '/candidate/notifications', icon: 'bell', label: 'Notifications' },
+      { path: '/candidate/help', icon: 'help-circle', label: 'Help & Support' },
+    ];
+    const currentPath = typeof locals.currentPath !== 'undefined' ? locals.currentPath : '';
+    const cand = typeof candidate !== 'undefined' ? candidate : (typeof locals.candidate !== 'undefined' ? locals.candidate : null);
+  %>
+
+  <!-- Mobile sidebar overlay -->
+  <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"
+       class="fixed inset-0 bg-black/50 z-40 lg:hidden"></div>
+
+  <!-- Sidebar -->
+  <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+         class="fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-slate-900 to-blue-950 z-50 transition-transform lg:translate-x-0 flex flex-col">
+    <div class="p-5 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600/30 flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-blue-300"></i>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold text-white truncate">Candidate Portal</h1>
+          <p class="text-xxs text-white/50 uppercase tracking-widest">ATLAS Skilltech</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+      <% candidateNav.forEach(function(item) { %>
+        <a href="<%= item.path %>"
+           class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+             <%= currentPath === item.path || (item.path !== '/candidate/dashboard' && currentPath && currentPath.startsWith(item.path))
+               ? 'bg-white/10 text-white' : 'text-white/60 hover:bg-white/5 hover:text-white' %>">
+          <i data-lucide="<%= item.icon %>" class="w-4 h-4"></i>
+          <span><%= item.label %></span>
+        </a>
+      <% }); %>
+    </nav>
+    <div class="p-4 border-t border-white/10">
+      <% if (cand) { %>
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-full bg-blue-600/40 flex items-center justify-center text-xs font-bold text-white">
+            <%= (cand.name || 'C').charAt(0).toUpperCase() %>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-xs font-medium text-white truncate"><%= cand.name || 'Candidate' %></p>
+            <p class="text-xxs text-white/50 truncate"><%= cand.email %></p>
+          </div>
+        </div>
+      <% } %>
+      <a href="/candidate/logout" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-white/50 hover:text-white hover:bg-white/5 transition-all">
+        <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+        Sign Out
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <div class="lg:ml-64 min-h-screen flex flex-col">
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 bg-card/80 backdrop-blur-xl border-b border-border h-14 flex items-center px-4 lg:px-6">
+      <button @click="sidebarOpen = true" class="lg:hidden mr-3 p-1.5 rounded-lg hover:bg-muted">
+        <i data-lucide="menu" class="w-5 h-5 text-muted-foreground"></i>
+      </button>
+      <h2 class="text-sm font-semibold text-foreground"><%= typeof title !== 'undefined' ? title : '' %></h2>
+      <div class="ml-auto flex items-center gap-3">
+        <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode); darkMode ? document.documentElement.classList.add('dark') : document.documentElement.classList.remove('dark')"
+                class="p-2 rounded-lg hover:bg-muted transition-colors">
+          <i data-lucide="sun" class="w-4 h-4 text-muted-foreground" x-show="!darkMode"></i>
+          <i data-lucide="moon" class="w-4 h-4 text-muted-foreground" x-show="darkMode" x-cloak></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Flash messages -->
+    <% if (typeof success !== 'undefined' || typeof error !== 'undefined') { %>
+      <div class="px-4 lg:px-6 pt-4">
+        <% const flashTypes = [{key:'success',cls:'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300',icon:'check-circle'},{key:'error',cls:'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300',icon:'alert-circle'}]; %>
+        <% flashTypes.forEach(function(ft) { %>
+          <% const msgs = typeof locals[ft.key] !== 'undefined' ? (Array.isArray(locals[ft.key]) ? locals[ft.key] : [locals[ft.key]]) : []; %>
+          <% msgs.forEach(function(msg) { %>
+            <% if (msg && msg.length > 0) { %>
+              <div class="mb-2 p-3 rounded-xl border text-sm flex items-center gap-2 <%= ft.cls %>" x-data="{show:true}" x-show="show" x-init="setTimeout(()=>show=false,5000)">
+                <i data-lucide="<%= ft.icon %>" class="w-4 h-4 flex-shrink-0"></i>
+                <span class="flex-1"><%= msg %></span>
+                <button @click="show=false" class="hover:opacity-70"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+              </div>
+            <% } %>
+          <% }); %>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <!-- Page content -->
+    <main class="flex-1 p-4 lg:p-6">
+      <%- body %>
+    </main>
+
+    <footer class="border-t border-border bg-card/50 mt-auto">
+      <div class="px-6 py-4 text-center">
+        <p class="text-xs text-muted-foreground">&copy; <%= new Date().getFullYear() %> ATLAS Skilltech University. All rights reserved.</p>
+      </div>
+    </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', function() { lucide.createIcons(); });</script>
+  <script>
+    (function() {
+      var dm = localStorage.getItem('darkMode') === 'true';
+      if (dm) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    })();
+  </script>
+  <%- script %>
+</body>
+</html>
