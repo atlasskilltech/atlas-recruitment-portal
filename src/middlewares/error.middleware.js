@@ -43,6 +43,7 @@ function errorHandler(err, req, res, next) {
   // If the request expects JSON, respond with JSON
   if (req.accepts('html')) {
     return res.render('errors/error', {
+      layout: 'layouts/auth',
       title: statusCode === 404 ? 'Page Not Found' : 'Server Error',
       statusCode,
       message:
