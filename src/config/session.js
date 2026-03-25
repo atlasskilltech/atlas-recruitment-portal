@@ -58,4 +58,4 @@ function buildSessionConfig() {
   return config;
 }
 
-module.exports = buildSessionConfig;
+module.exports = { buildSessionConfig };
