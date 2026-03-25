@@ -129,6 +129,10 @@ app.listen(PORT, () => {
   ║   Environment: ${env.NODE_ENV.padEnd(33)}║
   ╚═══════════════════════════════════════════════════╝
   `);
+
+  // Start background cron jobs
+  const { startAIScreeningCron } = require('./jobs/aiScreeningCron');
+  startAIScreeningCron();
 });
 
 module.exports = app;

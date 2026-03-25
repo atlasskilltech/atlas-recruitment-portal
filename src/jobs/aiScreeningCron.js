@@ -1,0 +1,71 @@
+// ---------------------------------------------------------------------------
+// Atlas HR Recruitment Portal – AI Screening Cron Job
+// ---------------------------------------------------------------------------
+// Runs every 5 minutes to auto-screen candidates who haven't been screened yet.
+// ---------------------------------------------------------------------------
+const cron = require('node-cron');
+const pool = require('../config/db');
+const screeningService = require('../services/screening.service');
+const logger = require('../utils/logger');
+
+let isRunning = false;
+
+async function runPendingScreenings() {
+  if (isRunning) {
+    logger.info('[AI_CRON] Skipping – previous run still in progress');
+    return;
+  }
+
+  isRunning = true;
+
+  try {
+    // Find candidates who have NO screening record yet
+    const [unscreened] = await pool.query(`
+      SELECT dsr.id
+      FROM dice_staff_recruitment dsr
+      LEFT JOIN atlas_rec_candidate_ai_screening ais ON ais.candidate_id = dsr.id
+      WHERE ais.id IS NULL
+      ORDER BY dsr.appln_date DESC
+      LIMIT 10
+    `);
+
+    if (unscreened.length === 0) {
+      logger.info('[AI_CRON] No unscreened candidates found');
+      isRunning = false;
+      return;
+    }
+
+    const candidateIds = unscreened.map(r => r.id);
+    logger.info(`[AI_CRON] Found ${candidateIds.length} unscreened candidate(s): ${candidateIds.join(', ')}`);
+
+    const { results, errors } = await screeningService.runBulkAIMatch(candidateIds);
+
+    logger.info(`[AI_CRON] Completed: ${results.length} success, ${errors.length} failed`);
+
+    if (errors.length > 0) {
+      errors.forEach(e => logger.warn(`[AI_CRON] Failed candidate ${e.candidateId}: ${e.error}`));
+    }
+  } catch (error) {
+    logger.error(`[AI_CRON] Job error: ${error.message}`);
+  } finally {
+    isRunning = false;
+  }
+}
+
+function startAIScreeningCron() {
+  // Run every 5 minutes
+  cron.schedule('*/5 * * * *', () => {
+    logger.info('[AI_CRON] Running scheduled AI screening check...');
+    runPendingScreenings();
+  });
+
+  logger.info('[AI_CRON] AI screening cron job started (every 5 minutes)');
+
+  // Also run once on startup after a short delay
+  setTimeout(() => {
+    logger.info('[AI_CRON] Running initial AI screening check...');
+    runPendingScreenings();
+  }, 10000);
+}
+
+module.exports = { startAIScreeningCron, runPendingScreenings };
