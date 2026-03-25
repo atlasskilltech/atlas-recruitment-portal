@@ -23,7 +23,7 @@
     return 'stroke-red-500';
   }
   function qvBadgeClass(status) {
-    const s = (status||'').toLowerCase().replace(/\s+/g,'_');
+    const s = String(status||'').toLowerCase().replace(/\s+/g,'_');
     const map = {
       new:'badge-new', shortlisted:'badge-shortlisted', rejected:'badge-rejected',
       hold:'badge-hold', scheduled:'badge-scheduled', selected:'badge-selected',
@@ -34,7 +34,7 @@
   }
   function qvLabel(s) {
     if (!s) return '-';
-    return s.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+    return String(s).replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
   }
 %>
 

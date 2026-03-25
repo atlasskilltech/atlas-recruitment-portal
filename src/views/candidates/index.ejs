@@ -42,7 +42,7 @@
     return name.trim().split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join('');
   }
   function badgeClass(status) {
-    const s = (status||'').toLowerCase().replace(/\s+/g,'_');
+    const s = String(status||'').toLowerCase().replace(/\s+/g,'_');
     const map = {
       new:'badge-new', shortlisted:'badge-shortlisted', rejected:'badge-rejected',
       hold:'badge-hold', scheduled:'badge-scheduled', selected:'badge-selected',
@@ -54,7 +54,7 @@
   }
   function labelise(s) {
     if (!s) return '-';
-    return s.replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+    return String(s).replace(/_/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
   }
 
   /* Pagination page array */
