@@ -339,8 +339,17 @@ function videoInterview() {
       this.timerSeconds = 0;
       this.liveCaption = '';
 
-      // Start timer counting up
+      // Re-attach video stream (fixes video disappearing on question change)
       var self = this;
+      setTimeout(function() {
+        var video = document.querySelector('[x-ref="sessionVideo"]');
+        if (video && self.stream && !video.srcObject) {
+          video.srcObject = self.stream;
+          video.play().catch(function(){});
+        }
+      }, 100);
+
+      // Start timer counting up
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = setInterval(function() { self.timerSeconds++; }, 1000);
 
@@ -374,49 +383,74 @@ function videoInterview() {
     startListening() {
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        console.warn('Speech recognition not supported');
+        console.warn('Speech recognition not supported — use text input');
         return;
+      }
+
+      this.isRecording = true;
+      this._initRecognition();
+    },
+
+    _initRecognition() {
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (this.recognition) {
+        try { this.recognition.abort(); } catch(e) {}
       }
 
       this.recognition = new SpeechRecognition();
       this.recognition.continuous = true;
       this.recognition.interimResults = true;
       this.recognition.lang = 'en-US';
-      this.isRecording = true;
+      this.recognition.maxAlternatives = 1;
 
       var self = this;
-      var finalTranscript = this.answers[this.currentIndex] || '';
 
       this.recognition.onresult = function(event) {
         var interim = '';
+        var currentAnswer = self.answers[self.currentIndex] || '';
         for (var i = event.resultIndex; i < event.results.length; i++) {
           var t = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
-            finalTranscript += (finalTranscript ? ' ' : '') + t;
+            currentAnswer += (currentAnswer ? ' ' : '') + t;
             self.transcriptLines.push(t);
           } else {
             interim = t;
           }
         }
-        self.answers[self.currentIndex] = finalTranscript;
+        self.answers[self.currentIndex] = currentAnswer;
         self.liveCaption = interim || '';
       };
 
       this.recognition.onerror = function(e) {
-        console.warn('Speech recognition error:', e.error);
-        if (e.error !== 'no-speech') {
-          self.isRecording = false;
+        console.warn('Speech error:', e.error);
+        // Auto-restart on recoverable errors
+        if (e.error === 'no-speech' || e.error === 'audio-capture' || e.error === 'network') {
+          if (self.phase === 'session' && self.isRecording) {
+            setTimeout(function() { self._initRecognition(); }, 500);
+          }
         }
       };
 
       this.recognition.onend = function() {
-        // Auto-restart if still in session
+        // Chrome stops after ~60s — auto-restart
         if (self.phase === 'session' && self.isRecording) {
-          try { self.recognition.start(); } catch(e) {}
+          setTimeout(function() {
+            try {
+              self.recognition.start();
+            } catch(e) {
+              // If start fails, reinitialize
+              setTimeout(function() { self._initRecognition(); }, 300);
+            }
+          }, 200);
         }
       };
 
-      this.recognition.start();
+      try {
+        this.recognition.start();
+      } catch(e) {
+        console.warn('Recognition start failed:', e);
+        setTimeout(function() { self._initRecognition(); }, 500);
+      }
     },
 
     stopListening() {
@@ -453,11 +487,12 @@ function videoInterview() {
 
       this.answeredCount++;
 
-      // Move to next or end
+      // Move to next question or auto-end if last
       if (this.currentIndex < this.questions.length - 1) {
         this.currentIndex++;
         this.startQuestion();
       } else {
+        // Last question answered — auto-end
         this.endInterview();
       }
     },
