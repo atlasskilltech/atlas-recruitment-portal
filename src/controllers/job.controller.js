@@ -153,7 +153,7 @@ const store = asyncHandler(async (req, res) => {
   const [newJob] = await pool.query('SELECT id FROM isdi_admsn_applied_for WHERE applied_for_post = ? ORDER BY id DESC LIMIT 1', [applied_for_post]);
   if (newJob[0]) {
     setTimeout(() => {
-      jobMatchingService.scanCandidatesForJob(newJob[0].id, { limit: 200 })
+      jobMatchingService.scanCandidatesForJob(newJob[0].id, { limit: 5000 })
         .catch(err => logger.error(`[JOBS] Background scan failed: ${err.message}`));
     }, 2000);
   }
@@ -306,7 +306,7 @@ const refreshMatches = asyncHandler(async (req, res) => {
 
   try {
     const result = await jobMatchingService.scanCandidatesForJob(id, {
-      limit: 500,
+      limit: 5000,
       forceRefresh: true,
     });
 

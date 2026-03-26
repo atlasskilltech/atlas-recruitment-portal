@@ -19,7 +19,7 @@ class JobMatchingService {
    * @returns {Promise<{ scanned: number, matched: number }>}
    */
   async scanCandidatesForJob(jobId, options = {}) {
-    const { limit = 200, useAI = false, forceRefresh = false } = options;
+    const { limit = 5000, useAI = false, forceRefresh = false } = options;
 
     // 1. Get the job with its JD
     const [[job]] = await pool.query(
@@ -51,7 +51,7 @@ class JobMatchingService {
         SELECT id, appln_full_name, appln_high_qualification, appln_specialization,
                appln_total_experience, appln_current_designation, appln_current_organisation
         FROM dice_staff_recruitment
-        WHERE appln_date >= DATE_SUB(CURDATE(), INTERVAL 180 DAY)
+        WHERE appln_full_name IS NOT NULL
         ORDER BY appln_date DESC
         LIMIT ?
       `;
@@ -64,7 +64,7 @@ class JobMatchingService {
         FROM dice_staff_recruitment dsr
         LEFT JOIN atlas_rec_job_candidate_matches m ON m.candidate_id = dsr.id AND m.job_id = ?
         WHERE m.id IS NULL
-          AND dsr.appln_date >= DATE_SUB(CURDATE(), INTERVAL 180 DAY)
+          AND dsr.appln_full_name IS NOT NULL
         ORDER BY dsr.appln_date DESC
         LIMIT ?
       `;
