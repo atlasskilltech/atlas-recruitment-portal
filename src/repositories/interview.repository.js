@@ -111,8 +111,8 @@ class InterviewRepository {
       const allowedFields = [
         'status', 'interview_type', 'total_score',
         'communication_score', 'domain_knowledge_score', 'problem_solving_score',
-        'confidence_score', 'ai_feedback', 'ai_summary', 'started_at',
-        'submitted_at', 'evaluated_at',
+        'confidence_score', 'ai_feedback', 'ai_summary', 'ai_recommendation',
+        'started_at', 'submitted_at', 'evaluated_at',
       ];
 
       // Map common aliases to actual column names

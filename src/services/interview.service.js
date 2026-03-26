@@ -200,58 +200,97 @@ class InterviewService {
 
     logger.info(`[INTERVIEW] Found ${questions.length} questions, ${answers.length} answers for interview ${interviewId}`);
 
+    if (answers.length === 0) {
+      logger.warn(`[INTERVIEW] No answers found for interview ${interviewId}, marking as evaluated with 0 score`);
+    }
+
     // Evaluate each answer
     const evaluator = require('./ai/interviewEvaluator.service');
     const evaluatedAnswers = [];
 
     for (const answer of answers) {
       const question = questions.find((q) => q.id === answer.question_id);
-      if (!question) continue;
+      if (!question) {
+        logger.warn(`[INTERVIEW] No matching question for answer ${answer.id}, question_id=${answer.question_id}`);
+        continue;
+      }
 
-      const jobContext = {
-        job_title: interview.job_title,
-        job_description: interview.job_description,
-      };
+      try {
+        const jobContext = {
+          job_title: interview.job_title || interview.applied_for_post || '',
+          job_description: interview.job_description || interview.applied_job_desc || '',
+        };
 
-      const evaluation = await evaluator.evaluateAnswer(question, answer, jobContext);
+        const evaluation = await evaluator.evaluateAnswer(question, answer, jobContext);
+        logger.info(`[INTERVIEW] Answer ${answer.id} evaluated: score=${evaluation.score}, feedback=${(evaluation.feedback || '').substring(0, 50)}`);
 
-      // Update the answer with the score
-      await interviewRepository.updateAnswer(answer.id, {
-        ai_score: evaluation.score,
-        ai_feedback: evaluation.feedback,
-      });
+        // Update the answer with scores
+        await interviewRepository.updateAnswer(answer.id, {
+          ai_score: evaluation.score || 0,
+          keyword_relevance_score: evaluation.keyword_relevance_score || evaluation.keywordScore || null,
+          quality_score: evaluation.quality_score || evaluation.qualityScore || null,
+          ai_feedback: typeof evaluation.feedback === 'string' ? evaluation.feedback : JSON.stringify(evaluation.feedback || ''),
+        });
 
-      evaluatedAnswers.push({
-        ...answer,
-        ai_score: evaluation.score,
-        ai_feedback: evaluation.feedback,
-        evaluation,
-      });
+        evaluatedAnswers.push({
+          ...answer,
+          score: evaluation.score || 0,
+          keyword_relevance_score: evaluation.keyword_relevance_score || evaluation.keywordScore || 0,
+          quality_score: evaluation.quality_score || evaluation.qualityScore || 0,
+          ai_feedback: evaluation.feedback,
+          evaluation,
+        });
+      } catch (evalErr) {
+        logger.error(`[INTERVIEW] Failed to evaluate answer ${answer.id}: ${evalErr.message}`);
+        evaluatedAnswers.push({ ...answer, score: 0, evaluation: { score: 0, keyword_relevance_score: 0, quality_score: 0 } });
+      }
     }
 
     // Compute weighted total score
     const scoringService = require('./ai/scoring.service');
     const overallScore = scoringService.calculateInterviewScore(
-      evaluatedAnswers.map((a) => a.evaluation)
+      evaluatedAnswers.map((a) => a.evaluation || { score: a.score || 0, keyword_relevance_score: 0, quality_score: 0 })
     );
 
+    // Compute dimension scores
+    const avgKeywordRelevance = evaluatedAnswers.length > 0
+      ? evaluatedAnswers.reduce((s, a) => s + (a.keyword_relevance_score || (a.score / 10) * 100 || 0), 0) / evaluatedAnswers.length : 0;
+    const avgQuality = evaluatedAnswers.length > 0
+      ? evaluatedAnswers.reduce((s, a) => s + (a.quality_score || (a.score / 10) * 100 || 0), 0) / evaluatedAnswers.length : 0;
+
+    const communicationScore = Math.round(avgQuality * 10) / 10;
+    const domainKnowledgeScore = Math.round(avgKeywordRelevance * 10) / 10;
+    const problemSolvingScore = Math.round(((avgKeywordRelevance + avgQuality) / 2) * 10) / 10;
+    const confidenceScore = Math.round(avgQuality * 10) / 10;
+
+    logger.info(`[INTERVIEW] Scores: overall=${overallScore}, comm=${communicationScore}, domain=${domainKnowledgeScore}, problem=${problemSolvingScore}, confidence=${confidenceScore}`);
+
     // Generate summary
-    const summary = await evaluator.generateInterviewSummary(interview, answers, evaluatedAnswers);
+    let summary = '';
+    try {
+      summary = await evaluator.generateInterviewSummary(interview, answers, evaluatedAnswers);
+    } catch (summaryErr) {
+      logger.warn(`[INTERVIEW] Summary generation failed: ${summaryErr.message}`);
+      summary = `Interview completed with ${answers.length} answers. Overall score: ${overallScore}%.`;
+    }
 
     // Determine recommendation
     const recommendation = scoringService.getRecommendationTag(overallScore);
 
-    // Update interview record
+    // Update interview record with all scores
     const updated = await interviewRepository.update(interviewId, {
       interview_status: INTERVIEW_STATUSES.EVALUATED,
       overall_score: overallScore,
-      questions_answered: answers.length,
+      communication_score: communicationScore,
+      domain_knowledge_score: domainKnowledgeScore,
+      problem_solving_score: problemSolvingScore,
+      confidence_score: confidenceScore,
       completed_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
       feedback: typeof summary === 'string' ? summary : JSON.stringify(summary),
       ai_recommendation: recommendation,
     });
 
-    logger.info(`Interview completed and evaluated: id=${interviewId}, score=${overallScore}, recommendation=${recommendation}`);
+    logger.info(`[INTERVIEW] Interview ${interviewId} completed: score=${overallScore}, status=evaluated, recommendation=${recommendation}`);
 
     return {
       ...updated,
