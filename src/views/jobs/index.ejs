@@ -69,6 +69,7 @@
             <th>Experience</th>
             <th>Visible</th>
             <th>Applicants</th>
+            <th>JD File</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -102,9 +103,17 @@
                   <span class="badge-muted">Hidden</span>
                 <% } %>
               </td>
-              <td class="text-sm font-medium text-foreground">
-                <!-- Count will be filled if needed -->
-                -
+              <td class="text-sm font-medium text-foreground">-</td>
+              <td>
+                <% if (j.applied_job_desc_file) { %>
+                  <a href="https://www.atlasskilltech.app/erp/assets/career/<%= j.applied_job_desc_file %>" target="_blank"
+                     class="text-xs text-primary-800 hover:underline flex items-center gap-1">
+                    <i data-lucide="file-text" class="w-3 h-3"></i>
+                    <%= j.applied_job_desc_file.length > 20 ? j.applied_job_desc_file.substring(0, 20) + '...' : j.applied_job_desc_file %>
+                  </a>
+                <% } else { %>
+                  <span class="text-xs text-muted-foreground">-</span>
+                <% } %>
               </td>
               <td>
                 <div class="flex items-center gap-2">

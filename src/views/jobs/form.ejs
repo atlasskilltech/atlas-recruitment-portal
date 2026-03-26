@@ -2,6 +2,9 @@
   const _job = typeof job !== 'undefined' ? job : null;
   const _scopes = typeof scopes !== 'undefined' ? scopes : [];
   const isEdit = !!_job;
+  const jdFileUrl = _job && _job.applied_job_desc_file
+    ? 'https://www.atlasskilltech.app/erp/assets/career/' + _job.applied_job_desc_file
+    : null;
 %>
 
 <!-- Page Header -->
@@ -11,13 +14,13 @@
   </a>
   <div>
     <h1 class="text-2xl font-bold text-foreground tracking-tight"><%= isEdit ? 'Edit Job Opening' : 'Add New Job Opening' %></h1>
-    <p class="text-sm text-muted-foreground mt-1"><%= isEdit ? 'Update job details' : 'Create a new job position for recruitment' %></p>
+    <p class="text-sm text-muted-foreground mt-1"><%= isEdit ? 'Update job details — visible on atlasuniversity.edu.in/job-openings' : 'Create a new job position visible on the careers page' %></p>
   </div>
 </div>
 
 <!-- Form -->
-<div class="card p-6 max-w-3xl">
-  <form method="POST" action="<%= isEdit ? '/jobs/' + _job.id : '/jobs' %>">
+<div class="card p-6">
+  <form method="POST" action="<%= isEdit ? '/jobs/' + _job.id : '/jobs' %>" enctype="multipart/form-data">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
 
       <!-- Scope -->
@@ -29,66 +32,121 @@
             <option value="<%= s.id %>" <%= _job && _job.applied_for_post_id == s.id ? 'selected' : '' %>><%= s.applied_for_name %></option>
           <% }); %>
         </select>
+        <p class="text-xs text-muted-foreground mt-1">Academics/Teaching or Administration/Non-teaching</p>
       </div>
 
       <!-- Post Name -->
       <div class="form-group">
         <label class="form-label">Post Name *</label>
         <input type="text" name="applied_for_post" class="form-input" required
-               value="<%= _job ? _job.applied_for_post : '' %>" placeholder="e.g., Assistant Professor">
+               value="<%= _job ? _job.applied_for_post : '' %>" placeholder="e.g., Professor, Assistant Professor">
       </div>
 
       <!-- Job Title (Short Desc) -->
       <div class="form-group md:col-span-2">
-        <label class="form-label">Job Title / Short Description</label>
+        <label class="form-label">Applied Job Short Desc New</label>
         <input type="text" name="applied_job_short_desc_new" class="form-input"
-               value="<%= _job ? (_job.applied_job_short_desc_new || '') : '' %>" placeholder="e.g., Assistant Professor - Computer Science">
+               value="<%= _job ? (_job.applied_job_short_desc_new || '') : '' %>" placeholder="Short title for display (35 words max)">
+        <p class="text-xs text-muted-foreground mt-1">Short description shown in listings</p>
       </div>
 
       <!-- Location -->
       <div class="form-group">
         <label class="form-label">Location</label>
-        <input type="text" name="applied_location" class="form-input"
-               value="<%= _job ? (_job.applied_location || '') : 'Mumbai' %>" placeholder="Mumbai">
+        <select name="applied_location" class="form-select">
+          <option value="Mumbai" <%= (!_job || _job.applied_location === 'Mumbai') ? 'selected' : '' %>>Mumbai</option>
+          <option value="Pune" <%= _job && _job.applied_location === 'Pune' ? 'selected' : '' %>>Pune</option>
+          <option value="Delhi" <%= _job && _job.applied_location === 'Delhi' ? 'selected' : '' %>>Delhi</option>
+          <option value="Bangalore" <%= _job && _job.applied_location === 'Bangalore' ? 'selected' : '' %>>Bangalore</option>
+          <option value="Remote" <%= _job && _job.applied_location === 'Remote' ? 'selected' : '' %>>Remote</option>
+        </select>
       </div>
 
       <!-- Visibility -->
       <div class="form-group">
-        <label class="form-label">Visibility</label>
+        <label class="form-label">Visible on Careers Page</label>
         <select name="applied_is_visible" class="form-select">
-          <option value="1" <%= (!_job || _job.applied_is_visible) ? 'selected' : '' %>>Visible</option>
-          <option value="0" <%= (_job && !_job.applied_is_visible) ? 'selected' : '' %>>Hidden</option>
+          <option value="1" <%= (!_job || _job.applied_is_visible) ? 'selected' : '' %>>Yes — Visible</option>
+          <option value="0" <%= (_job && !_job.applied_is_visible) ? 'selected' : '' %>>No — Hidden</option>
         </select>
+        <p class="text-xs text-muted-foreground mt-1">Controls visibility on atlasuniversity.edu.in/job-openings</p>
       </div>
 
       <!-- Experience Min -->
       <div class="form-group">
-        <label class="form-label">Min Experience (years)</label>
-        <input type="number" name="applied_experience_min" class="form-input" min="0" step="0.5"
-               value="<%= _job ? (_job.applied_experience_min || '') : '' %>" placeholder="0">
+        <label class="form-label">Experience Min (years)</label>
+        <input type="number" name="applied_experience_min" class="form-input" min="0" step="1"
+               value="<%= _job ? (_job.applied_experience_min || '') : '' %>" placeholder="e.g., 15">
       </div>
 
       <!-- Experience Max -->
       <div class="form-group">
-        <label class="form-label">Max Experience (years)</label>
-        <input type="number" name="applied_experience_max" class="form-input" min="0" step="0.5"
-               value="<%= _job ? (_job.applied_experience_max || '') : '' %>" placeholder="10">
+        <label class="form-label">Experience Max (years)</label>
+        <input type="number" name="applied_experience_max" class="form-input" min="0" step="1"
+               value="<%= _job ? (_job.applied_experience_max || '') : '' %>" placeholder="e.g., 30">
       </div>
 
-      <!-- Job Description -->
+      <!-- Job Description (HTML) -->
       <div class="form-group md:col-span-2">
-        <label class="form-label">Job Description</label>
-        <textarea name="applied_job_desc" class="form-input" rows="6"
-                  placeholder="Enter detailed job description, requirements, and responsibilities..."><%= _job ? (_job.applied_job_desc || '') : '' %></textarea>
+        <label class="form-label">Job Description (HTML supported)</label>
+        <div id="jobDescEditor" style="min-height: 250px; border: 1px solid var(--border, #e2e8f0); border-radius: 8px;"></div>
+        <textarea name="applied_job_desc" id="jobDescHidden" class="hidden"><%- _job ? (_job.applied_job_desc || '') : '' %></textarea>
+        <p class="text-xs text-muted-foreground mt-1">Supports HTML — use &lt;ul&gt;&lt;li&gt; for bullet points. This content appears on the public job page.</p>
+      </div>
+
+      <!-- Job Desc File -->
+      <div class="form-group md:col-span-2">
+        <label class="form-label">Job Description File (DOCX/PDF)</label>
+        <% if (jdFileUrl) { %>
+          <div class="flex items-center gap-3 mb-2 p-3 rounded-lg bg-muted/50 border border-border">
+            <i data-lucide="file-text" class="w-5 h-5 text-primary-800"></i>
+            <a href="<%= jdFileUrl %>" target="_blank" class="text-sm text-primary-800 hover:underline font-medium"><%= _job.applied_job_desc_file %></a>
+            <span class="text-xs text-muted-foreground">— Current file</span>
+          </div>
+        <% } %>
+        <input type="file" name="applied_job_desc_file" class="form-input" accept=".docx,.doc,.pdf">
+        <p class="text-xs text-muted-foreground mt-1">Upload JD file (stored in erp/assets/career/). Leave empty to keep current file.</p>
       </div>
     </div>
 
     <div class="flex items-center gap-3 pt-4 border-t border-border">
       <button type="submit" class="btn-primary">
         <i data-lucide="<%= isEdit ? 'save' : 'plus' %>" class="w-4 h-4"></i>
-        <%= isEdit ? 'Update Job' : 'Create Job' %>
+        <%= isEdit ? 'Save Changes' : 'Create Job Opening' %>
       </button>
       <a href="/jobs" class="btn-outline">Cancel</a>
     </div>
   </form>
 </div>
+
+<!-- Quill Rich Text Editor for Job Description -->
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var quill = new Quill('#jobDescEditor', {
+    theme: 'snow',
+    modules: {
+      toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline'],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+        ['link'],
+        ['clean']
+      ]
+    },
+    placeholder: 'Enter job description, requirements, responsibilities...'
+  });
+
+  // Load existing content
+  var existing = document.getElementById('jobDescHidden').value;
+  if (existing) {
+    quill.root.innerHTML = existing;
+  }
+
+  // Sync to hidden field on form submit
+  document.querySelector('form').addEventListener('submit', function() {
+    document.getElementById('jobDescHidden').value = quill.root.innerHTML;
+  });
+});
+</script>
