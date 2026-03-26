@@ -171,18 +171,14 @@ class InterviewQuestionGeneratorService {
    * @returns {Promise<Array<{ question_text: string, question_type: string, difficulty_level: string, expected_keywords: string[], max_score: number }>>}
    */
   async generateQuestions(job, candidate, interviewType = 'technical', count = 6) {
-    const hasAIKey = !!(
-      process.env.OPENAI_API_KEY ||
-      process.env.AZURE_OPENAI_API_KEY ||
-      process.env.OPENROUTER_API_KEY
-    );
-
-    if (hasAIKey) {
-      try {
-        return await this._generateWithAI(job, candidate, interviewType, count);
-      } catch (err) {
-        logger.warn('AI question generation failed, using built-in bank', { error: err.message });
+    // Always try AI first via callAI() which respects AI_PROVIDER env
+    try {
+      const aiQuestions = await this._generateWithAI(job, candidate, interviewType, count);
+      if (aiQuestions && aiQuestions.length > 0) {
+        return aiQuestions;
       }
+    } catch (err) {
+      logger.warn('AI question generation failed, using built-in bank', { error: err.message });
     }
 
     return this._generateFromBank(job, candidate, interviewType, count);
@@ -257,7 +253,7 @@ class InterviewQuestionGeneratorService {
    */
   _resolveBankKey(job, interviewType) {
     const type = (interviewType || '').toLowerCase();
-    if (type === 'technical') return 'technical';
+    // For university recruitment: 'technical' interview type = academic questions
     if (type === 'hr' || type === 'managerial' || type === 'panel') return 'admin';
 
     // Infer from job title
