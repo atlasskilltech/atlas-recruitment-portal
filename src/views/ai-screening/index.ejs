@@ -142,11 +142,11 @@
         <tbody>
           <% screenings.forEach(function(s) { %>
             <%
-              const score = s.ai_score || s.match_score || 0;
+              const score = parseFloat(s.ai_match_score) || parseFloat(s.ai_score) || parseFloat(s.match_score) || 0;
               const scoreColor = score >= 75 ? 'bg-success' : score >= 50 ? 'bg-warning' : 'bg-destructive';
               const scoreTextColor = score >= 75 ? 'text-success' : score >= 50 ? 'text-warning' : 'text-destructive';
 
-              const rec = s.recommendation || 'N/A';
+              const rec = s.ai_recommendation_tag || s.recommendation || 'N/A';
               const recBadge = rec === 'strong_fit' || rec === 'Strong Fit'
                 ? 'badge-strong-fit'
                 : rec === 'moderate_fit' || rec === 'Moderate Fit'
@@ -155,7 +155,7 @@
                     ? 'badge-weak-fit'
                     : 'badge-muted';
 
-              const status = s.ai_status || s.status || 'pending';
+              const status = s.ai_status || s.status || 'eligible';
               const statusBadge = status === 'completed'
                 ? 'badge-success'
                 : status === 'pending'
@@ -164,7 +164,13 @@
                     ? 'badge-info'
                     : 'badge-danger';
 
-              const skillsCount = s.skills_count || (s.extracted_skills ? (Array.isArray(s.extracted_skills) ? s.extracted_skills.length : 0) : 0);
+              let skillsCount = 0;
+              if (s.extracted_skills) {
+                try {
+                  const parsed = typeof s.extracted_skills === 'string' ? JSON.parse(s.extracted_skills) : s.extracted_skills;
+                  skillsCount = Array.isArray(parsed) ? parsed.length : 0;
+                } catch(e) { skillsCount = 0; }
+              }
               const candidateName = s.candidate_name || (s.candidate ? (s.candidate.first_name + ' ' + s.candidate.last_name) : 'Unknown');
               const jobTitle = s.job_title || (s.job ? s.job.title : 'N/A');
             %>

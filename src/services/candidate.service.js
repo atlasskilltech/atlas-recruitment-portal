@@ -22,11 +22,15 @@ class CandidateService {
     ]);
 
     // Attach latest screening and interview scores to each candidate row
+    // Map DB column names (ai_match_score, total_score, ai_status) to template field names
     const enriched = candidates.map((candidate) => {
       return {
         ...candidate,
-        match_score: candidate.match_score != null ? parseFloat(candidate.match_score) : null,
-        interview_score: candidate.interview_score != null ? parseFloat(candidate.interview_score) : null,
+        match_score: candidate.ai_match_score != null ? parseFloat(candidate.ai_match_score) : (candidate.match_score != null ? parseFloat(candidate.match_score) : null),
+        overall_score: candidate.total_score != null ? parseFloat(candidate.total_score) : (candidate.overall_score != null ? parseFloat(candidate.overall_score) : null),
+        interview_score: candidate.total_score != null ? parseFloat(candidate.total_score) : (candidate.interview_score != null ? parseFloat(candidate.interview_score) : null),
+        screening_status: candidate.ai_status || candidate.screening_status || null,
+        recommendation_tag: candidate.ai_recommendation_tag || candidate.recommendation_tag || null,
       };
     });
 

@@ -24,18 +24,18 @@ const index = asyncHandler(async (req, res) => {
   const conditions = [];
   const params = [];
 
-  if (req.query.screening_status) {
-    conditions.push('ais.screening_status = ?');
-    params.push(req.query.screening_status);
+  if (req.query.screening_status || req.query.status) {
+    conditions.push('ais.ai_status = ?');
+    params.push(req.query.screening_status || req.query.status);
   }
 
-  if (req.query.score_min) {
-    conditions.push('ais.match_score >= ?');
-    params.push(parseFloat(req.query.score_min));
+  if (req.query.score_min || req.query.minScore) {
+    conditions.push('ais.ai_match_score >= ?');
+    params.push(parseFloat(req.query.score_min || req.query.minScore));
   }
 
   if (req.query.score_max) {
-    conditions.push('ais.match_score <= ?');
+    conditions.push('ais.ai_match_score <= ?');
     params.push(parseFloat(req.query.score_max));
   }
 
@@ -44,18 +44,18 @@ const index = asyncHandler(async (req, res) => {
     params.push(`%${req.query.candidate_name}%`);
   }
 
-  if (req.query.job_id) {
+  if (req.query.job_id || req.query.jobId) {
     conditions.push('ais.job_id = ?');
-    params.push(req.query.job_id);
+    params.push(req.query.job_id || req.query.jobId);
   }
 
-  if (req.query.date_from) {
-    conditions.push('ais.screening_date >= ?');
-    params.push(req.query.date_from);
+  if (req.query.date_from || req.query.fromDate) {
+    conditions.push('ais.processed_at >= ?');
+    params.push(req.query.date_from || req.query.fromDate);
   }
 
   if (req.query.date_to) {
-    conditions.push('ais.screening_date <= ?');
+    conditions.push('ais.processed_at <= ?');
     params.push(req.query.date_to);
   }
 
@@ -104,9 +104,26 @@ const index = asyncHandler(async (req, res) => {
     'SELECT id, applied_job_short_desc_new AS title FROM isdi_admsn_applied_for ORDER BY applied_job_short_desc_new'
   );
 
+  // Compute summary stats for the cards
+  const [statsRows] = await pool.query(`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN ais.ai_status = 'eligible' THEN 1 ELSE 0 END) AS eligible,
+      SUM(CASE WHEN ais.ai_status = 'hold' THEN 1 ELSE 0 END) AS hold,
+      SUM(CASE WHEN ais.ai_status = 'rejected' THEN 1 ELSE 0 END) AS rejected
+    FROM atlas_rec_candidate_ai_screening ais
+    INNER JOIN (
+      SELECT candidate_id, MAX(id) AS max_id
+      FROM atlas_rec_candidate_ai_screening
+      GROUP BY candidate_id
+    ) latest ON ais.id = latest.max_id
+  `);
+  const screeningStats = statsRows[0] || { total: 0, eligible: 0, hold: 0, rejected: 0 };
+
   res.render('ai-screening/index', {
     title: 'AI Screening Results',
     screenings,
+    stats: screeningStats,
     jobs,
     filters: req.query,
     aiStatuses: AI_STATUSES_LIST,
@@ -162,13 +179,19 @@ const show = asyncHandler(async (req, res) => {
     try { return JSON.parse(val); } catch { return val; }
   };
 
-  screening.skills_analysis_parsed = parseJson(screening.skills_analysis);
-  screening.experience_analysis_parsed = parseJson(screening.experience_analysis);
-  screening.education_analysis_parsed = parseJson(screening.education_analysis);
+  screening.skills_analysis_parsed = parseJson(screening.skill_gap_analysis);
+  screening.experience_analysis_parsed = parseJson(screening.extracted_experience_summary);
+  screening.education_analysis_parsed = parseJson(screening.extracted_education_summary);
+
+  // Map field names for template compatibility
+  screening.match_score = screening.ai_match_score;
+  screening.screening_status = screening.ai_status;
+  screening.recommendation = screening.ai_recommendation_tag;
 
   // Fetch all screening history for this candidate
   const [history] = await pool.query(`
-    SELECT id, match_score, screening_status, recommendation, screening_date, created_at
+    SELECT id, ai_match_score AS match_score, ai_status AS screening_status,
+           ai_recommendation_tag AS recommendation, processed_at AS screening_date, created_at
     FROM atlas_rec_candidate_ai_screening
     WHERE candidate_id = ?
     ORDER BY created_at DESC
