@@ -49,9 +49,7 @@ class JobMatchingService {
       // Re-scan all recent candidates
       candidateQuery = `
         SELECT id, appln_full_name, appln_high_qualification, appln_specialization,
-               appln_total_experience, appln_current_designation, appln_current_organisation,
-               appln_phd_degree, appln_phd_specialization, appln_pg_degree, appln_pg_specialization,
-               appln_ug_degree, appln_ug_specialization
+               appln_total_experience, appln_current_designation, appln_current_organisation
         FROM dice_staff_recruitment
         WHERE appln_date >= DATE_SUB(CURDATE(), INTERVAL 180 DAY)
         ORDER BY appln_date DESC
@@ -62,9 +60,7 @@ class JobMatchingService {
       // Only scan candidates not yet matched for this job
       candidateQuery = `
         SELECT dsr.id, dsr.appln_full_name, dsr.appln_high_qualification, dsr.appln_specialization,
-               dsr.appln_total_experience, dsr.appln_current_designation, dsr.appln_current_organisation,
-               dsr.appln_phd_degree, dsr.appln_phd_specialization, dsr.appln_pg_degree, dsr.appln_pg_specialization,
-               dsr.appln_ug_degree, dsr.appln_ug_specialization
+               dsr.appln_total_experience, dsr.appln_current_designation, dsr.appln_current_organisation
         FROM dice_staff_recruitment dsr
         LEFT JOIN atlas_rec_job_candidate_matches m ON m.candidate_id = dsr.id AND m.job_id = ?
         WHERE m.id IS NULL
@@ -88,9 +84,6 @@ class JobMatchingService {
           candidate.appln_high_qualification || '',
           candidate.appln_current_designation || '',
           candidate.appln_current_organisation || '',
-          candidate.appln_phd_specialization || '',
-          candidate.appln_pg_specialization || '',
-          candidate.appln_ug_specialization || '',
         ].join(' ').trim();
 
         const candidateKeywords = this._extractKeywords(candidateText);
