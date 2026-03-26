@@ -46,7 +46,7 @@
               <% if (msg && msg.length > 0) { %>
                 <div class="flex items-center gap-2 p-3 rounded-xl border text-sm mb-2 <%= alert.cls %>"
                      x-data="{ show: true }" x-show="show"
-                     x-init="setTimeout(() => show = false, 5000)">
+                     x-init="setTimeout(() => show = false, 15000)">
                   <i data-lucide="<%= alert.icon %>" class="w-4 h-4 flex-shrink-0"></i>
                   <span class="flex-1"><%= msg %></span>
                   <button @click="show = false" class="hover:opacity-70"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
