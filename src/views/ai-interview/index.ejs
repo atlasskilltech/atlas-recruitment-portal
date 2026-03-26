@@ -96,7 +96,7 @@
 
 <!-- Filter Bar -->
 <div class="filter-panel">
-  <form method="GET" action="/ai-interview" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+  <form method="GET" action="/ai-interviews" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
     <!-- Status -->
     <div class="form-group">
       <label class="form-label">Status</label>
@@ -142,7 +142,7 @@
         <i data-lucide="search" class="w-4 h-4"></i>
         Filter
       </button>
-      <a href="/ai-interview" class="btn-outline btn-sm">
+      <a href="/ai-interviews" class="btn-outline btn-sm">
         <i data-lucide="x" class="w-4 h-4"></i>
         Clear
       </a>
@@ -269,7 +269,7 @@
 
               <!-- Actions -->
               <td>
-                <a href="/ai-interview/<%= iv.id %>" class="btn-ghost btn-sm text-primary-800 dark:text-primary-200" title="View Details">
+                <a href="/ai-interviews/<%= iv.id %>" class="btn-ghost btn-sm text-primary-800 dark:text-primary-200" title="View Details">
                   <i data-lucide="eye" class="w-4 h-4"></i>
                 </a>
               </td>

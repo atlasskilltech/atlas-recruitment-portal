@@ -38,6 +38,7 @@ router.use('/candidates', isAuthenticated, candidateRoutes);
 router.use('/ai', isAuthenticated, aiRoutes);
 router.use('/ai-screening', isAuthenticated, aiScreeningRoutes);
 router.use('/ai-interviews', isAuthenticated, aiInterviewRoutes);
+router.use('/ai-interview', isAuthenticated, aiInterviewRoutes); // alias (singular)
 router.use('/shortlist', isAuthenticated, shortlistRoutes);
 router.use('/schedules', isAuthenticated, scheduleRoutes);
 router.use('/notifications', isAuthenticated, notificationRoutes);
