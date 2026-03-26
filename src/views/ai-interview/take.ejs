@@ -3,237 +3,312 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Interview | Atlas HR Recruitment</title>
+  <title>AI Video Interview | ATLAS SkillTech University</title>
   <link rel="stylesheet" href="/css/output.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    .interview-container { max-width: 800px; margin: 0 auto; }
-    .question-timer { font-variant-numeric: tabular-nums; }
-    @keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); } }
-    .timer-pulse { animation: pulse-ring 2s infinite; }
-    .timer-warning { color: #f59e0b; }
-    .timer-danger { color: #ef4444; animation: pulse-ring 1s infinite; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
+    .video-container { position: relative; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 16/10; }
+    .video-container video { width: 100%; height: 100%; object-fit: cover; }
+    .video-overlay { position: absolute; top: 0; left: 0; right: 0; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); z-index: 2; }
+    .caption-bar { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); z-index: 2; font-size: 14px; color: #fff; min-height: 40px; }
+    .rec-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(239,68,68,0.9); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+    .rec-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff; animation: blink 1s infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .mic-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; }
+    .mic-on { background: rgba(34,197,94,0.2); color: #22c55e; }
+    .mic-off { background: rgba(239,68,68,0.2); color: #ef4444; }
+    .live-dot { display: inline-flex; align-items: center; gap: 4px; color: #ef4444; font-size: 12px; font-weight: 700; }
+    .live-dot::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; animation: blink 1.5s infinite; }
+    .ai-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .btn-action { padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-submit { background: #2563eb; color: #fff; }
+    .btn-submit:hover { background: #1d4ed8; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-skip { background: #334155; color: #94a3b8; }
+    .btn-skip:hover { background: #475569; }
+    .btn-save { background: #334155; color: #94a3b8; }
+    .btn-save:hover { background: #475569; }
+    .btn-end { background: rgba(239,68,68,0.15); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .btn-end:hover { background: rgba(239,68,68,0.25); }
+    .transcript-box, .answer-box { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px; min-height: 200px; font-size: 14px; color: #cbd5e1; }
+    .answer-box textarea { width: 100%; background: transparent; border: none; color: #e2e8f0; resize: none; font-family: inherit; font-size: 14px; outline: none; min-height: 160px; }
+    .answer-box textarea::placeholder { color: #475569; }
+    .setup-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; max-width: 700px; margin: 0 auto; }
+    .pulse-speaking { animation: pulse-speak 1.5s infinite; }
+    @keyframes pulse-speak { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); } 50% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } }
   </style>
 </head>
-<body class="min-h-screen bg-background text-foreground">
+<body>
 <%
   const _interview = typeof interview !== 'undefined' ? interview : {};
   const _questions = _interview.questions || (typeof questions !== 'undefined' ? questions : []);
   const _token = typeof token !== 'undefined' ? token : (_interview.invitation_token || '');
-
   const candidateName = _interview.candidate_name || _interview.appln_full_name || 'Candidate';
   const jobTitle = _interview.job_title || 'Position';
-  const timeLimit = _interview.time_limit_per_question || 300;
-
-  // Check interview status to determine what to show on page load
   const ivStatus = (_interview.status || _interview.interview_status || 'invited').toLowerCase();
   const isAlreadyCompleted = ['evaluated', 'submitted', 'passed', 'failed'].includes(ivStatus);
-  const isInProgress = ivStatus === 'in_progress';
 %>
 
-<div class="min-h-screen flex items-center justify-center p-4 bg-gradient-hero">
-  <div class="w-full max-w-3xl">
-    <!-- Header -->
-    <div class="text-center mb-6">
-      <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-brand rounded-2xl mb-3 shadow-brand">
-        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
-        </svg>
+<div id="app" x-data="videoInterview()" x-cloak>
+
+  <% if (isAlreadyCompleted) { %>
+  <!-- Already Completed -->
+  <div class="min-h-screen flex items-center justify-center p-6">
+    <div class="setup-card text-center">
+      <div class="w-20 h-20 rounded-full bg-green-900/30 flex items-center justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
       </div>
-      <h1 class="text-2xl font-bold text-white tracking-tight">AI Interview</h1>
-      <p class="text-white/60 text-sm mt-1">ATLAS SkillTech University</p>
-    </div>
-
-    <div class="card shadow-brand-lg p-8">
-
-      <% if (isAlreadyCompleted) { %>
-        <!-- Already Completed (server-rendered, no JS needed) -->
-        <div class="interview-container w-full">
-          <div class="text-center mb-6">
-            <h2 class="text-xl font-bold text-foreground"><%= candidateName %></h2>
-            <p class="text-sm text-muted-foreground"><%= jobTitle %></p>
-          </div>
-          <div class="text-center py-12">
-            <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6">
-              <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-            </div>
-            <h2 class="text-2xl font-bold text-foreground mb-2">Interview Already Completed</h2>
-            <p class="text-muted-foreground max-w-md mx-auto mb-6">
-              Thank you, <strong><%= candidateName %></strong>. Your interview has already been submitted and is being reviewed by our team.
-            </p>
-            <% if (_interview.total_score) { %>
-              <p class="text-sm text-muted-foreground">Your score: <strong><%= _interview.total_score %>%</strong></p>
-            <% } %>
-            <p class="text-sm text-muted-foreground mt-4">You may now close this window.</p>
-          </div>
-        </div>
-      <% } else { %>
-
-      <div class="interview-container w-full" x-data="interviewApp()" x-cloak>
-
-        <!-- Candidate Info -->
-        <div class="text-center mb-6">
-          <h2 class="text-xl font-bold text-foreground"><%= candidateName %></h2>
-          <p class="text-sm text-muted-foreground"><%= jobTitle %></p>
-        </div>
-
-        <!-- Interview Instructions (before start) -->
-        <template x-if="!started && !submitted">
-          <div class="mb-6">
-            <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-              <h3 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
-                Interview Instructions
-              </h3>
-              <ul class="space-y-3 text-sm text-muted-foreground">
-                <li class="flex items-start gap-2">
-                  <span class="text-blue-500 font-bold">1.</span>
-                  <span>This interview has <strong class="text-foreground"><%= _questions.length %> questions</strong>.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-blue-500 font-bold">2.</span>
-                  <span>You have <strong class="text-foreground"><%= Math.floor(timeLimit / 60) %> minutes</strong> per question.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-blue-500 font-bold">3.</span>
-                  <span>A <strong class="text-foreground">text response</strong> is required for each question.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-amber-500 font-bold">!</span>
-                  <span>You <strong class="text-foreground">cannot go back</strong> to previous questions once submitted.</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <span class="text-blue-500 font-bold">5.</span>
-                  <span>Questions are presented <strong class="text-foreground">one at a time</strong>.</span>
-                </li>
-              </ul>
-              <div class="mt-6 text-center">
-                <button @click="startInterview()" class="btn-primary px-8 py-3 text-base font-semibold">
-                  Start Interview
-                </button>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <!-- Interview In Progress -->
-        <template x-if="started && !submitted">
-          <div>
-            <!-- Progress Bar -->
-            <div class="mb-6">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-foreground">
-                  Question <span x-text="currentIndex + 1"></span> of <span x-text="questions.length"></span>
-                </span>
-                <span class="text-sm text-muted-foreground" x-text="Math.round(((currentIndex) / questions.length) * 100) + '% complete'"></span>
-              </div>
-              <div class="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-                <div class="h-full rounded-full bg-primary-800 transition-all duration-500"
-                     :style="'width: ' + ((currentIndex / questions.length) * 100) + '%'"></div>
-              </div>
-            </div>
-
-            <!-- Question Card -->
-            <div class="border border-border rounded-xl p-6 mb-4">
-              <!-- Timer -->
-              <div class="flex items-center justify-between mb-6">
-                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted text-sm font-medium text-foreground">
-                  Q<span x-text="currentIndex + 1"></span>
-                </span>
-                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold question-timer"
-                      :class="timerSeconds <= 30 ? 'bg-red-100 dark:bg-red-950 timer-danger' : timerSeconds <= 60 ? 'bg-amber-100 dark:bg-amber-950 timer-warning' : 'bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 timer-pulse'">
-                  <span x-text="formatTime(timerSeconds)"></span>
-                </span>
-              </div>
-
-              <!-- Question Text -->
-              <div class="mb-6">
-                <p class="text-lg font-semibold text-foreground leading-relaxed" x-text="questions[currentIndex]?.text"></p>
-              </div>
-
-              <!-- Answer Text Area -->
-              <div class="mb-4">
-                <label class="form-label">Your Answer</label>
-                <textarea x-model="answers[currentIndex]" rows="10"
-                  class="form-input w-full resize-y min-h-[200px]"
-                  placeholder="Type your answer here..." :disabled="saving"></textarea>
-                <div class="flex items-center justify-between mt-2">
-                  <span class="text-xs text-muted-foreground"><span x-text="(answers[currentIndex] || '').length"></span> characters</span>
-                  <span class="text-xs text-muted-foreground" x-show="saving">Saving...</span>
-                </div>
-              </div>
-
-              <!-- Navigation -->
-              <div class="flex items-center justify-end gap-3">
-                <template x-if="currentIndex < questions.length - 1">
-                  <button @click="nextQuestion()" class="btn-primary px-6"
-                          :disabled="!answers[currentIndex] || answers[currentIndex].trim() === '' || saving">
-                    Next Question &rarr;
-                  </button>
-                </template>
-                <template x-if="currentIndex === questions.length - 1">
-                  <button @click="submitInterview()" class="btn-primary px-6 bg-green-600 hover:bg-green-700"
-                          :disabled="!answers[currentIndex] || answers[currentIndex].trim() === '' || saving">
-                    Submit Interview
-                  </button>
-                </template>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <!-- Interview Submitted -->
-        <template x-if="submitted">
-          <div class="text-center py-12">
-            <div class="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-6">
-              <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-            </div>
-            <h2 class="text-2xl font-bold text-foreground mb-2">Interview Submitted!</h2>
-            <p class="text-muted-foreground max-w-md mx-auto mb-6">
-              Thank you, <strong><%= candidateName %></strong>. Your responses have been submitted successfully.
-              Our team will review your answers and get back to you soon.
-            </p>
-            <p class="text-sm text-muted-foreground">You may now close this window.</p>
-          </div>
-        </template>
-
-      </div>
-      <% } %>
-    </div>
-
-    <div class="mt-6 text-center">
-      <p class="text-xs text-white/40">&copy; <%= new Date().getFullYear() %> ATLAS SkillTech University. All rights reserved.</p>
+      <h2 class="text-2xl font-bold mb-2">Interview Already Completed</h2>
+      <p class="text-slate-400 mb-4">Thank you, <strong class="text-white"><%= candidateName %></strong>. Your interview has been submitted.</p>
+      <% if (_interview.total_score) { %><p class="text-sm text-slate-500">Score: <strong><%= _interview.total_score %>%</strong></p><% } %>
+      <a href="/candidate/dashboard" class="btn-action btn-submit mt-6">Back to Dashboard</a>
     </div>
   </div>
+
+  <% } else { %>
+
+  <!-- ═══ SETUP SCREEN ═══ -->
+  <template x-if="phase === 'setup'">
+    <div class="min-h-screen flex items-center justify-center p-6">
+      <div class="setup-card">
+        <div class="text-center mb-8">
+          <h1 class="text-2xl font-bold">AI Video Interview</h1>
+          <p class="text-slate-400 text-sm mt-1">ATLAS SkillTech University</p>
+          <p class="text-slate-300 mt-3"><strong><%= candidateName %></strong> &middot; <%= jobTitle %></p>
+        </div>
+
+        <!-- Camera Preview -->
+        <div class="mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <span class="text-green-400">&#9632;</span>
+              <span class="text-sm font-medium">Video Interview Mode</span>
+            </div>
+            <button @click="checkCamera()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 transition">
+              <span x-text="cameraReady ? 'Ready' : 'Check Camera'"></span>
+            </button>
+          </div>
+          <div class="video-container" style="max-height: 300px;">
+            <video x-ref="setupVideo" autoplay muted playsinline style="transform: scaleX(-1);"></video>
+            <div class="video-overlay" x-show="cameraReady">
+              <span class="text-xs text-green-400 font-medium">Camera & microphone ready</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- How it works -->
+        <div class="mb-6 p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+          <h3 class="font-semibold mb-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" /></svg>
+            How the Interview Works
+          </h3>
+          <ol class="space-y-2 text-sm text-slate-400">
+            <li><strong class="text-slate-200">1.</strong> Allow Camera & Microphone access</li>
+            <li><strong class="text-slate-200">2.</strong> The AI Interviewer will read each question aloud</li>
+            <li><strong class="text-slate-200">3.</strong> Speak your answer — your speech is auto-transcribed</li>
+            <li><strong class="text-slate-200">4.</strong> You can also type or edit your answer manually</li>
+            <li><strong class="text-slate-200">5.</strong> Click <strong>Submit</strong> to move to the next question, or <strong>End</strong> to finish</li>
+          </ol>
+        </div>
+
+        <p class="text-xs text-slate-500 text-center mb-4"><%= _questions.length %> questions &middot; Behavioral + HR &middot; Hard difficulty</p>
+
+        <button @click="startVideoInterview()" class="btn-action btn-submit w-full justify-center py-3 text-base"
+                :disabled="!cameraReady">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+          Start Video Interview
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- ═══ INTERVIEW SESSION ═══ -->
+  <template x-if="phase === 'session'">
+    <div class="min-h-screen flex flex-col">
+      <!-- Top Bar -->
+      <div class="flex items-center justify-between px-6 py-3 border-b border-slate-700 bg-slate-900/80 backdrop-blur">
+        <div>
+          <span class="font-bold text-white">Behavioral + HR Interview</span>
+          <span class="text-xs text-slate-400 ml-2"><%= jobTitle %> &middot; hard</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <span class="text-sm font-mono font-bold text-white" x-text="formatTime(timerSeconds)"></span>
+          <span class="live-dot">Live</span>
+          <span class="text-xs text-slate-400" x-text="answeredCount + '/' + questions.length"></span>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="flex-1 flex gap-0" style="min-height: 0;">
+        <!-- LEFT: Video -->
+        <div class="w-1/2 p-4 flex flex-col">
+          <div class="video-container flex-1">
+            <video x-ref="sessionVideo" autoplay muted playsinline style="transform: scaleX(-1);"></video>
+            <div class="video-overlay">
+              <span class="text-xs text-white font-medium">YOU</span>
+              <template x-if="isRecording">
+                <span class="rec-badge">Rec <span x-text="formatTime(timerSeconds)"></span></span>
+              </template>
+              <template x-if="!isRecording">
+                <span class="mic-badge mic-off">Mic Off</span>
+              </template>
+            </div>
+            <div class="caption-bar" x-text="liveCaption || ''"></div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Question + Transcript + Answer -->
+        <div class="w-1/2 p-4 flex flex-col gap-4 overflow-y-auto" style="max-height: calc(100vh - 130px);">
+          <!-- AI Interviewer -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="ai-avatar" :class="aiSpeaking ? 'pulse-speaking' : ''">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" /></svg>
+              </div>
+              <div>
+                <span class="font-semibold text-sm">AI Interviewer</span>
+                <span class="text-xs text-slate-400 ml-2" x-text="aiSpeaking ? '🔊 Speaking' : '👂 Listening'"></span>
+              </div>
+            </div>
+            <button @click="repeatQuestion()" class="text-xs text-blue-400 hover:text-blue-300">↻ Repeat Question</button>
+          </div>
+
+          <!-- Question -->
+          <div class="p-4 rounded-xl bg-slate-800 border border-slate-700">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white" x-text="currentIndex + 1"></span>
+              <span class="text-xs text-slate-400 uppercase font-semibold tracking-wide">Question</span>
+            </div>
+            <p class="text-base text-white leading-relaxed" x-text="questions[currentIndex]?.text"></p>
+          </div>
+
+          <!-- Transcript -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-slate-400 uppercase font-semibold tracking-wide">Transcript</span>
+            </div>
+            <div class="transcript-box">
+              <template x-for="(line, i) in transcriptLines" :key="i">
+                <div class="flex items-start gap-2 mb-2">
+                  <span class="w-4 h-4 rounded-full bg-green-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg class="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM6 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM1.49 15.326a.78.78 0 0 1-.358-.442 3 3 0 0 1 4.308-3.516 6.484 6.484 0 0 0-1.905 3.959c-.023.222-.014.442.025.654a4.97 4.97 0 0 1-2.07-.655Z"/></svg>
+                  </span>
+                  <span class="text-sm text-slate-300" x-text="line"></span>
+                </div>
+              </template>
+              <span class="text-slate-500 italic text-sm" x-show="transcriptLines.length === 0">Speak to see your transcript here...</span>
+            </div>
+          </div>
+
+          <!-- Your Answer -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs text-slate-400 uppercase font-semibold tracking-wide">Your Answer</span>
+              <span class="text-xs text-slate-500" x-text="wordCount + ' words | ' + answerDuration + 's'"></span>
+            </div>
+            <div class="answer-box">
+              <textarea x-model="answers[currentIndex]" placeholder="Auto-transcribed or type here..." x-ref="answerArea"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Action Bar -->
+      <div class="flex items-center justify-between px-6 py-3 border-t border-slate-700 bg-slate-900/80 backdrop-blur">
+        <div class="flex items-center gap-3">
+          <button @click="submitAnswer()" class="btn-action btn-submit" :disabled="saving || !(answers[currentIndex] || '').trim()">
+            ✈ Submit
+          </button>
+          <button @click="skipQuestion()" class="btn-action btn-skip">
+            ▸▸ Skip
+          </button>
+          <button @click="saveProgress()" class="btn-action btn-save">
+            ◻ Save
+          </button>
+          <button @click="endInterview()" class="btn-action btn-end">
+            ← End
+          </button>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-slate-500" x-text="answeredCount + ' of ' + questions.length + ' answered'"></span>
+          <a href="#" class="text-xs text-blue-400 hover:text-blue-300">● Help</a>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ═══ COMPLETED ═══ -->
+  <template x-if="phase === 'completed'">
+    <div class="min-h-screen flex items-center justify-center p-6">
+      <div class="setup-card text-center">
+        <div class="w-20 h-20 rounded-full bg-green-900/30 flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Interview Submitted!</h2>
+        <p class="text-slate-400 mb-4">Thank you, <strong class="text-white"><%= candidateName %></strong>. Your AI-powered report is being generated.</p>
+        <p class="text-xs text-slate-500 mb-6">Scores for communication, domain knowledge, problem solving, and confidence will be available shortly.</p>
+        <p class="text-sm text-slate-400">Redirecting to dashboard...</p>
+      </div>
+    </div>
+  </template>
+
+  <% } %>
 </div>
 
-<!-- Alpine.js -->
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
 <script>
-function interviewApp() {
+function videoInterview() {
   var questionsData = <%- JSON.stringify((_questions || []).map(function(q) {
     return { id: q.id, text: q.question_text || q.question || q.text || '' };
   })) %>;
   var interviewToken = '<%= _token %>';
-  var timeLimitSec = <%= timeLimit %>;
 
   return {
-    started: false,
-    submitted: false,
+    phase: 'setup',
+    cameraReady: false,
+    stream: null,
+    recognition: null,
+    isRecording: false,
+    aiSpeaking: false,
+    liveCaption: '',
     saving: false,
+
     questions: questionsData,
     currentIndex: 0,
     answers: {},
-    timerSeconds: timeLimitSec,
-    timerInterval: null,
+    answeredCount: 0,
+    transcriptLines: [],
     interviewId: null,
 
-    async startInterview() {
+    timerSeconds: 0,
+    timerInterval: null,
+    answerStartTime: null,
+
+    get wordCount() {
+      return ((this.answers[this.currentIndex] || '').match(/\S+/g) || []).length;
+    },
+    get answerDuration() {
+      if (!this.answerStartTime) return 0;
+      return Math.round((Date.now() - this.answerStartTime) / 1000);
+    },
+
+    async checkCamera() {
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        this.$refs.setupVideo.srcObject = this.stream;
+        this.cameraReady = true;
+      } catch (e) {
+        alert('Camera/microphone access denied. Please allow access and try again.');
+      }
+    },
+
+    async startVideoInterview() {
+      // Call API to start
       try {
         var res = await fetch('/ai/interview/' + interviewToken + '/start', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          method: 'POST', headers: { 'Content-Type': 'application/json' }
         });
         var data = await res.json();
         if (data.success) {
@@ -244,96 +319,193 @@ function interviewApp() {
             });
           }
         }
-      } catch (e) {
-        console.error('Failed to start:', e);
-      }
-      this.started = true;
-      this.startTimer();
-    },
+      } catch (e) { console.error('Start failed:', e); }
 
-    startTimer() {
-      this.timerSeconds = timeLimitSec;
-      if (this.timerInterval) clearInterval(this.timerInterval);
+      this.phase = 'session';
       var self = this;
-      this.timerInterval = setInterval(function() {
-        self.timerSeconds--;
-        if (self.timerSeconds <= 0) {
-          self.timerSeconds = 0;
-          self.autoAdvance();
+      // Attach stream to session video after template renders
+      this.$nextTick(function() {
+        if (self.$refs.sessionVideo && self.stream) {
+          self.$refs.sessionVideo.srcObject = self.stream;
         }
-      }, 1000);
+        self.startQuestion();
+      });
     },
 
-    formatTime(seconds) {
-      var m = Math.floor(seconds / 60);
-      var s = seconds % 60;
-      return m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+    startQuestion() {
+      this.transcriptLines = [];
+      this.answerStartTime = Date.now();
+      this.timerSeconds = 0;
+      this.liveCaption = '';
+
+      // Start timer counting up
+      var self = this;
+      if (this.timerInterval) clearInterval(this.timerInterval);
+      this.timerInterval = setInterval(function() { self.timerSeconds++; }, 1000);
+
+      // AI reads the question aloud
+      this.speakQuestion();
     },
 
-    async saveAnswer() {
-      var questionId = this.questions[this.currentIndex].id;
-      var answerText = this.answers[this.currentIndex] || '';
-      if (!answerText.trim()) return;
+    speakQuestion() {
+      var text = this.questions[this.currentIndex]?.text;
+      if (!text) return;
+
+      this.aiSpeaking = true;
+      var utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.lang = 'en-US';
+      var self = this;
+      utterance.onend = function() {
+        self.aiSpeaking = false;
+        self.startListening();
+      };
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utterance);
+    },
+
+    repeatQuestion() {
+      this.stopListening();
+      this.speakQuestion();
+    },
+
+    startListening() {
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.warn('Speech recognition not supported');
+        return;
+      }
+
+      this.recognition = new SpeechRecognition();
+      this.recognition.continuous = true;
+      this.recognition.interimResults = true;
+      this.recognition.lang = 'en-US';
+      this.isRecording = true;
+
+      var self = this;
+      var finalTranscript = this.answers[this.currentIndex] || '';
+
+      this.recognition.onresult = function(event) {
+        var interim = '';
+        for (var i = event.resultIndex; i < event.results.length; i++) {
+          var t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += (finalTranscript ? ' ' : '') + t;
+            self.transcriptLines.push(t);
+          } else {
+            interim = t;
+          }
+        }
+        self.answers[self.currentIndex] = finalTranscript;
+        self.liveCaption = interim || '';
+      };
+
+      this.recognition.onerror = function(e) {
+        console.warn('Speech recognition error:', e.error);
+        if (e.error !== 'no-speech') {
+          self.isRecording = false;
+        }
+      };
+
+      this.recognition.onend = function() {
+        // Auto-restart if still in session
+        if (self.phase === 'session' && self.isRecording) {
+          try { self.recognition.start(); } catch(e) {}
+        }
+      };
+
+      this.recognition.start();
+    },
+
+    stopListening() {
+      this.isRecording = false;
+      if (this.recognition) {
+        try { this.recognition.stop(); } catch(e) {}
+        this.recognition = null;
+      }
+      this.liveCaption = '';
+    },
+
+    formatTime(s) {
+      var m = Math.floor(s / 60);
+      var sec = s % 60;
+      return m.toString().padStart(2,'0') + ':' + sec.toString().padStart(2,'0');
+    },
+
+    async submitAnswer() {
+      this.stopListening();
+      speechSynthesis.cancel();
+      var answer = (this.answers[this.currentIndex] || '').trim();
+      if (!answer) { alert('Please provide an answer before submitting.'); return; }
 
       this.saving = true;
       try {
         var res = await fetch('/ai/interview/' + interviewToken + '/answer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question_id: questionId, answer_text: answerText })
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: this.questions[this.currentIndex].id, answer_text: answer })
         });
         var data = await res.json();
-        if (!data.success) {
-          console.error('Answer save failed:', data.message);
-        }
-      } catch (e) {
-        console.error('Failed to save answer:', e);
-      }
+        if (!data.success) { console.error('Save failed:', data.message); }
+      } catch(e) { console.error('Save error:', e); }
       this.saving = false;
-    },
 
-    async nextQuestion() {
-      await this.saveAnswer();
+      this.answeredCount++;
+
+      // Move to next or end
       if (this.currentIndex < this.questions.length - 1) {
         this.currentIndex++;
-        this.startTimer();
-      }
-    },
-
-    autoAdvance() {
-      if (this.currentIndex < this.questions.length - 1) {
-        this.nextQuestion();
+        this.startQuestion();
       } else {
-        this.submitInterview();
+        this.endInterview();
       }
     },
 
-    async submitInterview() {
-      await this.saveAnswer();
-      if (this.timerInterval) clearInterval(this.timerInterval);
+    skipQuestion() {
+      this.stopListening();
+      speechSynthesis.cancel();
+      if (this.currentIndex < this.questions.length - 1) {
+        this.currentIndex++;
+        this.startQuestion();
+      } else {
+        this.endInterview();
+      }
+    },
 
+    async saveProgress() {
+      // Save current answer without advancing
+      var answer = (this.answers[this.currentIndex] || '').trim();
+      if (!answer) return;
+      this.saving = true;
+      try {
+        await fetch('/ai/interview/' + interviewToken + '/answer', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question_id: this.questions[this.currentIndex].id, answer_text: answer })
+        });
+      } catch(e) {}
+      this.saving = false;
+      alert('Progress saved.');
+    },
+
+    async endInterview() {
+      this.stopListening();
+      speechSynthesis.cancel();
+      if (this.timerInterval) clearInterval(this.timerInterval);
+      if (this.stream) { this.stream.getTracks().forEach(function(t) { t.stop(); }); }
+
+      // Submit for evaluation
       this.saving = true;
       try {
         var res = await fetch('/ai/interview/' + interviewToken + '/submit', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          method: 'POST', headers: { 'Content-Type': 'application/json' }
         });
         var data = await res.json();
-        console.log('Submit response:', data);
-        if (data.success) {
-          this.submitted = true;
-          // Redirect to candidate dashboard after 3 seconds
-          setTimeout(function() {
-            window.location.href = '/candidate/dashboard';
-          }, 3000);
-        } else {
-          alert('Submission error: ' + (data.message || 'Unknown error'));
-        }
-      } catch (e) {
-        console.error('Failed to submit interview:', e);
-        alert('There was an error submitting your interview. Please try again.');
-      }
+        console.log('Submit result:', data);
+      } catch(e) { console.error('Submit error:', e); }
       this.saving = false;
+
+      this.phase = 'completed';
+      setTimeout(function() { window.location.href = '/candidate/dashboard'; }, 4000);
     }
   };
 }

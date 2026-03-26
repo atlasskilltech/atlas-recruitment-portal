@@ -205,7 +205,8 @@ class InterviewQuestionGeneratorService {
       skills: candidate?.appln_specialization || '',
     };
 
-    const prompt = getInterviewQuestionsPrompt(jobData, candidateData, interviewType, count);
+    // Always use mixed (behavioral+HR) type with hard difficulty
+    const prompt = getInterviewQuestionsPrompt(jobData, candidateData, 'mixed', count);
     const result = await callAI(prompt, { temperature: 0.5 });
 
     const aiQuestions = result?.questions || [];

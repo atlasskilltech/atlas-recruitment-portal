@@ -38,20 +38,22 @@ class InterviewService {
     // 3. Generate invitation token
     const interviewToken = this.generateInvitationToken(null, candidateId);
 
-    // 4. Create interview record
+    // 4. Create interview record — always behavioral+hr, difficulty high
     const interview = await interviewRepository.create({
       candidate_id: candidateId,
       job_id: jobId,
       screening_id: screeningId || null,
       interview_token: interviewToken,
       interview_status: INTERVIEW_STATUSES.INVITED,
+      interview_type: 'hr',
+      difficulty_level: 'high',
       total_questions: 6,
       duration_minutes: 30,
     });
 
-    // 5. Generate questions
+    // 5. Generate questions — behavioral+hr mix, hard difficulty
     const questionGenerator = require('./ai/interviewQuestionGenerator.service');
-    const questions = await questionGenerator.generateQuestions(job, candidate, interviewType, 6);
+    const questions = await questionGenerator.generateQuestions(job, candidate, 'hr', 6);
 
     // 6. Save questions
     const savedQuestions = [];

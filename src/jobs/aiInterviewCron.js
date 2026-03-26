@@ -55,12 +55,10 @@ async function inviteEligibleCandidates() {
 
     for (const candidate of eligible) {
       try {
-        // Determine interview type based on appln_applied_for
-        // 1 = Academics/Teaching → technical interview
-        // 2 = Administration/Non-teaching → hr interview
-        const interviewType = String(candidate.appln_applied_for) === '2' ? 'hr' : 'technical';
+        // Always use behavioral+hr interview type with hard difficulty
+        const interviewType = 'hr';
 
-        logger.info(`[INTERVIEW_CRON] Auto-inviting candidate ${candidate.candidate_id} (${candidate.appln_full_name || 'N/A'}) for ${interviewType} interview (score: ${candidate.ai_match_score})`);
+        logger.info(`[INTERVIEW_CRON] Auto-inviting candidate ${candidate.candidate_id} (${candidate.appln_full_name || 'N/A'}) for behavioral+hr interview (score: ${candidate.ai_match_score})`);
 
         const result = await interviewService.createInterview(
           candidate.candidate_id,
