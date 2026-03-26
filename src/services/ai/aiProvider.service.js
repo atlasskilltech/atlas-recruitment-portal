@@ -280,27 +280,66 @@ function getProvider() {
  * @param {object} options
  * @returns {Promise<object>} parsed AI response
  */
+// Global rate limit queue — ensures only 1 API call at a time with delay between calls
+let lastCallTime = 0;
+const MIN_DELAY_MS = 3000; // 3 seconds between API calls to avoid 429
+
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
 async function callAI(prompt, options = {}) {
   const provider = getProvider();
   const providerName = provider.constructor.name;
   const model = provider.model || provider.deploymentName || 'N/A';
   logger.info(`[AI_CALL] Using provider=${providerName}, model=${model}`);
 
-  try {
-    const result = await provider.complete(prompt, options);
-    logger.info(`[AI_CALL] Success — overallScore=${result?.overallScore ?? 'N/A'}`);
-    return result;
-  } catch (err) {
-    logger.error(`[AI_CALL] ${providerName} failed: ${err.message}`, {
-      status: err.response?.status,
-      statusText: err.response?.statusText,
-      data: err.response?.data ? JSON.stringify(err.response.data).substring(0, 500) : undefined,
-    });
-    // Fallback to mock on error so the system remains functional
-    logger.warn('[AI_CALL] Falling back to MockProvider');
-    const mock = new MockProvider();
-    return mock.complete(prompt, options);
+  // Throttle: ensure minimum delay between API calls
+  const now = Date.now();
+  const elapsed = now - lastCallTime;
+  if (elapsed < MIN_DELAY_MS) {
+    const waitMs = MIN_DELAY_MS - elapsed;
+    logger.info(`[AI_CALL] Throttling: waiting ${waitMs}ms before API call`);
+    await sleep(waitMs);
   }
+  lastCallTime = Date.now();
+
+  // Retry with exponential backoff for rate limits (429)
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await provider.complete(prompt, options);
+      logger.info(`[AI_CALL] Success — overallScore=${result?.overallScore ?? 'N/A'}`);
+      return result;
+    } catch (err) {
+      const status = err.response?.status;
+      const isRateLimit = status === 429;
+
+      if (isRateLimit && attempt < maxRetries) {
+        // Extract retry-after header or use exponential backoff
+        const retryAfter = parseInt(err.response?.headers?.['retry-after'], 10) || 0;
+        const backoffMs = retryAfter > 0 ? retryAfter * 1000 : Math.pow(2, attempt) * 2000; // 4s, 8s
+        logger.warn(`[AI_CALL] Rate limited (429), retry ${attempt}/${maxRetries} in ${backoffMs}ms`);
+        await sleep(backoffMs);
+        lastCallTime = Date.now();
+        continue;
+      }
+
+      logger.error(`[AI_CALL] ${providerName} failed: ${err.message}`, {
+        status,
+        attempt,
+        data: err.response?.data ? JSON.stringify(err.response.data).substring(0, 300) : undefined,
+      });
+
+      // Fallback to mock on non-retryable errors
+      logger.warn('[AI_CALL] Falling back to MockProvider');
+      const mock = new MockProvider();
+      return mock.complete(prompt, options);
+    }
+  }
+
+  // All retries exhausted
+  logger.error('[AI_CALL] All retries exhausted, falling back to MockProvider');
+  const mock = new MockProvider();
+  return mock.complete(prompt, options);
 }
 
 module.exports = {

@@ -28,7 +28,7 @@ async function runPendingScreenings() {
       WHERE ais.id IS NULL
         AND dsr.appln_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
       ORDER BY dsr.appln_date DESC
-      LIMIT 15
+      LIMIT 5
     `);
 
     if (unscreened.length === 0) {
@@ -65,13 +65,13 @@ async function runPendingScreenings() {
 }
 
 function startAIScreeningCron() {
-  // Run every 2 minutes
-  cron.schedule('*/2 * * * *', () => {
+  // Run every 5 minutes to avoid OpenAI rate limits
+  cron.schedule('*/5 * * * *', () => {
     logger.info('[AI_CRON] Running scheduled AI screening check...');
     runPendingScreenings();
   });
 
-  logger.info('[AI_CRON] AI screening cron job started (every 2 minutes, batch size 15)');
+  logger.info('[AI_CRON] AI screening cron job started (every 5 minutes, batch size 5)');
 
   // Also run once on startup after a short delay
   setTimeout(() => {
