@@ -38,20 +38,22 @@ class InterviewService {
     // 3. Generate invitation token
     const interviewToken = this.generateInvitationToken(null, candidateId);
 
-    // 4. Create interview record
+    // 4. Create interview record — always behavioral+hr, difficulty high
     const interview = await interviewRepository.create({
       candidate_id: candidateId,
       job_id: jobId,
       screening_id: screeningId || null,
       interview_token: interviewToken,
       interview_status: INTERVIEW_STATUSES.INVITED,
+      interview_type: 'hr',
+      difficulty_level: 'high',
       total_questions: 6,
       duration_minutes: 30,
     });
 
-    // 5. Generate questions
+    // 5. Generate questions — behavioral+hr mix, hard difficulty
     const questionGenerator = require('./ai/interviewQuestionGenerator.service');
-    const questions = await questionGenerator.generateQuestions(job, candidate, interviewType, 6);
+    const questions = await questionGenerator.generateQuestions(job, candidate, 'hr', 6);
 
     // 6. Save questions
     const savedQuestions = [];
@@ -146,14 +148,24 @@ class InterviewService {
    * @returns {Promise<object>} saved answer
    */
   async submitAnswer(interviewId, questionId, answerText) {
-    // Verify interview exists and is in progress
+    // Verify interview exists
     const interview = await interviewRepository.findById(interviewId);
     if (!interview) {
       throw new Error(`Interview not found: ${interviewId}`);
     }
 
-    if (interview.interview_status !== INTERVIEW_STATUSES.IN_PROGRESS) {
-      throw new Error(`Cannot submit answers for interview in status: ${interview.interview_status}`);
+    const status = interview.interview_status || interview.status;
+    // Allow answer submission for invited or in_progress status
+    if (status && !['invited', 'in_progress', 'pending'].includes(status)) {
+      throw new Error(`Cannot submit answers for interview in status: ${status}`);
+    }
+
+    // Auto-mark as in_progress if still invited
+    if (status === 'invited' || status === 'pending') {
+      await interviewRepository.update(interviewId, {
+        interview_status: INTERVIEW_STATUSES.IN_PROGRESS,
+        started_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+      });
     }
 
     // Save the answer
@@ -173,6 +185,8 @@ class InterviewService {
    * @returns {Promise<object>} evaluated interview
    */
   async completeInterview(interviewId) {
+    logger.info(`[INTERVIEW] Starting evaluation for interview ${interviewId}`);
+
     const interview = await interviewRepository.findById(interviewId);
     if (!interview) {
       throw new Error(`Interview not found: ${interviewId}`);
@@ -183,6 +197,8 @@ class InterviewService {
       interviewRepository.getQuestions(interviewId),
       interviewRepository.getAnswers(interviewId),
     ]);
+
+    logger.info(`[INTERVIEW] Found ${questions.length} questions, ${answers.length} answers for interview ${interviewId}`);
 
     // Evaluate each answer
     const evaluator = require('./ai/interviewEvaluator.service');
