@@ -245,6 +245,48 @@ body {
 .shadow-brand { box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25) !important; }
 .shadow-brand-lg { box-shadow: 0 8px 24px 0 rgba(16, 185, 129, 0.2) !important; }
 
+/* ═══ Candidate Detail Header ═══ */
+/* Change from bright green to dark slate professional look */
+.bg-gradient-brand, [class*="bg-gradient-brand"] {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 60%, #064e3b 100%) !important;
+}
+
+/* Candidate detail page header card */
+.rounded-2xl.overflow-hidden[class*="bg-gradient"],
+.card[class*="bg-gradient-brand"],
+div[class*="bg-gradient-brand"][class*="rounded"] {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 60%, #064e3b 100%) !important;
+  border: 1px solid #334155 !important;
+}
+
+/* Action buttons in candidate header */
+.bg-gradient-brand .btn-primary,
+[class*="bg-gradient-brand"] .btn-primary,
+.bg-gradient-brand [class*="btn-accent"],
+[class*="bg-gradient-brand"] [class*="btn-accent"] {
+  background: #10b981 !important;
+  border: none !important;
+}
+
+.bg-gradient-brand .btn-primary:hover,
+[class*="bg-gradient-brand"] .btn-primary:hover {
+  background: #059669 !important;
+}
+
+/* Outline buttons on dark background */
+.bg-gradient-brand .btn-outline,
+[class*="bg-gradient-brand"] .btn-outline,
+.bg-gradient-brand [class*="btn-ghost"],
+[class*="bg-gradient-brand"] [class*="btn-ghost"] {
+  border-color: rgba(255,255,255,0.2) !important;
+  color: white !important;
+}
+
+.bg-gradient-brand .btn-outline:hover,
+[class*="bg-gradient-brand"] .btn-outline:hover {
+  background: rgba(255,255,255,0.1) !important;
+}
+
 /* ═══ User Dropdown Fix ═══ */
 /* Fix dropdown overlapping with content */
 [x-show][class*="absolute"][class*="right-0"] {
