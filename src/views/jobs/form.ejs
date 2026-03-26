@@ -1,0 +1,94 @@
+<%
+  const _job = typeof job !== 'undefined' ? job : null;
+  const _scopes = typeof scopes !== 'undefined' ? scopes : [];
+  const isEdit = !!_job;
+%>
+
+<!-- Page Header -->
+<div class="flex items-center gap-4 mb-6">
+  <a href="/jobs" class="btn-outline btn-sm">
+    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Jobs
+  </a>
+  <div>
+    <h1 class="text-2xl font-bold text-foreground tracking-tight"><%= isEdit ? 'Edit Job Opening' : 'Add New Job Opening' %></h1>
+    <p class="text-sm text-muted-foreground mt-1"><%= isEdit ? 'Update job details' : 'Create a new job position for recruitment' %></p>
+  </div>
+</div>
+
+<!-- Form -->
+<div class="card p-6 max-w-3xl">
+  <form method="POST" action="<%= isEdit ? '/jobs/' + _job.id : '/jobs' %>">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+      <!-- Scope -->
+      <div class="form-group">
+        <label class="form-label">Scope *</label>
+        <select name="applied_for_post_id" class="form-select" required>
+          <option value="">Select Scope</option>
+          <% _scopes.forEach(function(s) { %>
+            <option value="<%= s.id %>" <%= _job && _job.applied_for_post_id == s.id ? 'selected' : '' %>><%= s.applied_for_name %></option>
+          <% }); %>
+        </select>
+      </div>
+
+      <!-- Post Name -->
+      <div class="form-group">
+        <label class="form-label">Post Name *</label>
+        <input type="text" name="applied_for_post" class="form-input" required
+               value="<%= _job ? _job.applied_for_post : '' %>" placeholder="e.g., Assistant Professor">
+      </div>
+
+      <!-- Job Title (Short Desc) -->
+      <div class="form-group md:col-span-2">
+        <label class="form-label">Job Title / Short Description</label>
+        <input type="text" name="applied_job_short_desc_new" class="form-input"
+               value="<%= _job ? (_job.applied_job_short_desc_new || '') : '' %>" placeholder="e.g., Assistant Professor - Computer Science">
+      </div>
+
+      <!-- Location -->
+      <div class="form-group">
+        <label class="form-label">Location</label>
+        <input type="text" name="applied_location" class="form-input"
+               value="<%= _job ? (_job.applied_location || '') : 'Mumbai' %>" placeholder="Mumbai">
+      </div>
+
+      <!-- Visibility -->
+      <div class="form-group">
+        <label class="form-label">Visibility</label>
+        <select name="applied_is_visible" class="form-select">
+          <option value="1" <%= (!_job || _job.applied_is_visible) ? 'selected' : '' %>>Visible</option>
+          <option value="0" <%= (_job && !_job.applied_is_visible) ? 'selected' : '' %>>Hidden</option>
+        </select>
+      </div>
+
+      <!-- Experience Min -->
+      <div class="form-group">
+        <label class="form-label">Min Experience (years)</label>
+        <input type="number" name="applied_experience_min" class="form-input" min="0" step="0.5"
+               value="<%= _job ? (_job.applied_experience_min || '') : '' %>" placeholder="0">
+      </div>
+
+      <!-- Experience Max -->
+      <div class="form-group">
+        <label class="form-label">Max Experience (years)</label>
+        <input type="number" name="applied_experience_max" class="form-input" min="0" step="0.5"
+               value="<%= _job ? (_job.applied_experience_max || '') : '' %>" placeholder="10">
+      </div>
+
+      <!-- Job Description -->
+      <div class="form-group md:col-span-2">
+        <label class="form-label">Job Description</label>
+        <textarea name="applied_job_desc" class="form-input" rows="6"
+                  placeholder="Enter detailed job description, requirements, and responsibilities..."><%= _job ? (_job.applied_job_desc || '') : '' %></textarea>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 pt-4 border-t border-border">
+      <button type="submit" class="btn-primary">
+        <i data-lucide="<%= isEdit ? 'save' : 'plus' %>" class="w-4 h-4"></i>
+        <%= isEdit ? 'Update Job' : 'Create Job' %>
+      </button>
+      <a href="/jobs" class="btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>

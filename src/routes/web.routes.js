@@ -17,6 +17,7 @@ const aiScreeningRoutes = require('./aiScreening.routes');
 const aiInterviewRoutes = require('./aiInterview.routes');
 const shortlistRoutes = require('./shortlist.routes');
 const scheduleRoutes = require('./schedule.routes');
+const jobRoutes = require('./job.routes');
 const notificationRoutes = require('./notification.routes');
 const reportRoutes = require('./report.routes');
 const apiRoutes = require('./api.routes');
@@ -39,6 +40,7 @@ router.use('/ai', isAuthenticated, aiRoutes);
 router.use('/ai-screening', isAuthenticated, aiScreeningRoutes);
 router.use('/ai-interviews', isAuthenticated, aiInterviewRoutes);
 router.use('/ai-interview', isAuthenticated, aiInterviewRoutes); // alias (singular)
+router.use('/jobs', isAuthenticated, jobRoutes);
 router.use('/shortlist', isAuthenticated, shortlistRoutes);
 router.use('/schedules', isAuthenticated, scheduleRoutes);
 router.use('/notifications', isAuthenticated, notificationRoutes);
