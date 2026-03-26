@@ -191,12 +191,23 @@ const startInterview = asyncHandler(async (req, res) => {
 });
 
 /**
- * POST /ai-interview/:interviewId/answer
+ * POST /ai-interview/:interviewId/answer  (admin route, uses interviewId)
+ * POST /ai/interview/:token/answer        (public route, uses token)
  * Save candidate's answer for a question. Returns JSON.
  */
 const submitAnswer = asyncHandler(async (req, res) => {
-  const interviewId = parseInt(req.params.interviewId, 10);
+  let interviewId = parseInt(req.params.interviewId, 10);
   const { question_id, answer_text } = req.body;
+
+  // If accessed via token (public route), resolve interviewId from token
+  if (!interviewId && req.params.token) {
+    try {
+      const interview = await interviewService.getInterviewByToken(req.params.token);
+      interviewId = interview.id;
+    } catch (err) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+  }
 
   if (!interviewId || !question_id) {
     return res.status(400).json({
@@ -234,11 +245,22 @@ const submitAnswer = asyncHandler(async (req, res) => {
 });
 
 /**
- * POST /ai-interview/:interviewId/complete
+ * POST /ai-interview/:interviewId/complete  (admin route)
+ * POST /ai/interview/:token/submit          (public route, uses token)
  * Finalize and evaluate the interview.
  */
 const completeInterview = asyncHandler(async (req, res) => {
-  const interviewId = parseInt(req.params.interviewId, 10);
+  let interviewId = parseInt(req.params.interviewId, 10);
+
+  // If accessed via token (public route), resolve interviewId from token
+  if (!interviewId && req.params.token) {
+    try {
+      const interview = await interviewService.getInterviewByToken(req.params.token);
+      interviewId = interview.id;
+    } catch (err) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
+  }
 
   if (!interviewId) {
     return res.status(400).json({
