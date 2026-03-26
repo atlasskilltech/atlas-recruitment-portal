@@ -3,6 +3,9 @@ const candidateAuthService = require('../services/candidateAuth.service');
 const logger = require('../utils/logger');
 
 const showLogin = (req, res) => {
+  // Prevent browser caching so flash messages are always visible after redirect
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
   res.render('candidate/auth/login', {
     layout: 'candidate/layouts/candidate-auth',
     title: 'Candidate Login',
@@ -13,27 +16,39 @@ const showLogin = (req, res) => {
 
 const sendOTP = asyncHandler(async (req, res) => {
   const { email } = req.body;
+  logger.info(`[CANDIDATE_LOGIN] OTP request for email: ${email || 'EMPTY'}`);
+
   if (!email) {
     req.flash('error', 'Please enter your email address.');
     return res.redirect('/candidate/login');
   }
 
-  const result = await candidateAuthService.requestOTP(email);
-  if (!result.success) {
-    req.flash('error', result.message);
+  try {
+    const result = await candidateAuthService.requestOTP(email);
+    logger.info(`[CANDIDATE_LOGIN] OTP result for ${email}: success=${result.success}, message=${result.message}`);
+
+    if (!result.success) {
+      req.flash('error', result.message);
+      return res.redirect('/candidate/login');
+    }
+
+    req.session.candidateOTPEmail = email.trim().toLowerCase();
+    req.session.candidateOTPCode = result.otp; // Store for dev bypass display
+    req.flash('success', result.message);
+    return res.redirect('/candidate/verify-otp');
+  } catch (err) {
+    logger.error(`[CANDIDATE_LOGIN] OTP error for ${email}: ${err.message}`, { stack: err.stack });
+    req.flash('error', `Login error: ${err.message}`);
     return res.redirect('/candidate/login');
   }
-
-  req.session.candidateOTPEmail = email.trim().toLowerCase();
-  req.session.candidateOTPCode = result.otp; // Store for dev bypass display
-  req.flash('success', result.message);
-  return res.redirect('/candidate/verify-otp');
 });
 
 const showVerifyOTP = (req, res) => {
   if (!req.session.candidateOTPEmail) {
     return res.redirect('/candidate/login');
   }
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
   res.render('candidate/auth/verify-otp', {
     layout: 'candidate/layouts/candidate-auth',
     title: 'Verify OTP',
