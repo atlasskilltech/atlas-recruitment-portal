@@ -4,8 +4,13 @@
   const _pagination  = typeof pagination  !== 'undefined' ? pagination  : { page:1, limit:20, total:0, totalPages:1, hasNext:false, hasPrev:false };
   const _filters     = typeof filters     !== 'undefined' ? filters     : {};
   const _jobs        = typeof jobs        !== 'undefined' ? jobs        : [];
+  const _posts       = typeof posts       !== 'undefined' ? posts       : [];
   const _hrStatuses  = typeof hrStatuses  !== 'undefined' ? hrStatuses  : [];
   const _aiStatuses  = typeof aiStatuses  !== 'undefined' ? aiStatuses  : [];
+  const _applnAppliedFor    = typeof applnAppliedFor    !== 'undefined' ? applnAppliedFor    : {};
+  const _applnCategory      = typeof applnCategory      !== 'undefined' ? applnCategory      : {};
+  const _applnQualified     = typeof applnQualified     !== 'undefined' ? applnQualified     : {};
+  const _applnHighQual      = typeof applnHighQualification !== 'undefined' ? applnHighQualification : {};
 
   /* Status counts derived from candidate list for mini-cards (fallback) */
   const _stats = typeof stats !== 'undefined' ? stats : {
@@ -170,7 +175,41 @@
         <% if (_filters.search) { %><input type="hidden" name="search" value="<%= _filters.search %>"><% } %>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <!-- Job Applied -->
+
+          <!-- Department Type (Academic / Non-Academic) -->
+          <div class="form-group">
+            <label class="form-label">Department Type</label>
+            <select name="appln_applied_for" id="filterDeptType" class="form-select">
+              <option value="">All</option>
+              <% Object.entries(_applnAppliedFor).forEach(function([k,v]) { %>
+                <option value="<%= k %>" <%= _filters.appln_applied_for == k ? 'selected' : '' %>><%= v %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- Post Category (applied_for_post_id) -->
+          <div class="form-group">
+            <label class="form-label">Post Category</label>
+            <select name="applied_for_post_id" id="filterPostId" class="form-select">
+              <option value="">All</option>
+              <% Object.entries(_applnAppliedFor).forEach(function([k,v]) { %>
+                <option value="<%= k %>" <%= _filters.applied_for_post_id == k ? 'selected' : '' %>><%= v %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- Specific Post/Role (cascading from post category) -->
+          <div class="form-group">
+            <label class="form-label">Post / Role</label>
+            <select name="applied_for_post" id="filterPost" class="form-select">
+              <option value="">All Posts</option>
+              <% _posts.forEach(function(p) { %>
+                <option value="<%= p.applied_for_post %>" data-post-id="<%= p.applied_for_post_id %>" <%= _filters.applied_for_post == p.applied_for_post ? 'selected' : '' %>><%= p.applied_for_post %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- Job Applied (specific job listing) -->
           <div class="form-group">
             <label class="form-label">Job Applied</label>
             <select name="job_id" class="form-select">
@@ -181,10 +220,37 @@
             </select>
           </div>
 
-          <!-- Department/Post -->
+          <!-- Qualification -->
           <div class="form-group">
-            <label class="form-label">Department / Post</label>
-            <input type="text" name="department" value="<%= _filters.department || '' %>" class="form-input" placeholder="e.g. Computer Science">
+            <label class="form-label">Qualification</label>
+            <select name="appln_high_qualification" class="form-select">
+              <option value="">All</option>
+              <% Object.entries(_applnHighQual).forEach(function([k,v]) { %>
+                <option value="<%= k %>" <%= _filters.appln_high_qualification == k ? 'selected' : '' %>><%= v %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- Category (SC/ST/OBC/General) -->
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select name="appln_category" class="form-select">
+              <option value="">All</option>
+              <% Object.entries(_applnCategory).forEach(function([k,v]) { %>
+                <option value="<%= k %>" <%= _filters.appln_category == k ? 'selected' : '' %>><%= v %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <!-- NET/SET Qualification -->
+          <div class="form-group">
+            <label class="form-label">NET / SET / JRF</label>
+            <select name="appln_qualified" class="form-select">
+              <option value="">All</option>
+              <% Object.entries(_applnQualified).forEach(function([k,v]) { %>
+                <option value="<%= k %>" <%= _filters.appln_qualified == k ? 'selected' : '' %>><%= v %></option>
+              <% }); %>
+            </select>
           </div>
 
           <!-- AI Status -->
@@ -216,26 +282,6 @@
               <input type="number" name="match_score_min" value="<%= _filters.match_score_min || '' %>" class="form-input" placeholder="Min" min="0" max="100" step="1">
               <input type="number" name="match_score_max" value="<%= _filters.match_score_max || '' %>" class="form-input" placeholder="Max" min="0" max="100" step="1">
             </div>
-          </div>
-
-          <!-- Interview Score Range -->
-          <div class="form-group">
-            <label class="form-label">Interview Score</label>
-            <div class="flex gap-2">
-              <input type="number" name="interview_score_min" value="<%= _filters.interview_score_min || '' %>" class="form-input" placeholder="Min" min="0" max="100" step="1">
-              <input type="number" name="interview_score_max" value="<%= _filters.interview_score_max || '' %>" class="form-input" placeholder="Max" min="0" max="100" step="1">
-            </div>
-          </div>
-
-          <!-- Qualification -->
-          <div class="form-group">
-            <label class="form-label">Qualification</label>
-            <select name="qualification" class="form-select">
-              <option value="">All</option>
-              <% ['PhD', 'M.Tech', 'M.Sc', 'MCA', 'MBA', 'M.E', 'B.Tech', 'B.E', 'B.Sc', 'BCA'].forEach(function(q) { %>
-                <option value="<%= q %>" <%= _filters.qualification === q ? 'selected' : '' %>><%= q %></option>
-              <% }); %>
-            </select>
           </div>
 
           <!-- Experience Range -->
@@ -272,6 +318,45 @@
           </a>
         </div>
       </form>
+
+      <!-- Cascading filter JS: Department Type → Post Category → Post -->
+      <script>
+        (function() {
+          var deptType = document.getElementById('filterDeptType');
+          var postId = document.getElementById('filterPostId');
+          var postSelect = document.getElementById('filterPost');
+          if (!deptType || !postId || !postSelect) return;
+
+          var allPostOptions = Array.from(postSelect.querySelectorAll('option[data-post-id]'));
+
+          function syncPostCategory() {
+            if (deptType.value) postId.value = deptType.value;
+          }
+
+          function filterPosts() {
+            var selectedPostId = postId.value;
+            var currentVal = postSelect.value;
+            // Remove all post options except "All Posts"
+            allPostOptions.forEach(function(opt) { opt.style.display = 'none'; opt.disabled = true; });
+            // Show matching ones
+            allPostOptions.forEach(function(opt) {
+              if (!selectedPostId || opt.getAttribute('data-post-id') == selectedPostId) {
+                opt.style.display = '';
+                opt.disabled = false;
+              }
+            });
+            // Reset post selection if current is now hidden
+            var currentOpt = postSelect.querySelector('option[value="' + currentVal + '"]:not([disabled])');
+            if (!currentOpt && currentVal) postSelect.value = '';
+          }
+
+          deptType.addEventListener('change', function() { syncPostCategory(); filterPosts(); });
+          postId.addEventListener('change', filterPosts);
+
+          // Initialize on load
+          filterPosts();
+        })();
+      </script>
     </div>
   </div>
 

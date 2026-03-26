@@ -122,6 +122,46 @@ const PAGINATION = {
   MAX_LIMIT: 100,
 };
 
+// ---- Application Form Dropdown Mappings -----------------------------------
+// These match the PHP CRUD dropdown definitions from the legacy system
+
+const APPLN_APPLIED_FOR = {
+  '1': 'Academics/Teaching',
+  '2': 'Administration/Non-teaching/Admissions',
+};
+
+const APPLN_CATEGORY = {
+  '1': 'SC',
+  '2': 'ST',
+  '3': 'OBC-A',
+  '4': 'OBC-B',
+  '5': 'PWD',
+  '6': 'General',
+};
+
+const APPLN_QUALIFIED = {
+  '1': 'JRF',
+  '2': 'NET',
+  '3': 'SLET',
+  '4': 'SET',
+  '5': 'None',
+};
+
+const APPLN_MARITAL_STATUS = {
+  '1': 'Single',
+  '2': 'Married',
+  '3': 'Widowed',
+  '4': 'Divorced',
+};
+
+const APPLN_HIGH_QUALIFICATION = {
+  '1': 'PhD',
+  '2': 'Masters',
+  '3': 'Bachelors',
+  '4': 'Diploma',
+  '5': 'Any others',
+};
+
 module.exports = {
   ROLES,
   ROLES_LIST,
@@ -142,4 +182,9 @@ module.exports = {
   FILE_COLUMNS,
   ALLOWED_FILE_TYPES,
   PAGINATION,
+  APPLN_APPLIED_FOR,
+  APPLN_CATEGORY,
+  APPLN_QUALIFIED,
+  APPLN_MARITAL_STATUS,
+  APPLN_HIGH_QUALIFICATION,
 };

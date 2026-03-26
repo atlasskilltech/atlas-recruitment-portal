@@ -93,6 +93,44 @@ class CandidateRepository {
       params.push(`%${filters.location}%`);
     }
 
+    // --- New cascading filters ---
+
+    // Department type: 1=Academics/Teaching, 2=Administration/Non-teaching
+    if (filters.appln_applied_for) {
+      conditions.push('dsr.appln_applied_for = ?');
+      params.push(filters.appln_applied_for);
+    }
+
+    // Post category from job table (applied_for_post_id): 1=Academics, 2=Administration
+    if (filters.applied_for_post_id) {
+      conditions.push('job.applied_for_post_id = ?');
+      params.push(filters.applied_for_post_id);
+    }
+
+    // Specific post/role name from job table
+    if (filters.applied_for_post) {
+      conditions.push('job.applied_for_post LIKE ?');
+      params.push(`%${filters.applied_for_post}%`);
+    }
+
+    // Category: 1=SC, 2=ST, 3=OBC-A, 4=OBC-B, 5=PWD, 6=General
+    if (filters.appln_category) {
+      conditions.push('dsr.appln_category = ?');
+      params.push(filters.appln_category);
+    }
+
+    // NET/SET qualification: 1=JRF, 2=NET, 3=SLET, 4=SET, 5=None
+    if (filters.appln_qualified) {
+      conditions.push('dsr.appln_qualified = ?');
+      params.push(filters.appln_qualified);
+    }
+
+    // High qualification: 1=PhD, 2=Masters, 3=Bachelors, 4=Diploma, 5=Others
+    if (filters.appln_high_qualification) {
+      conditions.push('dsr.appln_high_qualification = ?');
+      params.push(filters.appln_high_qualification);
+    }
+
     const whereClause = conditions.length > 0
       ? 'WHERE ' + conditions.join(' AND ')
       : '';
@@ -134,7 +172,8 @@ class CandidateRepository {
         dsr.appln_current_organisation, dsr.appln_current_designation,
         dsr.appln_date, dsr.appln_status, dsr.appln_status_new,
         dsr.appln_cv, dsr.appln_industry_exp_letter,
-        job.id AS job_id, job.applied_for_post_id,
+        dsr.appln_applied_for, dsr.appln_category, dsr.appln_qualified,
+        job.id AS job_id, job.applied_for_post_id, job.applied_for_post,
         job.applied_job_short_desc_new, job.applied_job_desc,
         job.applied_location,
         ais.id AS screening_id, ais.ai_match_score, ais.ai_status,
