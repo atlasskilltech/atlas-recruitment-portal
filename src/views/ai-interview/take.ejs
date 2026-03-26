@@ -274,11 +274,10 @@ function interviewApp() {
       var questionId = this.questions[this.currentIndex].id;
       var answerText = this.answers[this.currentIndex] || '';
       if (!answerText.trim()) return;
-      var id = this.interviewId || '';
 
       this.saving = true;
       try {
-        await fetch('/ai-interview/' + id + '/answer', {
+        await fetch('/ai/interview/' + interviewToken + '/answer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question_id: questionId, answer_text: answerText })
@@ -308,11 +307,10 @@ function interviewApp() {
     async submitInterview() {
       await this.saveAnswer();
       if (this.timerInterval) clearInterval(this.timerInterval);
-      var id = this.interviewId || '';
 
       this.saving = true;
       try {
-        await fetch('/ai-interview/' + id + '/complete', {
+        await fetch('/ai/interview/' + interviewToken + '/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
