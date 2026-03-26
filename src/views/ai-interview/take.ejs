@@ -217,10 +217,17 @@
       <!-- Bottom Action Bar -->
       <div class="flex items-center justify-between px-6 py-3 border-t border-slate-700 bg-slate-900/80 backdrop-blur">
         <div class="flex items-center gap-3">
-          <button @click="submitAnswer()" class="btn-action btn-submit" :disabled="saving || !(answers[currentIndex] || '').trim()">
-            ✈ Submit
-          </button>
-          <button @click="skipQuestion()" class="btn-action btn-skip">
+          <template x-if="currentIndex < questions.length - 1">
+            <button @click="submitAnswer()" class="btn-action btn-submit" :disabled="saving || !(answers[currentIndex] || '').trim()">
+              ✈ Submit
+            </button>
+          </template>
+          <template x-if="currentIndex >= questions.length - 1">
+            <button @click="submitAndEnd()" class="btn-action btn-submit" style="background:#16a34a;" :disabled="saving">
+              ✈ Submit &amp; Finish
+            </button>
+          </template>
+          <button @click="skipQuestion()" class="btn-action btn-skip" x-show="currentIndex < questions.length - 1">
             ▸▸ Skip
           </button>
           <button @click="saveProgress()" class="btn-action btn-save">
@@ -506,6 +513,24 @@ function videoInterview() {
       } else {
         this.endInterview();
       }
+    },
+
+    async submitAndEnd() {
+      // Save the last answer then immediately end
+      this.stopListening();
+      speechSynthesis.cancel();
+      var answer = (this.answers[this.currentIndex] || '').trim();
+      if (answer) {
+        this.saving = true;
+        try {
+          await fetch('/ai/interview/' + interviewToken + '/answer', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question_id: this.questions[this.currentIndex].id, answer_text: answer })
+          });
+        } catch(e) { console.error('Save error:', e); }
+        this.saving = false;
+      }
+      this.endInterview();
     },
 
     async saveProgress() {
