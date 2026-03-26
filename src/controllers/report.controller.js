@@ -10,13 +10,13 @@ const logger = require('../utils/logger');
  * Show reports and analytics dashboard.
  */
 const index = asyncHandler(async (req, res) => {
-  // Applicants by job role
+  // Applicants by job role (use applied_for_post for role name)
   const [applicantsByRole] = await pool.query(`
-    SELECT job.applied_job_short_desc_new AS label, COUNT(dsr.id) AS value
+    SELECT COALESCE(job.applied_for_post, job.applied_job_short_desc_new, 'Unknown') AS label,
+           COUNT(dsr.id) AS value
     FROM dice_staff_recruitment dsr
     LEFT JOIN isdi_admsn_applied_for job ON dsr.appln_applied_for_sub = job.id
-    WHERE job.applied_job_short_desc_new IS NOT NULL
-    GROUP BY job.applied_job_short_desc_new
+    GROUP BY label
     ORDER BY value DESC
     LIMIT 15
   `);
@@ -30,23 +30,34 @@ const index = asyncHandler(async (req, res) => {
     ORDER BY label ASC
   `);
 
-  // AI match pass rate
+  // AI match pass rate (eligible = score >= 50)
   const [[aiPassRate]] = await pool.query(`
     SELECT
       COUNT(*) AS total,
-      SUM(CASE WHEN ai_match_score >= 50 THEN 1 ELSE 0 END) AS passed
-    FROM atlas_rec_candidate_ai_screening
-    WHERE id IN (SELECT MAX(id) FROM atlas_rec_candidate_ai_screening GROUP BY candidate_id)
+      SUM(CASE WHEN ais.ai_match_score >= 50 THEN 1 ELSE 0 END) AS passed,
+      SUM(CASE WHEN ais.ai_status = 'eligible' THEN 1 ELSE 0 END) AS eligible,
+      SUM(CASE WHEN ais.ai_status = 'hold' THEN 1 ELSE 0 END) AS hold,
+      SUM(CASE WHEN ais.ai_status = 'rejected' THEN 1 ELSE 0 END) AS rejected
+    FROM atlas_rec_candidate_ai_screening ais
+    INNER JOIN (
+      SELECT candidate_id, MAX(id) AS max_id
+      FROM atlas_rec_candidate_ai_screening GROUP BY candidate_id
+    ) latest ON ais.id = latest.max_id
   `);
 
-  // Interview completion & pass rates
+  // Interview completion & pass rates (evaluated/passed/failed = completed)
   const [[interviewRates]] = await pool.query(`
     SELECT
       COUNT(*) AS total,
-      SUM(CASE WHEN status IN ('evaluated','passed','failed') THEN 1 ELSE 0 END) AS completed,
-      SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) AS passed
-    FROM atlas_rec_ai_interviews
-    WHERE id IN (SELECT MAX(id) FROM atlas_rec_ai_interviews GROUP BY candidate_id)
+      SUM(CASE WHEN aint.status IN ('evaluated','passed','failed','submitted') THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN aint.status IN ('passed') OR (aint.status = 'evaluated' AND aint.total_score >= 50) THEN 1 ELSE 0 END) AS passed,
+      SUM(CASE WHEN aint.status = 'invited' THEN 1 ELSE 0 END) AS invited,
+      SUM(CASE WHEN aint.status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress
+    FROM atlas_rec_ai_interviews aint
+    INNER JOIN (
+      SELECT candidate_id, MAX(id) AS max_id
+      FROM atlas_rec_ai_interviews GROUP BY candidate_id
+    ) latest ON aint.id = latest.max_id
   `);
 
   // Hiring funnel
@@ -82,11 +93,11 @@ const index = asyncHandler(async (req, res) => {
 
   // Top performing jobs
   const [topJobs] = await pool.query(`
-    SELECT job.applied_job_short_desc_new AS title, COUNT(dsr.id) AS applicant_count
+    SELECT COALESCE(job.applied_for_post, job.applied_job_short_desc_new, 'Unknown') AS title,
+           COUNT(dsr.id) AS applicant_count
     FROM dice_staff_recruitment dsr
     LEFT JOIN isdi_admsn_applied_for job ON dsr.appln_applied_for_sub = job.id
-    WHERE job.applied_job_short_desc_new IS NOT NULL
-    GROUP BY job.applied_job_short_desc_new
+    GROUP BY title
     ORDER BY applicant_count DESC
     LIMIT 10
   `);
@@ -97,12 +108,17 @@ const index = asyncHandler(async (req, res) => {
     aiPassRate: {
       total: aiPassRate.total || 0,
       passed: aiPassRate.passed || 0,
+      eligible: aiPassRate.eligible || 0,
+      hold: aiPassRate.hold || 0,
+      rejected: aiPassRate.rejected || 0,
       rate: aiPassRate.total > 0 ? Math.round((aiPassRate.passed / aiPassRate.total) * 100) : 0,
     },
     interviewRates: {
       total: interviewRates.total || 0,
       completed: interviewRates.completed || 0,
       passed: interviewRates.passed || 0,
+      invited: interviewRates.invited || 0,
+      in_progress: interviewRates.in_progress || 0,
       completionRate: interviewRates.total > 0 ? Math.round((interviewRates.completed / interviewRates.total) * 100) : 0,
       passRate: interviewRates.completed > 0 ? Math.round((interviewRates.passed / interviewRates.completed) * 100) : 0,
     },
