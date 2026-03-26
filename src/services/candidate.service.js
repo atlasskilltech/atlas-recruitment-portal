@@ -3,6 +3,10 @@ const jobRepository = require('../repositories/job.repository');
 const screeningRepository = require('../repositories/screening.repository');
 const interviewRepository = require('../repositories/interview.repository');
 const { buildFileUrl, getFileColumns, getFileLabel } = require('../utils/helpers');
+const {
+  APPLN_APPLIED_FOR, APPLN_CATEGORY, APPLN_QUALIFIED,
+  APPLN_MARITAL_STATUS, APPLN_HIGH_QUALIFICATION,
+} = require('../config/constants');
 const logger = require('../utils/logger');
 
 /**
@@ -22,15 +26,30 @@ class CandidateService {
     ]);
 
     // Attach latest screening and interview scores to each candidate row
-    // Map DB column names (ai_match_score, total_score, ai_status) to template field names
+    // Map DB column names and resolve numeric IDs to text labels
     const enriched = candidates.map((candidate) => {
+      // Resolve job role: prefer applied_for_post > applied_job_short_desc_new
+      const jobRole = candidate.applied_for_post
+        || candidate.applied_job_short_desc_new
+        || null;
+
+      // Resolve department type from appln_applied_for numeric ID
+      const deptType = APPLN_APPLIED_FOR[String(candidate.appln_applied_for)] || null;
+
       return {
         ...candidate,
+        // Score mappings
         match_score: candidate.ai_match_score != null ? parseFloat(candidate.ai_match_score) : (candidate.match_score != null ? parseFloat(candidate.match_score) : null),
         overall_score: candidate.total_score != null ? parseFloat(candidate.total_score) : (candidate.overall_score != null ? parseFloat(candidate.overall_score) : null),
         interview_score: candidate.total_score != null ? parseFloat(candidate.total_score) : (candidate.interview_score != null ? parseFloat(candidate.interview_score) : null),
         screening_status: candidate.ai_status || candidate.screening_status || null,
         recommendation_tag: candidate.ai_recommendation_tag || candidate.recommendation_tag || null,
+        // Resolved display labels
+        job_role_label: jobRole,
+        dept_type_label: deptType,
+        qualification_label: APPLN_HIGH_QUALIFICATION[String(candidate.appln_high_qualification)] || candidate.appln_high_qualification || null,
+        category_label: APPLN_CATEGORY[String(candidate.appln_category)] || null,
+        qualified_label: APPLN_QUALIFIED[String(candidate.appln_qualified)] || null,
       };
     });
 

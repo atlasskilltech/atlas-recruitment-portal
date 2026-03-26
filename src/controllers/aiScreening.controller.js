@@ -68,7 +68,8 @@ const index = asyncHandler(async (req, res) => {
     SELECT ais.*,
       dsr.appln_full_name AS candidate_name, dsr.appln_email AS candidate_email,
       dsr.appln_mobile_no AS candidate_mobile,
-      job.applied_job_short_desc_new AS job_title, job.applied_location AS job_location
+      COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
+      job.applied_location AS job_location
     FROM atlas_rec_candidate_ai_screening ais
     INNER JOIN (
       SELECT candidate_id, MAX(id) AS max_id
@@ -101,7 +102,8 @@ const index = asyncHandler(async (req, res) => {
 
   // Fetch job list for filter dropdown
   const [jobs] = await pool.query(
-    'SELECT id, applied_job_short_desc_new AS title FROM isdi_admsn_applied_for ORDER BY applied_job_short_desc_new'
+    `SELECT id, COALESCE(applied_for_post, applied_job_short_desc_new) AS title,
+            applied_for_post_id FROM isdi_admsn_applied_for ORDER BY applied_for_post_id, applied_for_post`
   );
 
   // Compute summary stats for the cards
@@ -157,7 +159,8 @@ const show = asyncHandler(async (req, res) => {
       dsr.appln_mobile_no AS candidate_mobile, dsr.appln_total_experience,
       dsr.appln_high_qualification, dsr.appln_current_organisation,
       dsr.appln_current_designation,
-      job.applied_job_short_desc_new AS job_title, job.applied_job_desc AS job_description,
+      COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
+      job.applied_job_desc AS job_description,
       job.applied_location AS job_location
     FROM atlas_rec_candidate_ai_screening ais
     LEFT JOIN dice_staff_recruitment dsr ON ais.candidate_id = dsr.id
