@@ -276,9 +276,19 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
 }
 
 /* ═══ Login Page Fix ═══ */
-/* Better gradient for auth pages */
+/* Animated gradient for auth pages */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
 .bg-gradient-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #064e3b 100%) !important;
+  background: linear-gradient(-45deg, #0f172a, #1e293b, #064e3b, #10b981, #0f172a, #1e3a5f) !important;
+  background-size: 400% 400% !important;
+  animation: gradientShift 15s ease infinite !important;
 }
 
 /* Login card styling */
