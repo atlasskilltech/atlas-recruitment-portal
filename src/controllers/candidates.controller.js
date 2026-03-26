@@ -6,7 +6,11 @@ const screeningService = require('../services/screening.service');
 const noteRepository = require('../repositories/note.repository');
 const pool = require('../config/db');
 const { asyncHandler } = require('../middlewares/error.middleware');
-const { PAGINATION, HR_STATUSES_LIST, AI_STATUSES_LIST } = require('../config/constants');
+const {
+  PAGINATION, HR_STATUSES_LIST, AI_STATUSES_LIST,
+  APPLN_APPLIED_FOR, APPLN_CATEGORY, APPLN_QUALIFIED,
+  APPLN_MARITAL_STATUS, APPLN_HIGH_QUALIFICATION,
+} = require('../config/constants');
 const logger = require('../utils/logger');
 
 /**
@@ -42,6 +46,12 @@ const index = asyncHandler(async (req, res) => {
   if (req.query.experience_min) filters.experience_min = parseFloat(req.query.experience_min);
   if (req.query.experience_max) filters.experience_max = parseFloat(req.query.experience_max);
   if (req.query.location) filters.location = req.query.location;
+  if (req.query.appln_applied_for) filters.appln_applied_for = req.query.appln_applied_for;
+  if (req.query.applied_for_post_id) filters.applied_for_post_id = req.query.applied_for_post_id;
+  if (req.query.applied_for_post) filters.applied_for_post = req.query.applied_for_post;
+  if (req.query.appln_category) filters.appln_category = req.query.appln_category;
+  if (req.query.appln_qualified) filters.appln_qualified = req.query.appln_qualified;
+  if (req.query.appln_high_qualification) filters.appln_high_qualification = req.query.appln_high_qualification;
 
   // Sorting
   if (req.query.sort_by) {
@@ -60,10 +70,19 @@ const index = asyncHandler(async (req, res) => {
     'SELECT id, applied_job_short_desc_new AS title FROM isdi_admsn_applied_for ORDER BY applied_job_short_desc_new'
   );
 
+  // Fetch distinct posts from isdi_admsn_applied_for for cascading filters
+  const [posts] = await pool.query(
+    `SELECT DISTINCT applied_for_post_id, applied_for_post
+     FROM isdi_admsn_applied_for
+     WHERE applied_for_post IS NOT NULL AND applied_for_post != ''
+     ORDER BY applied_for_post_id, applied_for_post`
+  );
+
   res.render('candidates/index', {
     title: 'Candidates',
     candidates,
     jobs,
+    posts,
     filters: req.query,
     pagination: {
       page,
@@ -75,6 +94,10 @@ const index = asyncHandler(async (req, res) => {
     },
     hrStatuses: HR_STATUSES_LIST,
     aiStatuses: AI_STATUSES_LIST,
+    applnAppliedFor: APPLN_APPLIED_FOR,
+    applnCategory: APPLN_CATEGORY,
+    applnQualified: APPLN_QUALIFIED,
+    applnHighQualification: APPLN_HIGH_QUALIFICATION,
     success: req.flash('success'),
     error: req.flash('error'),
   });
