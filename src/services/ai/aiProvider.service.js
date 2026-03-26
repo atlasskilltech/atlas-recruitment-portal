@@ -242,23 +242,35 @@ class MockProvider {
  */
 function getProvider() {
   const explicit = (process.env.AI_PROVIDER || '').toLowerCase();
+  // Also check AI_API_KEY as a generic key that can be used with any provider
+  const genericKey = process.env.AI_API_KEY || '';
 
   if (explicit === 'openai' || (!explicit && process.env.OPENAI_API_KEY)) {
+    // If AI_API_KEY is set but OPENAI_API_KEY is not, use generic key
+    if (!process.env.OPENAI_API_KEY && genericKey) {
+      process.env.OPENAI_API_KEY = genericKey;
+    }
     logger.info('AI provider: OpenAI');
     return new OpenAIProvider();
   }
 
   if (explicit === 'azure' || (!explicit && process.env.AZURE_OPENAI_API_KEY)) {
+    if (!process.env.AZURE_OPENAI_API_KEY && genericKey) {
+      process.env.AZURE_OPENAI_API_KEY = genericKey;
+    }
     logger.info('AI provider: Azure OpenAI');
     return new AzureProvider();
   }
 
   if (explicit === 'openrouter' || (!explicit && process.env.OPENROUTER_API_KEY)) {
+    if (!process.env.OPENROUTER_API_KEY && genericKey) {
+      process.env.OPENROUTER_API_KEY = genericKey;
+    }
     logger.info('AI provider: OpenRouter');
     return new OpenRouterProvider();
   }
 
-  logger.info('AI provider: Mock (no API keys configured)');
+  logger.info('AI provider: Mock (no API keys configured — set AI_PROVIDER and API key env vars for real AI matching)');
   return new MockProvider();
 }
 

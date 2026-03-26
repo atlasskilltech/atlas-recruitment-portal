@@ -28,7 +28,7 @@ class ScreeningRepository {
         data.extracted_keywords || null,
         data.extracted_education_summary || null,
         data.extracted_experience_summary || null,
-        data.ai_match_score || null,
+        data.ai_match_score != null ? data.ai_match_score : null,
         data.skill_gap_analysis || null,
         data.role_fit_summary || null,
         data.ai_recommendation_tag || 'weak_fit',

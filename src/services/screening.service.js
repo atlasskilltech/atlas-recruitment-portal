@@ -24,16 +24,28 @@ class ScreeningService {
       throw new Error(`Candidate not found: ${candidateId}`);
     }
 
-    // 2. Get associated job
-    const jobId = candidate.job_id || candidate.appln_applied_for_sub;
+    // 2. Get associated job — handle appln_applied_for_sub = 0 or NULL
+    const rawJobId = candidate.job_id || candidate.appln_applied_for_sub;
+    const jobId = (rawJobId && parseInt(rawJobId, 10) > 0) ? parseInt(rawJobId, 10) : null;
     const job = jobId ? await jobRepository.findById(jobId) : null;
+
     if (!job) {
-      throw new Error(`Job not found for candidate ${candidateId}`);
+      logger.warn(`No valid job found for candidate ${candidateId} (appln_applied_for_sub=${candidate.appln_applied_for_sub}). Using placeholder job data.`);
     }
+
+    // Build a job object even when no job record exists, using whatever info we have
+    const effectiveJob = job || {
+      id: 0,
+      applied_job_short_desc_new: candidate.appln_applied_for_sub_text || candidate.appln_post_applied || 'General Application',
+      applied_job_desc: candidate.appln_applied_for_sub_text || candidate.appln_post_applied || '',
+      applied_job_requirements: '',
+      applied_for_post_id: '',
+      applied_location: '',
+    };
 
     // 3. Use the JD matcher service (which falls back to heuristic if no AI key)
     const jdMatcher = require('./ai/jdMatcher.service');
-    const matchResult = await jdMatcher.matchCandidateToJob(candidate, job);
+    const matchResult = await jdMatcher.matchCandidateToJob(candidate, effectiveJob);
 
     // 4. Determine screening status based on score
     const scoringService = require('./ai/scoring.service');
@@ -47,12 +59,12 @@ class ScreeningService {
     // 6. Save screening result
     const screening = await screeningRepository.create({
       candidate_id: candidateId,
-      job_id: job.id,
+      job_id: effectiveJob.id || 0,
       cv_file_name: candidate.appln_cv || null,
       cv_file_url: cvUrl,
       cover_letter_file_name: candidate.appln_industry_exp_letter || null,
       cover_letter_file_url: coverUrl,
-      jd_snapshot: job.applied_job_desc || null,
+      jd_snapshot: effectiveJob.applied_job_desc || null,
       extracted_skills: JSON.stringify(matchResult.extractedSkills || []),
       extracted_keywords: JSON.stringify(matchResult.extractedKeywords || []),
       extracted_education_summary: matchResult.educationSummary || null,
@@ -68,20 +80,23 @@ class ScreeningService {
       processed_at: new Date(),
     });
 
-    // 6. Log activity
+    // 7. Log activity
     await auditService.logActivity({
       candidate_id: candidateId,
-      job_id: job.id,
+      job_id: effectiveJob.id || 0,
       action_key: 'ai_screening_completed',
       action_label: `AI screening completed with score ${matchResult.score}`,
       metadata: JSON.stringify({
         screening_id: screening.id,
         score: matchResult.score,
         status: screeningStatus,
+        provider: matchResult.provider,
+        had_job: !!job,
+        had_cv: !!candidate.appln_cv,
       }),
     });
 
-    logger.info(`AI match completed for candidate ${candidateId}: score=${matchResult.score}, status=${screeningStatus}`);
+    logger.info(`AI match completed for candidate ${candidateId}: score=${matchResult.score}, status=${screeningStatus}, provider=${matchResult.provider}`);
 
     return screening;
   }
