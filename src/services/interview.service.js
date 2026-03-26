@@ -348,7 +348,7 @@ class InterviewService {
     };
 
     return jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES_IN || '24h',
+      expiresIn: '10d', // 10 days validity for interview link
     });
   }
 }
