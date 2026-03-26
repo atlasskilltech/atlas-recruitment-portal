@@ -86,6 +86,39 @@
 
 <!-- Top 20 Candidates -->
 <% if (_candidates.length > 0) { %>
+<div x-data="{
+  selected: [],
+  selectAll: false,
+  toggleAll(checked) {
+    this.selectAll = checked;
+    this.selected = checked ? [<% _candidates.forEach((c,i) => { %>'<%= c.candidate_id %>'<%= i < _candidates.length-1 ? ',' : '' %><% }); %>] : [];
+  },
+  toggleOne(id) {
+    const idx = this.selected.indexOf(id);
+    if (idx > -1) this.selected.splice(idx,1); else this.selected.push(id);
+    this.selectAll = this.selected.length === <%= _candidates.length %>;
+  }
+}">
+
+  <!-- Bulk Action Bar -->
+  <div x-show="selected.length > 0" x-cloak
+       class="card p-3 mb-4 flex flex-wrap items-center gap-3 border-primary-300 bg-primary-50 dark:bg-primary-900/30"
+       x-transition>
+    <span class="text-sm font-semibold text-primary-800 dark:text-primary-200">
+      <span x-text="selected.length"></span> selected
+    </span>
+    <div class="flex items-center gap-2 ml-auto">
+      <form method="POST" action="/jobs/<%= _job.id %>/bulk-invite" class="inline">
+        <template x-for="id in selected" :key="id">
+          <input type="hidden" name="candidate_ids[]" :value="id">
+        </template>
+        <button type="submit" class="btn-primary btn-sm">
+          <i data-lucide="video" class="w-4 h-4"></i> Send Interview to Selected
+        </button>
+      </form>
+    </div>
+  </div>
+
 <div class="card overflow-hidden">
   <div class="px-5 py-4 border-b border-border flex items-center justify-between">
     <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
@@ -98,6 +131,9 @@
     <table class="data-table">
       <thead>
         <tr>
+          <th class="w-10">
+            <input type="checkbox" class="rounded border-border" :checked="selectAll" @change="toggleAll($event.target.checked)">
+          </th>
           <th class="w-10">#</th>
           <th>Candidate</th>
           <th>Qualification</th>
@@ -112,6 +148,13 @@
       <tbody>
         <% _candidates.forEach(function(c, idx) { %>
           <tr>
+            <!-- Checkbox -->
+            <td>
+              <input type="checkbox" class="rounded border-border"
+                     value="<%= c.candidate_id %>"
+                     :checked="selected.includes('<%= c.candidate_id %>')"
+                     @change="toggleOne('<%= c.candidate_id %>')">
+            </td>
             <!-- Rank -->
             <td>
               <% if (idx < 3) { %>
@@ -196,6 +239,7 @@
       </tbody>
     </table>
   </div>
+</div>
 </div>
 <% } else { %>
 <div class="card">
