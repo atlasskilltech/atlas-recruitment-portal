@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------
 // Atlas HR Recruitment Portal – AI Screening Cron Job
 // ---------------------------------------------------------------------------
-// Runs every 5 minutes to auto-screen candidates who haven't been screened yet.
+// Runs every 2 minutes to auto-screen candidates who haven't been screened yet.
+// Processes up to 15 candidates per run.
 // ---------------------------------------------------------------------------
 const cron = require('node-cron');
 const pool = require('../config/db');
@@ -21,12 +22,12 @@ async function runPendingScreenings() {
   try {
     // Find candidates who have NO screening record yet
     const [unscreened] = await pool.query(`
-      SELECT dsr.id
+      SELECT dsr.id, dsr.appln_full_name, dsr.appln_applied_for_sub, dsr.appln_cv
       FROM dice_staff_recruitment dsr
       LEFT JOIN atlas_rec_candidate_ai_screening ais ON ais.candidate_id = dsr.id
       WHERE ais.id IS NULL
       ORDER BY dsr.appln_date DESC
-      LIMIT 10
+      LIMIT 15
     `);
 
     if (unscreened.length === 0) {
@@ -38,28 +39,38 @@ async function runPendingScreenings() {
     const candidateIds = unscreened.map(r => r.id);
     logger.info(`[AI_CRON] Found ${candidateIds.length} unscreened candidate(s): ${candidateIds.join(', ')}`);
 
+    // Log details for debugging
+    unscreened.forEach(c => {
+      logger.info(`[AI_CRON]   - ID=${c.id}, Name=${c.appln_full_name || 'N/A'}, JobRef=${c.appln_applied_for_sub || 'NONE'}, CV=${c.appln_cv || 'NONE'}`);
+    });
+
     const { results, errors } = await screeningService.runBulkAIMatch(candidateIds);
 
     logger.info(`[AI_CRON] Completed: ${results.length} success, ${errors.length} failed`);
+
+    // Log successful results with scores
+    results.forEach(r => {
+      logger.info(`[AI_CRON]   - Candidate ${r.candidateId}: score=${r.screening?.ai_match_score}, status=${r.screening?.ai_status}`);
+    });
 
     if (errors.length > 0) {
       errors.forEach(e => logger.warn(`[AI_CRON] Failed candidate ${e.candidateId}: ${e.error}`));
     }
   } catch (error) {
-    logger.error(`[AI_CRON] Job error: ${error.message}`);
+    logger.error(`[AI_CRON] Job error: ${error.message}`, { stack: error.stack });
   } finally {
     isRunning = false;
   }
 }
 
 function startAIScreeningCron() {
-  // Run every 5 minutes
-  cron.schedule('*/5 * * * *', () => {
+  // Run every 2 minutes
+  cron.schedule('*/2 * * * *', () => {
     logger.info('[AI_CRON] Running scheduled AI screening check...');
     runPendingScreenings();
   });
 
-  logger.info('[AI_CRON] AI screening cron job started (every 5 minutes)');
+  logger.info('[AI_CRON] AI screening cron job started (every 2 minutes, batch size 15)');
 
   // Also run once on startup after a short delay
   setTimeout(() => {
