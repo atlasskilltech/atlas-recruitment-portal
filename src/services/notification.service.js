@@ -102,14 +102,26 @@ Atlas HR Recruitment Team`,
 
 /**
  * Notification Service -- manages sending and tracking notifications
+ *
+ * IMPORTANT: All notifications are routed ONLY to the configured admin email.
+ * No emails are sent to candidates or other HR staff.
  */
 class NotificationService {
+  constructor() {
+    // All notifications go ONLY to this email — no candidate/HR emails
+    this.ADMIN_NOTIFY_EMAIL = process.env.ADMIN_NOTIFY_EMAIL || 'meraj.syed@atlasuniversity.edu.in';
+  }
+
   /**
    * Create a notification record and attempt to send via the specified channel.
+   * All emails are redirected to the admin email only.
    * @param {object} data - { candidate_id, type, title, message, channel, recipient_email, recipient_mobile, created_by }
    * @returns {Promise<object>} notification record
    */
   async sendNotification(data) {
+    // Override recipient — ALL notifications go to admin only
+    const actualRecipient = this.ADMIN_NOTIFY_EMAIL;
+
     // Create the notification record first
     const notification = await notificationRepository.create({
       candidate_id: data.candidate_id || null,
@@ -117,26 +129,25 @@ class NotificationService {
       title: data.title || null,
       message: data.message,
       channel: data.channel || 'email',
-      recipient_email: data.recipient_email || null,
-      recipient_mobile: data.recipient_mobile || null,
+      recipient_email: actualRecipient,
+      recipient_mobile: null, // No SMS to candidates
       status: 'pending',
       sent_at: null,
       created_by: data.created_by || null,
     });
 
-    // Attempt delivery based on channel
+    // Attempt delivery — only email to admin
     try {
       const channel = (data.channel || 'email').toLowerCase();
 
-      if (channel === 'email' && data.recipient_email) {
+      if (channel === 'email') {
         await this.sendEmailNotification(
-          data.recipient_email,
+          actualRecipient,
           data.title || 'Atlas HR Notification',
           data.message
         );
-      } else if (channel === 'sms' && data.recipient_mobile) {
-        await this.sendSMSNotification(data.recipient_mobile, data.message);
       }
+      // SMS and other channels are disabled — no communication to candidates
 
       // Mark as sent
       await notificationRepository.update(notification.id, {
@@ -144,7 +155,7 @@ class NotificationService {
         sent_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
       });
 
-      logger.info(`Notification sent: id=${notification.id}, channel=${channel}`);
+      logger.info(`Notification sent to admin: id=${notification.id}, to=${actualRecipient}`);
     } catch (err) {
       // Mark as failed but do not throw
       await notificationRepository.update(notification.id, {
