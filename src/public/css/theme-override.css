@@ -1,0 +1,246 @@
+/* ATLAS HR Recruitment Portal - Theme Override
+   Applies the professional light theme color scheme globally.
+   This file is loaded AFTER output.css to override Tailwind defaults. */
+
+:root {
+  /* Colors - Light Professional Theme */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --bg-sidebar: #1e293b;
+  --bg-sidebar-hover: #334155;
+
+  /* Override Tailwind CSS custom properties */
+  --background: #f8fafc;
+  --foreground: #1e293b;
+  --card: #ffffff;
+  --card-foreground: #1e293b;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --border: #e2e8f0;
+
+  /* Primary = emerald green */
+  --primary-50: #ecfdf5;
+  --primary-100: #d1fae5;
+  --primary-200: #a7f3d0;
+  --primary-300: #6ee7b7;
+  --primary-400: #10b981;
+  --primary-500: #10b981;
+  --primary-600: #059669;
+  --primary-700: #047857;
+  --primary-800: #065f46;
+  --primary-900: #064e3b;
+
+  /* Accent = emerald */
+  --accent: #10b981;
+  --accent-foreground: #ffffff;
+  --accent-50: #ecfdf5;
+  --accent-100: #d1fae5;
+  --accent-600: #059669;
+  --accent-700: #047857;
+
+  /* Status colors */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --destructive: #ef4444;
+  --info: #3b82f6;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-brand: 0 4px 14px 0 rgba(16, 185, 129, 0.25);
+  --shadow-brand-lg: 0 8px 24px 0 rgba(16, 185, 129, 0.2);
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+}
+
+/* Dark mode overrides */
+.dark {
+  --background: #0f172a;
+  --foreground: #e2e8f0;
+  --card: #1e293b;
+  --card-foreground: #e2e8f0;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --border: #334155;
+}
+
+/* ═══ Global Font ═══ */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* ═══ Sidebar Theme ═══ */
+.sidebar, nav[class*="sidebar"], aside {
+  background: #1e293b !important;
+}
+
+.sidebar a.active, nav a.active, .nav-link.active {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+/* ═══ Primary Button Override ═══ */
+.btn-primary, [class*="btn-primary"] {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+}
+
+.btn-primary:hover, [class*="btn-primary"]:hover {
+  background: #059669 !important;
+  border-color: #059669 !important;
+}
+
+/* ═══ Accent Color Override ═══ */
+.bg-primary-800, [class*="bg-primary-8"] {
+  background-color: #065f46 !important;
+}
+
+.bg-primary-100 {
+  background-color: #d1fae5 !important;
+}
+
+.text-primary-800, .text-primary-400 {
+  color: #10b981 !important;
+}
+
+.bg-accent, [class*="bg-accent"] {
+  background-color: #10b981 !important;
+}
+
+/* ═══ Score Ring Colors ═══ */
+.stroke-green-500 { stroke: #10b981 !important; }
+.stroke-yellow-500 { stroke: #f59e0b !important; }
+.stroke-red-500 { stroke: #ef4444 !important; }
+
+/* ═══ Gradient Override ═══ */
+.bg-gradient-brand, .bg-gradient-hero {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #064e3b 100%) !important;
+}
+
+/* ═══ Card Styling ═══ */
+.card, .stat-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.dark .card, .dark .stat-card {
+  border-color: #334155;
+}
+
+/* ═══ Stat Card Icon Colors ═══ */
+.stat-icon {
+  border-radius: 8px;
+}
+
+/* ═══ Badge Overrides ═══ */
+.badge-eligible, .badge-success {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+
+.badge-strong-fit {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #059669 !important;
+}
+
+.badge-moderate-fit {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+}
+
+.badge-weak-fit {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #f59e0b !important;
+}
+
+.badge-warning {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #f59e0b !important;
+}
+
+.badge-danger {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.badge-info {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+}
+
+.badge-muted {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+/* ═══ Table Styling ═══ */
+.data-table th {
+  background: #f1f5f9 !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .data-table th {
+  background: #1e293b !important;
+  color: #94a3b8;
+}
+
+.data-table td {
+  border-bottom-color: #f1f5f9;
+}
+
+.dark .data-table td {
+  border-bottom-color: #334155;
+}
+
+/* ═══ Filter Panel ═══ */
+.filter-panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.dark .filter-panel {
+  background: #1e293b;
+  border-color: #334155;
+}
+
+/* ═══ Form Inputs ═══ */
+.form-input:focus, .form-select:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* ═══ Charts — ApexCharts color palette ═══ */
+.apexcharts-legend-text {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* ═══ Score Colors ═══ */
+.text-green-600 { color: #10b981 !important; }
+.text-yellow-600 { color: #f59e0b !important; }
+.text-red-600 { color: #ef4444 !important; }
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.dark ::-webkit-scrollbar-track { background: #1e293b; }
+.dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+/* ═══ Shadow Brand ═══ */
+.shadow-brand { box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25) !important; }
+.shadow-brand-lg { box-shadow: 0 8px 24px 0 rgba(16, 185, 129, 0.2) !important; }
