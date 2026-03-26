@@ -134,8 +134,9 @@ app.listen(PORT, () => {
   const { startAIScreeningCron } = require('./jobs/aiScreeningCron');
   startAIScreeningCron();
 
-  const { startAIInterviewCron } = require('./jobs/aiInterviewCron');
-  startAIInterviewCron();
+  // Interview auto-invite cron DISABLED — use "Invite Interview" button from candidates page
+  // const { startAIInterviewCron } = require('./jobs/aiInterviewCron');
+  // startAIInterviewCron();
 });
 
 module.exports = app;

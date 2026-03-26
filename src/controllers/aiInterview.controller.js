@@ -314,10 +314,83 @@ const completeInterview = asyncHandler(async (req, res) => {
   }
 });
 
+/**
+ * GET /ai-interviews/invite/:candidateId
+ * Create interview (if not exists) + send email with link. Redirects back.
+ */
+const inviteGet = asyncHandler(async (req, res) => {
+  const candidateId = parseInt(req.params.candidateId, 10);
+
+  if (!candidateId) {
+    req.flash('error', 'Candidate ID is required.');
+    return res.redirect('/ai-interviews');
+  }
+
+  try {
+    // Check if candidate already has an active interview
+    const interviewRepository = require('../repositories/interview.repository');
+    const existing = await interviewRepository.findByCandidateId(candidateId);
+    const activeInterview = existing.find(iv => !['expired', 'failed'].includes(iv.status));
+
+    let interviewLink;
+    let result;
+
+    if (activeInterview) {
+      // Interview exists — just build the link
+      interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${activeInterview.invitation_token}`;
+      result = activeInterview;
+      logger.info(`[INTERVIEW] Existing interview for candidate ${candidateId}: id=${result.id}`);
+    } else {
+      // Create new interview
+      result = await interviewService.createInterview(candidateId, null, 'hr');
+      interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${result.token}`;
+      logger.info(`[INTERVIEW] New interview created for candidate ${candidateId}: id=${result.id}`);
+    }
+
+    // Send email with interview link to admin
+    try {
+      const notificationService = require('../services/notification.service');
+      // Get candidate name
+      const candidateRepo = require('../repositories/candidate.repository');
+      const candidate = await candidateRepo.findById(candidateId);
+      const candidateName = candidate?.appln_full_name || 'Candidate';
+
+      const templateData = notificationService.getTemplateMessage('ai_interview_invite', {
+        candidateName: candidateName,
+        jobTitle: candidate?.applied_for_post || candidate?.applied_job_short_desc_new || 'Position',
+        interviewLink: interviewLink,
+        expiresIn: '10 days',
+      });
+
+      if (templateData) {
+        await notificationService.sendNotification({
+          candidate_id: candidateId,
+          type: 'interview_invite',
+          title: templateData.subject,
+          message: templateData.message,
+          channel: 'email',
+        });
+      }
+
+      req.flash('success', `Interview invitation created and email sent. Link: ${interviewLink}`);
+    } catch (emailErr) {
+      logger.warn(`[INTERVIEW] Email failed: ${emailErr.message}`);
+      req.flash('success', `Interview created but email failed. Link: ${interviewLink}`);
+    }
+  } catch (err) {
+    logger.error(`[INTERVIEW] Invite failed for candidate ${candidateId}`, { error: err.message });
+    req.flash('error', `Failed to create interview: ${err.message}`);
+  }
+
+  const returnUrl = req.get('Referer') || `/candidates/${candidateId}`;
+  return res.redirect(returnUrl);
+});
+
 module.exports = {
   index,
   show,
   invite,
+  inviteGet,
   showInterview,
   startInterview,
   submitAnswer,
