@@ -5,32 +5,51 @@
   const candidate = typeof locals.candidate !== 'undefined' ? locals.candidate : {};
   const job = typeof locals.job !== 'undefined' ? locals.job : {};
 
-  const candidateName = candidate.first_name
-    ? candidate.first_name + ' ' + (candidate.last_name || '')
-    : 'Unknown Candidate';
-  const jobTitle = job.title || 'N/A';
+  const candidateName = interview.candidate_name || interview.appln_full_name
+    || (candidate.first_name ? candidate.first_name + ' ' + (candidate.last_name || '') : 'Candidate');
+  const jobTitle = interview.job_title || job.title || 'N/A';
 
-  const ivStatus = interview.status || 'pending';
-  const ivStatusBadge = ivStatus === 'completed' ? 'badge-success'
+  const ivStatus = interview.interview_status || interview.status || 'invited';
+  const ivStatusBadge = ivStatus === 'evaluated' ? 'badge-success'
+    : ivStatus === 'submitted' ? 'badge-info'
     : ivStatus === 'passed' ? 'badge-success'
     : ivStatus === 'failed' ? 'badge-danger'
     : ivStatus === 'in_progress' ? 'badge-info'
-    : 'badge-warning';
-
-  const ivType = interview.interview_type || interview.type || 'general';
-  const typeBadgeClass = ivType === 'technical' ? 'badge-info'
-    : ivType === 'behavioral' ? 'badge-warning'
-    : ivType === 'domain' ? 'badge-success'
+    : ivStatus === 'invited' ? 'badge-warning'
     : 'badge-muted';
 
-  const totalScore = interview.total_score || interview.overall_score || 0;
-  const commScore = interview.communication_score || 0;
-  const domainScore = interview.domain_score || 0;
-  const problemScore = interview.problem_solving_score || 0;
-  const confidenceScore = interview.confidence_score || 0;
+  const ivType = interview.interview_type || interview.type || 'hr';
+  const typeBadgeClass = 'badge-muted';
 
-  const aiFeedback = interview.ai_feedback || '';
-  const aiSummary = interview.ai_summary || '';
+  const totalScore = parseFloat(interview.total_score) || parseFloat(interview.overall_score) || 0;
+  const commScore = parseFloat(interview.communication_score) || 0;
+  const domainScore = parseFloat(interview.domain_knowledge_score) || parseFloat(interview.domain_score) || 0;
+  const problemScore = parseFloat(interview.problem_solving_score) || 0;
+  const confidenceScore = parseFloat(interview.confidence_score) || 0;
+
+  // Parse JSON feedback safely
+  function safeParse(val) {
+    if (!val) return null;
+    if (typeof val === 'object') return val;
+    try { return JSON.parse(val); } catch(e) { return null; }
+  }
+
+  const feedbackRaw = interview.ai_feedback || '';
+  const summaryRaw = interview.ai_summary || '';
+  const feedbackObj = safeParse(feedbackRaw);
+  const summaryObj = safeParse(summaryRaw);
+
+  // Extract readable fields from JSON
+  const performanceSummary = feedbackObj?.performanceSummary || summaryObj?.performanceSummary || '';
+  const recommendation = feedbackObj?.recommendation || summaryObj?.recommendation || '';
+  const recommendationJustification = feedbackObj?.recommendationJustification || summaryObj?.recommendationJustification || '';
+  const strengthAreas = feedbackObj?.strengthAreas || summaryObj?.strengthAreas || [];
+  const improvementAreas = feedbackObj?.improvementAreas || summaryObj?.improvementAreas || [];
+  const competencyRatings = feedbackObj?.competencyRatings || summaryObj?.competencyRatings || {};
+  const redFlags = feedbackObj?.redFlags || summaryObj?.redFlags || [];
+  const culturalFit = feedbackObj?.culturalFitAssessment || summaryObj?.culturalFitAssessment || '';
+  const plainFeedback = typeof feedbackRaw === 'string' && !feedbackObj ? feedbackRaw : '';
+  const plainSummary = typeof summaryRaw === 'string' && !summaryObj ? summaryRaw : '';
 
   function scoreColor(s) {
     return s >= 75 ? 'text-success' : s >= 50 ? 'text-warning' : 'text-destructive';
@@ -143,34 +162,128 @@
   </div>
 </div>
 
-<!-- AI Feedback & Summary -->
+<!-- AI Analysis Dashboard -->
+<% if (recommendation || performanceSummary || plainFeedback) { %>
+
+<!-- Recommendation Banner -->
+<div class="card p-5 mb-6 flex items-center justify-between" style="border-left: 4px solid <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? '#10b981' : recommendation === 'No Hire' ? '#ef4444' : '#f59e0b' %>;">
+  <div>
+    <h3 class="text-lg font-bold text-foreground">AI Recommendation</h3>
+    <p class="text-sm text-muted-foreground mt-1"><%= recommendationJustification || performanceSummary || plainFeedback %></p>
+  </div>
+  <span class="px-4 py-2 rounded-lg text-sm font-bold
+    <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? 'bg-green-100 text-green-700' :
+       recommendation === 'No Hire' ? 'bg-red-100 text-red-700' :
+       'bg-yellow-100 text-yellow-700' %>">
+    <%= recommendation || 'Pending' %>
+  </span>
+</div>
+
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-  <!-- AI Feedback -->
+
+  <!-- Competency Ratings -->
+  <% if (Object.keys(competencyRatings).length > 0) { %>
   <div class="card p-6">
-    <h2 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-      <i data-lucide="message-square" class="w-5 h-5 text-info"></i>
-      AI Feedback
+    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+      <i data-lucide="bar-chart-3" class="w-5 h-5 text-info"></i>
+      Competency Ratings
     </h2>
-    <% if (aiFeedback) { %>
-      <div class="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"><%= aiFeedback %></div>
-    <% } else { %>
-      <p class="text-sm text-muted-foreground">No AI feedback available yet.</p>
+    <div class="space-y-3">
+      <% const compLabels = { technicalKnowledge: 'Technical Knowledge', problemSolving: 'Problem Solving', communication: 'Communication', teamwork: 'Teamwork', leadership: 'Leadership', adaptability: 'Adaptability', domainExpertise: 'Domain Expertise' }; %>
+      <% Object.entries(competencyRatings).forEach(function([key, val]) { %>
+        <% const pct = Math.round((parseFloat(val) / 5) * 100); %>
+        <div>
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-foreground font-medium"><%= compLabels[key] || key %></span>
+            <span class="font-bold <%= pct >= 60 ? 'text-green-600' : pct >= 40 ? 'text-yellow-600' : 'text-red-600' %>"><%= val %>/5</span>
+          </div>
+          <div class="w-full h-2 bg-muted rounded-full overflow-hidden">
+            <div class="h-full rounded-full <%= pct >= 60 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-500' %>" style="width: <%= pct %>%"></div>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Strengths & Improvements -->
+  <div class="card p-6">
+    <% if (strengthAreas.length > 0) { %>
+    <div class="mb-5">
+      <h3 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <span class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center"><i data-lucide="trending-up" class="w-3 h-3 text-green-600"></i></span>
+        Strengths
+      </h3>
+      <div class="space-y-2">
+        <% strengthAreas.forEach(function(s) { %>
+          <div class="flex items-start gap-2 text-sm p-2 rounded-lg bg-green-50 dark:bg-green-900/10">
+            <span class="text-green-500 mt-0.5">✓</span>
+            <div>
+              <span class="font-medium text-foreground"><%= typeof s === 'string' ? s : s.area || '' %></span>
+              <% if (s.evidence) { %><p class="text-xs text-muted-foreground mt-0.5"><%= s.evidence %></p><% } %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (improvementAreas.length > 0) { %>
+    <div>
+      <h3 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <span class="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center"><i data-lucide="alert-triangle" class="w-3 h-3 text-amber-600"></i></span>
+        Areas for Improvement
+      </h3>
+      <div class="space-y-2">
+        <% improvementAreas.forEach(function(a) { %>
+          <div class="flex items-start gap-2 text-sm p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10">
+            <span class="text-amber-500 mt-0.5">!</span>
+            <div>
+              <span class="font-medium text-foreground"><%= typeof a === 'string' ? a : a.area || '' %></span>
+              <% if (a.severity) { %><span class="ml-2 text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700"><%= a.severity %></span><% } %>
+              <% if (a.evidence) { %><p class="text-xs text-muted-foreground mt-0.5"><%= a.evidence %></p><% } %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (strengthAreas.length === 0 && improvementAreas.length === 0 && plainFeedback) { %>
+      <h3 class="text-sm font-semibold text-foreground mb-3">AI Analysis</h3>
+      <p class="text-sm text-muted-foreground leading-relaxed"><%= plainFeedback.substring(0, 500) %></p>
     <% } %>
   </div>
 
-  <!-- AI Summary -->
-  <div class="card p-6">
-    <h2 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-      <i data-lucide="file-text" class="w-5 h-5 text-accent"></i>
-      AI Summary
-    </h2>
-    <% if (aiSummary) { %>
-      <div class="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"><%= aiSummary %></div>
-    <% } else { %>
-      <p class="text-sm text-muted-foreground">No AI summary available yet.</p>
-    <% } %>
+  <% if (redFlags.length > 0) { %>
+  <div class="card p-6 lg:col-span-2">
+    <h3 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+      <span class="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center"><i data-lucide="flag" class="w-3 h-3 text-red-600"></i></span>
+      Red Flags
+    </h3>
+    <div class="flex flex-wrap gap-2">
+      <% redFlags.forEach(function(f) { %>
+        <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200"><%= f %></span>
+      <% }); %>
+    </div>
   </div>
+  <% } %>
+
+  <% if (culturalFit) { %>
+  <div class="card p-6 lg:col-span-2">
+    <h3 class="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+      <i data-lucide="users" class="w-4 h-4 text-muted-foreground"></i> Cultural Fit Assessment
+    </h3>
+    <p class="text-sm text-muted-foreground"><%= culturalFit %></p>
+  </div>
+  <% } %>
+
 </div>
+<% } else { %>
+<div class="card p-6 mb-6 text-center text-sm text-muted-foreground">
+  <p>AI evaluation is in progress or not yet available.</p>
+</div>
+<% } %>
 
 <!-- Questions & Answers -->
 <div class="card p-6 mb-6">
