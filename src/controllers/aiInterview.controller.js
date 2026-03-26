@@ -296,17 +296,32 @@ const completeInterview = asyncHandler(async (req, res) => {
   }
 
   try {
-    const result = await interviewService.completeInterview(interviewId);
+    // Immediately mark as submitted and respond — evaluation runs in background
+    const interviewRepository = require('../repositories/interview.repository');
+    await interviewRepository.update(interviewId, {
+      interview_status: 'submitted',
+      completed_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    });
 
-    return res.json({
+    logger.info(`[INTERVIEW] Interview ${interviewId} marked as submitted, starting background evaluation`);
+
+    // Respond immediately so the candidate sees "Interview Submitted!"
+    res.json({
       success: true,
-      message: 'Interview completed and evaluated successfully.',
-      overall_score: result.overallScore,
-      recommendation: result.recommendation,
-      summary: result.summary,
+      message: 'Interview submitted. Evaluation in progress.',
+    });
+
+    // Run evaluation in background (after response is sent)
+    setImmediate(async () => {
+      try {
+        const result = await interviewService.completeInterview(interviewId);
+        logger.info(`[INTERVIEW] Background evaluation completed for ${interviewId}: score=${result.overallScore}`);
+      } catch (evalErr) {
+        logger.error(`[INTERVIEW] Background evaluation failed for ${interviewId}: ${evalErr.message}`, { stack: evalErr.stack });
+      }
     });
   } catch (err) {
-    logger.error(`Failed to complete interview ${interviewId}`, { error: err.message });
+    logger.error(`Failed to submit interview ${interviewId}`, { error: err.message });
     return res.status(400).json({
       success: false,
       message: err.message,
