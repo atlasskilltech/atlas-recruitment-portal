@@ -11,9 +11,9 @@ const logger = require('../../utils/logger');
  */
 class OpenAIProvider {
   constructor() {
-    this.apiKey = process.env.OPENAI_API_KEY || '';
-    this.model = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
-    this.baseUrl = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+    this.apiKey = process.env.OPENAI_API_KEY || process.env.AI_API_KEY || '';
+    this.model = process.env.OPENAI_MODEL || process.env.AI_MODEL || 'gpt-3.5-turbo';
+    this.baseUrl = process.env.OPENAI_BASE_URL || process.env.AI_BASE_URL || 'https://api.openai.com/v1';
   }
 
   async complete(prompt, options = {}) {
@@ -57,9 +57,9 @@ class OpenAIProvider {
  */
 class AzureProvider {
   constructor() {
-    this.apiKey = process.env.AZURE_OPENAI_API_KEY || '';
+    this.apiKey = process.env.AZURE_OPENAI_API_KEY || process.env.AI_API_KEY || '';
     this.endpoint = (process.env.AZURE_OPENAI_ENDPOINT || '').replace(/\/+$/, '');
-    this.deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-35-turbo';
+    this.deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT || process.env.AI_MODEL || 'gpt-35-turbo';
     this.apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
   }
 
@@ -104,9 +104,9 @@ class AzureProvider {
  */
 class OpenRouterProvider {
   constructor() {
-    this.apiKey = process.env.OPENROUTER_API_KEY || '';
-    this.model = process.env.OPENROUTER_MODEL || 'openai/gpt-3.5-turbo';
-    this.baseUrl = process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
+    this.apiKey = process.env.OPENROUTER_API_KEY || process.env.AI_API_KEY || '';
+    this.model = process.env.OPENROUTER_MODEL || process.env.AI_MODEL || 'openai/gpt-3.5-turbo';
+    this.baseUrl = process.env.OPENROUTER_BASE_URL || process.env.AI_BASE_URL || 'https://openrouter.ai/api/v1';
   }
 
   async complete(prompt, options = {}) {
@@ -282,12 +282,22 @@ function getProvider() {
  */
 async function callAI(prompt, options = {}) {
   const provider = getProvider();
+  const providerName = provider.constructor.name;
+  const model = provider.model || provider.deploymentName || 'N/A';
+  logger.info(`[AI_CALL] Using provider=${providerName}, model=${model}`);
+
   try {
     const result = await provider.complete(prompt, options);
+    logger.info(`[AI_CALL] Success — overallScore=${result?.overallScore ?? 'N/A'}`);
     return result;
   } catch (err) {
-    logger.error('AI call failed, falling back to mock', { error: err.message });
+    logger.error(`[AI_CALL] ${providerName} failed: ${err.message}`, {
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data ? JSON.stringify(err.response.data).substring(0, 500) : undefined,
+    });
     // Fallback to mock on error so the system remains functional
+    logger.warn('[AI_CALL] Falling back to MockProvider');
     const mock = new MockProvider();
     return mock.complete(prompt, options);
   }
