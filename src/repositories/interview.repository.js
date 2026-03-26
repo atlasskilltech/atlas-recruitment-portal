@@ -165,6 +165,10 @@ class InterviewRepository {
    */
   async createQuestion(data) {
     try {
+      // The DB ENUM for question_type is: 'text', 'audio', 'video', 'mcq'
+      // Map interview question types (general/technical/behavioral) to response mode
+      const responseMode = data.response_mode || 'text';
+
       const sql = `
         INSERT INTO atlas_rec_ai_interview_questions
         (interview_id, question_order, question_text, question_type,
@@ -176,8 +180,8 @@ class InterviewRepository {
         data.interview_id,
         data.question_number || data.question_order || 0,
         data.question_text,
-        data.question_type || 'text',
-        data.expected_answer || data.expected_keywords || null,
+        responseMode, // Always 'text' for MVP (audio/video phase 2)
+        typeof data.expected_answer === 'string' ? data.expected_answer : JSON.stringify(data.expected_keywords || data.expected_answer || []),
         data.max_duration_seconds || 300,
       ];
 
