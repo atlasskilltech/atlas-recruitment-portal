@@ -244,3 +244,106 @@ body {
 /* ═══ Shadow Brand ═══ */
 .shadow-brand { box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25) !important; }
 .shadow-brand-lg { box-shadow: 0 8px 24px 0 rgba(16, 185, 129, 0.2) !important; }
+
+/* ═══ User Dropdown Fix ═══ */
+/* Fix dropdown overlapping with content */
+[x-show][class*="absolute"][class*="right-0"] {
+  z-index: 999 !important;
+}
+
+/* User dropdown menu styling */
+.bg-card[class*="border"][class*="rounded"][class*="shadow"] {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15) !important;
+  z-index: 999 !important;
+}
+
+.dark .bg-card[class*="border"][class*="rounded"][class*="shadow"] {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Sign out link styling */
+a[href="/logout"], a[href*="logout"] {
+  color: #ef4444 !important;
+  font-weight: 500;
+}
+
+a[href="/logout"]:hover, a[href*="logout"]:hover {
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+
+/* ═══ Login Page Fix ═══ */
+/* Better gradient for auth pages */
+.bg-gradient-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #064e3b 100%) !important;
+}
+
+/* Login card styling */
+.card.shadow-brand-lg {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.dark .card.shadow-brand-lg {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+/* Sign In button on login */
+.btn-primary.w-full {
+  background: #10b981 !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  font-size: 1rem !important;
+  padding: 12px 24px !important;
+  letter-spacing: 0.01em;
+}
+
+.btn-primary.w-full:hover {
+  background: #059669 !important;
+}
+
+/* Login page logo icon */
+.bg-gradient-brand {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+/* Input fields on login */
+.form-input.pl-11 {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  padding: 12px 12px 12px 44px !important;
+  font-size: 0.95rem !important;
+}
+
+.dark .form-input.pl-11 {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.form-input.pl-11:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* ═══ Sidebar Active State ═══ */
+/* Green active nav item */
+aside a[class*="bg-primary"], nav a[class*="bg-primary"] {
+  background: #10b981 !important;
+  color: white !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+/* ═══ Header User Area ═══ */
+/* User avatar circle */
+.bg-primary-800.rounded-full, [class*="rounded-full"][class*="bg-primary"] {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+}
