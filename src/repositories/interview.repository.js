@@ -37,9 +37,10 @@ class InterviewRepository {
     try {
       const sql = `
         SELECT aii.*,
-          dsr.appln_full_name, dsr.appln_email, dsr.appln_mobile_no,
+          dsr.appln_full_name AS candidate_name, dsr.appln_email, dsr.appln_mobile_no,
           dsr.appln_total_experience, dsr.appln_high_qualification,
-          job.applied_job_short_desc_new, job.applied_location
+          COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
+          job.applied_location
         FROM atlas_rec_ai_interviews aii
         LEFT JOIN dice_staff_recruitment dsr ON aii.candidate_id = dsr.id
         LEFT JOIN isdi_admsn_applied_for job ON aii.job_id = job.id
@@ -60,9 +61,10 @@ class InterviewRepository {
     try {
       const sql = `
         SELECT aii.*,
-          dsr.appln_full_name, dsr.appln_email, dsr.appln_mobile_no,
+          dsr.appln_full_name AS candidate_name, dsr.appln_email, dsr.appln_mobile_no,
           dsr.appln_total_experience, dsr.appln_high_qualification,
-          job.applied_job_short_desc_new, job.applied_job_desc, job.applied_location
+          COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
+          job.applied_job_desc, job.applied_location
         FROM atlas_rec_ai_interviews aii
         LEFT JOIN dice_staff_recruitment dsr ON aii.candidate_id = dsr.id
         LEFT JOIN isdi_admsn_applied_for job ON aii.job_id = job.id
@@ -82,7 +84,9 @@ class InterviewRepository {
   async findByCandidateId(candidateId) {
     try {
       const sql = `
-        SELECT aii.*, job.applied_job_short_desc_new, job.applied_location
+        SELECT aii.*,
+          COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
+          job.applied_location
         FROM atlas_rec_ai_interviews aii
         LEFT JOIN isdi_admsn_applied_for job ON aii.job_id = job.id
         WHERE aii.candidate_id = ?
@@ -372,8 +376,9 @@ class InterviewRepository {
 
       const sql = `
         SELECT aii.*,
-          dsr.appln_full_name, dsr.appln_email, dsr.appln_mobile_no,
-          job.applied_job_short_desc_new, job.applied_location
+          dsr.appln_full_name AS candidate_name, dsr.appln_email, dsr.appln_mobile_no,
+          COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
+          job.applied_location
         FROM atlas_rec_ai_interviews aii
         LEFT JOIN dice_staff_recruitment dsr ON aii.candidate_id = dsr.id
         LEFT JOIN isdi_admsn_applied_for job ON aii.job_id = job.id
