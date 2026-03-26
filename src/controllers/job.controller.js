@@ -2,9 +2,24 @@
 // Atlas HR Recruitment Portal – Job/Post Master Controller
 // ---------------------------------------------------------------------------
 const pool = require('../config/db');
+const multer = require('multer');
+const path = require('path');
 const { asyncHandler } = require('../middlewares/error.middleware');
 const { PAGINATION } = require('../config/constants');
 const logger = require('../utils/logger');
+
+// File upload config for JD files
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    // Store locally; in production, sync to erp/assets/career/
+    cb(null, path.join(__dirname, '../../uploads'));
+  },
+  filename: function(req, file, cb) {
+    const name = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '-');
+    cb(null, name);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }).single('applied_job_desc_file');
 
 /**
  * GET /jobs
@@ -100,8 +115,14 @@ const create = asyncHandler(async (req, res) => {
  * Save new job.
  */
 const store = asyncHandler(async (req, res) => {
+  // Handle file upload
+  await new Promise((resolve, reject) => {
+    upload(req, res, function(err) { if (err) reject(err); else resolve(); });
+  });
+
   const { applied_for_post_id, applied_for_post, applied_job_short_desc_new, applied_job_desc,
     applied_location, applied_experience_min, applied_experience_max, applied_is_visible } = req.body;
+  const uploadedFile = req.file ? req.file.filename : null;
 
   if (!applied_for_post || !applied_for_post_id) {
     req.flash('error', 'Post name and scope are required.');
@@ -111,8 +132,8 @@ const store = asyncHandler(async (req, res) => {
   await pool.query(`
     INSERT INTO isdi_admsn_applied_for
     (applied_for_post_id, applied_for_post, applied_job_short_desc_new, applied_job_desc,
-     applied_location, applied_experience_min, applied_experience_max, applied_is_visible)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+     applied_location, applied_experience_min, applied_experience_max, applied_is_visible, applied_job_desc_file)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     applied_for_post_id,
     applied_for_post,
@@ -122,6 +143,7 @@ const store = asyncHandler(async (req, res) => {
     applied_experience_min || null,
     applied_experience_max || null,
     applied_is_visible ? 1 : 0,
+    uploadedFile,
   ]);
 
   logger.info(`[JOBS] New job created: ${applied_for_post}`);
@@ -165,26 +187,39 @@ const edit = asyncHandler(async (req, res) => {
  */
 const update = asyncHandler(async (req, res) => {
   const id = parseInt(req.params.id, 10);
+
+  // Handle file upload
+  await new Promise((resolve, reject) => {
+    upload(req, res, function(err) { if (err) reject(err); else resolve(); });
+  });
+
   const { applied_for_post_id, applied_for_post, applied_job_short_desc_new, applied_job_desc,
     applied_location, applied_experience_min, applied_experience_max, applied_is_visible } = req.body;
+  const uploadedFile = req.file ? req.file.filename : null;
 
-  await pool.query(`
-    UPDATE isdi_admsn_applied_for SET
+  let sql, params;
+  if (uploadedFile) {
+    sql = `UPDATE isdi_admsn_applied_for SET
+      applied_for_post_id = ?, applied_for_post = ?, applied_job_short_desc_new = ?,
+      applied_job_desc = ?, applied_location = ?,
+      applied_experience_min = ?, applied_experience_max = ?, applied_is_visible = ?,
+      applied_job_desc_file = ?
+    WHERE id = ?`;
+    params = [applied_for_post_id, applied_for_post, applied_job_short_desc_new || applied_for_post,
+      applied_job_desc || '', applied_location || '', applied_experience_min || null,
+      applied_experience_max || null, applied_is_visible ? 1 : 0, uploadedFile, id];
+  } else {
+    sql = `UPDATE isdi_admsn_applied_for SET
       applied_for_post_id = ?, applied_for_post = ?, applied_job_short_desc_new = ?,
       applied_job_desc = ?, applied_location = ?,
       applied_experience_min = ?, applied_experience_max = ?, applied_is_visible = ?
-    WHERE id = ?
-  `, [
-    applied_for_post_id,
-    applied_for_post,
-    applied_job_short_desc_new || applied_for_post,
-    applied_job_desc || '',
-    applied_location || '',
-    applied_experience_min || null,
-    applied_experience_max || null,
-    applied_is_visible ? 1 : 0,
-    id,
-  ]);
+    WHERE id = ?`;
+    params = [applied_for_post_id, applied_for_post, applied_job_short_desc_new || applied_for_post,
+      applied_job_desc || '', applied_location || '', applied_experience_min || null,
+      applied_experience_max || null, applied_is_visible ? 1 : 0, id];
+  }
+
+  await pool.query(sql, params);
 
   logger.info(`[JOBS] Job updated: id=${id}, ${applied_for_post}`);
   req.flash('success', `Job opening "${applied_for_post}" updated successfully.`);
