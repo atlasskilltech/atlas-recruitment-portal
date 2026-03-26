@@ -3,12 +3,12 @@
   const candidate = typeof locals.candidate !== 'undefined' ? locals.candidate : {};
   const job = typeof locals.job !== 'undefined' ? locals.job : {};
 
-  const score = screening.ai_score || screening.match_score || 0;
+  const score = parseFloat(screening.ai_match_score) || parseFloat(screening.match_score) || 0;
   const scoreColor = score >= 75 ? 'text-success' : score >= 50 ? 'text-warning' : 'text-destructive';
   const scoreBgColor = score >= 75 ? 'stroke-success' : score >= 50 ? 'stroke-warning' : 'stroke-destructive';
   const scoreTrack = 'stroke-muted';
 
-  const rec = screening.recommendation || 'N/A';
+  const rec = screening.ai_recommendation_tag || screening.recommendation || 'N/A';
   const recLabel = rec.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
   const recBadge = rec === 'strong_fit' || rec === 'Strong Fit'
     ? 'badge-strong-fit'
@@ -18,23 +18,31 @@
         ? 'badge-weak-fit'
         : 'badge-muted';
 
-  const status = screening.ai_status || screening.status || 'pending';
-  const statusBadge = status === 'completed' ? 'badge-success'
-    : status === 'pending' ? 'badge-warning'
-    : status === 'processing' ? 'badge-info'
-    : 'badge-danger';
+  const status = screening.ai_status || screening.status || 'eligible';
+  const statusBadge = status === 'eligible' ? 'badge-success'
+    : status === 'hold' ? 'badge-warning'
+    : status === 'rejected' ? 'badge-danger'
+    : 'badge-info';
 
-  const skills = screening.extracted_skills || [];
-  const keywords = screening.extracted_keywords || [];
-  const educationSummary = screening.education_summary || '';
-  const experienceSummary = screening.experience_summary || '';
-  const skillGapAnalysis = screening.skill_gap_analysis || '';
+  /* Parse JSON fields safely */
+  function safeParse(val) {
+    if (!val) return val;
+    if (typeof val !== 'string') return val;
+    try { return JSON.parse(val); } catch(e) { return val; }
+  }
+
+  const skills = safeParse(screening.extracted_skills) || [];
+  const keywords = safeParse(screening.extracted_keywords) || [];
+  const educationSummary = screening.extracted_education_summary || screening.education_summary || '';
+  const experienceSummary = screening.extracted_experience_summary || screening.experience_summary || '';
+  const skillGapRaw = safeParse(screening.skill_gap_analysis) || '';
+  const skillGapAnalysis = typeof skillGapRaw === 'object' ? JSON.stringify(skillGapRaw, null, 2) : skillGapRaw;
   const roleFitSummary = screening.role_fit_summary || '';
 
-  const candidateName = candidate.first_name
+  const candidateName = screening.candidate_name || (candidate.first_name
     ? candidate.first_name + ' ' + (candidate.last_name || '')
-    : 'Unknown Candidate';
-  const jobTitle = job.title || 'N/A';
+    : screening.appln_full_name || 'Unknown Candidate');
+  const jobTitle = screening.job_title || job.title || 'N/A';
 
   const circumference = 2 * Math.PI * 54;
   const offset = circumference - (score / 100) * circumference;

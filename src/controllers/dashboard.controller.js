@@ -181,8 +181,11 @@ const index = asyncHandler(async (req, res) => {
     SELECT dsr.id, dsr.appln_id, dsr.appln_full_name, dsr.appln_email,
       dsr.appln_date, dsr.appln_status_new,
       job.applied_job_short_desc_new AS job_title,
-      ais.ai_match_score, ais.ai_status AS ai_screening_status,
-      aint.total_score AS interview_score, aint.status AS ai_interview_status
+      ais.ai_match_score, ais.ai_match_score AS match_score,
+      ais.ai_status AS ai_screening_status,
+      ais.ai_recommendation_tag AS recommendation_tag,
+      aint.total_score AS interview_score, aint.total_score AS overall_score,
+      aint.status AS ai_interview_status
     FROM dice_staff_recruitment dsr
     LEFT JOIN isdi_admsn_applied_for job ON dsr.appln_applied_for_sub = job.id
     LEFT JOIN atlas_rec_candidate_ai_screening ais ON ais.candidate_id = dsr.id
