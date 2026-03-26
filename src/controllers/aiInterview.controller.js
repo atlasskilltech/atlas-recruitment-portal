@@ -38,7 +38,8 @@ const index = asyncHandler(async (req, res) => {
 
   // Fetch job list for filter dropdown
   const [jobs] = await pool.query(
-    'SELECT id, applied_job_short_desc_new AS title FROM isdi_admsn_applied_for ORDER BY applied_job_short_desc_new'
+    `SELECT id, COALESCE(applied_for_post, applied_job_short_desc_new) AS title,
+            applied_for_post_id FROM isdi_admsn_applied_for ORDER BY applied_for_post_id, applied_for_post`
   );
 
   res.render('ai-interview/index', {
