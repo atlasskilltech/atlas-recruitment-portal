@@ -237,4 +237,83 @@ const toggleVisibility = asyncHandler(async (req, res) => {
   return res.redirect('/jobs');
 });
 
-module.exports = { index, create, store, edit, update, toggleVisibility };
+/**
+ * GET /jobs/:id/top-matches
+ * Show top 20 matching candidates for a specific job role based on AI match scores.
+ */
+const topMatches = asyncHandler(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  // Get job details
+  const [[job]] = await pool.query(`
+    SELECT j.*, s.applied_for_name AS scope_name
+    FROM isdi_admsn_applied_for j
+    LEFT JOIN career_applied_for s ON j.applied_for_post_id = s.id
+    WHERE j.id = ?
+  `, [id]);
+
+  if (!job) {
+    req.flash('error', 'Job not found.');
+    return res.redirect('/jobs');
+  }
+
+  // Get top 20 candidates matched to this job, sorted by AI match score
+  const [topCandidates] = await pool.query(`
+    SELECT
+      dsr.id, dsr.appln_full_name, dsr.appln_email, dsr.appln_mobile_no,
+      dsr.appln_high_qualification, dsr.appln_specialization,
+      dsr.appln_total_experience, dsr.appln_current_designation,
+      dsr.appln_current_organisation, dsr.appln_cv,
+      ais.ai_match_score, ais.ai_status, ais.ai_recommendation_tag,
+      ais.role_fit_summary, ais.extracted_skills,
+      aint.total_score AS interview_score, aint.status AS interview_status
+    FROM atlas_rec_candidate_ai_screening ais
+    INNER JOIN (
+      SELECT candidate_id, MAX(id) AS max_id
+      FROM atlas_rec_candidate_ai_screening
+      GROUP BY candidate_id
+    ) latest ON ais.id = latest.max_id
+    LEFT JOIN dice_staff_recruitment dsr ON ais.candidate_id = dsr.id
+    LEFT JOIN atlas_rec_ai_interviews aint ON aint.candidate_id = dsr.id
+      AND aint.id = (SELECT MAX(i.id) FROM atlas_rec_ai_interviews i WHERE i.candidate_id = dsr.id)
+    WHERE ais.job_id = ?
+      AND ais.ai_match_score > 0
+    ORDER BY ais.ai_match_score DESC
+    LIMIT 20
+  `, [id]);
+
+  // Get total applicants for this job
+  const [[{ total_applicants }]] = await pool.query(
+    'SELECT COUNT(*) AS total_applicants FROM dice_staff_recruitment WHERE appln_applied_for_sub = ?', [id]
+  );
+
+  // Score distribution
+  const [scoreDist] = await pool.query(`
+    SELECT
+      SUM(CASE WHEN ais.ai_match_score >= 75 THEN 1 ELSE 0 END) AS strong,
+      SUM(CASE WHEN ais.ai_match_score >= 50 AND ais.ai_match_score < 75 THEN 1 ELSE 0 END) AS moderate,
+      SUM(CASE WHEN ais.ai_match_score >= 30 AND ais.ai_match_score < 50 THEN 1 ELSE 0 END) AS hold,
+      SUM(CASE WHEN ais.ai_match_score < 30 THEN 1 ELSE 0 END) AS weak,
+      COUNT(*) AS screened,
+      ROUND(AVG(ais.ai_match_score), 1) AS avg_score
+    FROM atlas_rec_candidate_ai_screening ais
+    INNER JOIN (
+      SELECT candidate_id, MAX(id) AS max_id
+      FROM atlas_rec_candidate_ai_screening GROUP BY candidate_id
+    ) latest ON ais.id = latest.max_id
+    WHERE ais.job_id = ?
+  `, [id]);
+
+  const stats = scoreDist[0] || { strong: 0, moderate: 0, hold: 0, weak: 0, screened: 0, avg_score: 0 };
+
+  res.render('jobs/top-matches', {
+    title: `Top Matches - ${job.applied_for_post}`,
+    job,
+    topCandidates,
+    stats: { ...stats, total_applicants },
+    success: req.flash('success'),
+    error: req.flash('error'),
+  });
+});
+
+module.exports = { index, create, store, edit, update, toggleVisibility, topMatches };
