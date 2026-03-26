@@ -63,7 +63,7 @@
       <h2 class="text-2xl font-bold mb-2">Interview Already Completed</h2>
       <p class="text-slate-400 mb-4">Thank you, <strong class="text-white"><%= candidateName %></strong>. Your interview has been submitted.</p>
       <% if (_interview.total_score) { %><p class="text-sm text-slate-500">Score: <strong><%= _interview.total_score %>%</strong></p><% } %>
-      <a href="/candidate/dashboard" class="btn-action btn-submit mt-6">Back to Dashboard</a>
+      <p class="text-sm text-slate-400 mt-6">You may close this window.</p>
     </div>
   </div>
 
@@ -255,7 +255,7 @@
         <h2 class="text-2xl font-bold mb-2">Interview Submitted!</h2>
         <p class="text-slate-400 mb-4">Thank you, <strong class="text-white"><%= candidateName %></strong>. Your AI-powered report is being generated.</p>
         <p class="text-xs text-slate-500 mb-6">Scores for communication, domain knowledge, problem solving, and confidence will be available shortly.</p>
-        <p class="text-sm text-slate-400">Redirecting to dashboard...</p>
+        <p class="text-sm text-slate-400">You may now close this window.</p>
       </div>
     </div>
   </template>
@@ -566,7 +566,7 @@ function videoInterview() {
       this.saving = false;
 
       this.phase = 'completed';
-      setTimeout(function() { window.location.href = '/candidate/dashboard'; }, 4000);
+      // No redirect — stay on thank you screen
     }
   };
 }
