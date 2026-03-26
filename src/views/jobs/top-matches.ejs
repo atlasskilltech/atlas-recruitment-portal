@@ -140,7 +140,7 @@
           <th>Experience</th>
           <th>Current Role</th>
           <th class="text-center">AI Match</th>
-          <th>Recommendation</th>
+          <th>Status</th>
           <th>Interview</th>
           <th>Actions</th>
         </tr>
@@ -205,11 +205,18 @@
               </div>
             </td>
 
-            <!-- Match Status -->
+            <!-- Status -->
             <td>
-              <span class="<%= recBadge(c.match_status) %>">
-                <%= (c.match_status || 'weak_fit').replace(/_/g, ' ').replace(/\b\w/g, function(x){return x.toUpperCase();}) %>
-              </span>
+              <div class="flex flex-col gap-1">
+                <span class="<%= recBadge(c.match_status) %>" style="font-size:0.7rem;">
+                  <%= (c.match_status || 'weak_fit').replace(/_/g, ' ').replace(/\b\w/g, function(x){return x.toUpperCase();}) %>
+                </span>
+                <% if (c.has_applied) { %>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
+                    ✓ Applied
+                  </span>
+                <% } %>
+              </div>
             </td>
 
             <!-- Interview Status -->

@@ -146,6 +146,8 @@ class JobMatchingService {
         dsr.appln_high_qualification, dsr.appln_specialization,
         dsr.appln_total_experience, dsr.appln_current_designation,
         dsr.appln_current_organisation, dsr.appln_cv,
+        dsr.appln_applied_for_sub,
+        IF(dsr.appln_applied_for_sub = ?, 1, 0) AS has_applied,
         ais.ai_match_score AS screening_score, ais.ai_status AS screening_status,
         aint.total_score AS interview_score, aint.status AS interview_status
       FROM atlas_rec_job_candidate_matches m
@@ -157,7 +159,7 @@ class JobMatchingService {
       WHERE m.job_id = ? AND m.match_score > 0
       ORDER BY m.match_score DESC
       LIMIT ?
-    `, [jobId, limit]);
+    `, [jobId, jobId, limit]);
 
     return rows;
   }
