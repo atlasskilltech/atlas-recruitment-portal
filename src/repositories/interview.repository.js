@@ -36,7 +36,7 @@ class InterviewRepository {
   async findById(id) {
     try {
       const sql = `
-        SELECT aii.*,
+        SELECT aii.*, aii.status AS interview_status,
           dsr.appln_full_name AS candidate_name, dsr.appln_email, dsr.appln_mobile_no,
           dsr.appln_total_experience, dsr.appln_high_qualification,
           COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
@@ -60,11 +60,11 @@ class InterviewRepository {
   async findByToken(token) {
     try {
       const sql = `
-        SELECT aii.*,
+        SELECT aii.*, aii.status AS interview_status,
           dsr.appln_full_name AS candidate_name, dsr.appln_email, dsr.appln_mobile_no,
           dsr.appln_total_experience, dsr.appln_high_qualification,
           COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
-          job.applied_job_desc, job.applied_location
+          job.applied_job_desc AS job_description, job.applied_location
         FROM atlas_rec_ai_interviews aii
         LEFT JOIN dice_staff_recruitment dsr ON aii.candidate_id = dsr.id
         LEFT JOIN isdi_admsn_applied_for job ON aii.job_id = job.id
@@ -84,7 +84,7 @@ class InterviewRepository {
   async findByCandidateId(candidateId) {
     try {
       const sql = `
-        SELECT aii.*,
+        SELECT aii.*, aii.status AS interview_status,
           COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
           job.applied_location
         FROM atlas_rec_ai_interviews aii
@@ -379,7 +379,7 @@ class InterviewRepository {
       const offset = (page - 1) * limit;
 
       const sql = `
-        SELECT aii.*,
+        SELECT aii.*, aii.status AS interview_status,
           dsr.appln_full_name AS candidate_name, dsr.appln_email, dsr.appln_mobile_no,
           COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
           job.applied_location
