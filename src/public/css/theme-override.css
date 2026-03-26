@@ -245,6 +245,48 @@ body {
 .shadow-brand { box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.25) !important; }
 .shadow-brand-lg { box-shadow: 0 8px 24px 0 rgba(16, 185, 129, 0.2) !important; }
 
+/* ═══ Candidate Detail Header ═══ */
+/* Change from bright green to dark slate professional look */
+.bg-gradient-brand, [class*="bg-gradient-brand"] {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 60%, #064e3b 100%) !important;
+}
+
+/* Candidate detail page header card */
+.rounded-2xl.overflow-hidden[class*="bg-gradient"],
+.card[class*="bg-gradient-brand"],
+div[class*="bg-gradient-brand"][class*="rounded"] {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 60%, #064e3b 100%) !important;
+  border: 1px solid #334155 !important;
+}
+
+/* Action buttons in candidate header */
+.bg-gradient-brand .btn-primary,
+[class*="bg-gradient-brand"] .btn-primary,
+.bg-gradient-brand [class*="btn-accent"],
+[class*="bg-gradient-brand"] [class*="btn-accent"] {
+  background: #10b981 !important;
+  border: none !important;
+}
+
+.bg-gradient-brand .btn-primary:hover,
+[class*="bg-gradient-brand"] .btn-primary:hover {
+  background: #059669 !important;
+}
+
+/* Outline buttons on dark background */
+.bg-gradient-brand .btn-outline,
+[class*="bg-gradient-brand"] .btn-outline,
+.bg-gradient-brand [class*="btn-ghost"],
+[class*="bg-gradient-brand"] [class*="btn-ghost"] {
+  border-color: rgba(255,255,255,0.2) !important;
+  color: white !important;
+}
+
+.bg-gradient-brand .btn-outline:hover,
+[class*="bg-gradient-brand"] .btn-outline:hover {
+  background: rgba(255,255,255,0.1) !important;
+}
+
 /* ═══ User Dropdown Fix ═══ */
 /* Fix dropdown overlapping with content */
 [x-show][class*="absolute"][class*="right-0"] {
@@ -276,9 +318,19 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
 }
 
 /* ═══ Login Page Fix ═══ */
-/* Better gradient for auth pages */
+/* Animated gradient for auth pages */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+  100% { background-position: 0% 50%; }
+}
+
 .bg-gradient-hero {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #064e3b 100%) !important;
+  background: linear-gradient(-45deg, #0f172a, #1e293b, #064e3b, #10b981, #0f172a, #1e3a5f) !important;
+  background-size: 400% 400% !important;
+  animation: gradientShift 15s ease infinite !important;
 }
 
 /* Login card styling */
@@ -346,4 +398,131 @@ aside a[class*="bg-primary"], nav a[class*="bg-primary"] {
 /* User avatar circle */
 .bg-primary-800.rounded-full, [class*="rounded-full"][class*="bg-primary"] {
   background: linear-gradient(135deg, #10b981, #059669) !important;
+}
+
+/* ═══ All Profile/Detail Page Headers ═══ */
+/* AI Screening detail, AI Interview detail, candidate profile avatar */
+.bg-primary-100 {
+  background-color: #d1fae5 !important;
+}
+
+.dark .bg-primary-100 {
+  background-color: #064e3b !important;
+}
+
+.text-primary-800 {
+  color: #065f46 !important;
+}
+
+.dark .text-primary-800 {
+  color: #6ee7b7 !important;
+}
+
+.dark .text-primary-200 {
+  color: #a7f3d0 !important;
+}
+
+/* ═══ Skill/Keyword Pills ═══ */
+/* Extracted skills pills - use dark emerald on light green */
+.bg-primary-100.text-primary-800,
+[class*="bg-primary-100"][class*="text-primary-800"] {
+  background: #d1fae5 !important;
+  color: #065f46 !important;
+  border: 1px solid #a7f3d0 !important;
+}
+
+.dark .bg-primary-100.text-primary-800,
+.dark [class*="bg-primary-100"][class*="text-primary-800"] {
+  background: rgba(16, 185, 129, 0.15) !important;
+  color: #6ee7b7 !important;
+  border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+
+/* Keyword pills - accent colored */
+[class*="bg-accent"][class*="text-accent"] {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+
+/* ═══ Score Ring Colors (detail pages) ═══ */
+.stroke-success, [class*="stroke-success"] {
+  stroke: #10b981 !important;
+}
+.stroke-warning, [class*="stroke-warning"] {
+  stroke: #f59e0b !important;
+}
+.stroke-destructive, [class*="stroke-destructive"] {
+  stroke: #ef4444 !important;
+}
+
+.text-success { color: #10b981 !important; }
+.text-warning { color: #f59e0b !important; }
+.text-destructive { color: #ef4444 !important; }
+
+/* ═══ Section Icons ═══ */
+/* Tag, key, graduation-cap, briefcase, git-compare, target icons */
+.text-info { color: #3b82f6 !important; }
+
+/* ═══ All Detail Page Cards ═══ */
+.card p, .card span {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ═══ Avatar Sizes (all detail pages) ═══ */
+/* Large profile avatars on detail pages */
+.w-16.h-16.rounded-full, .w-14.h-14.rounded-full {
+  background: linear-gradient(135deg, #1e293b, #064e3b) !important;
+  color: white !important;
+}
+
+/* Medium avatars in lists */
+.w-9.h-9.rounded-full, .w-8.h-8.rounded-full {
+  background: #d1fae5 !important;
+}
+
+.dark .w-9.h-9.rounded-full, .dark .w-8.h-8.rounded-full {
+  background: #064e3b !important;
+}
+
+/* ═══ Tab Navigation (detail pages) ═══ */
+/* Active tab indicator */
+[class*="border-b-2"][class*="border-primary"],
+[class*="border-bottom"][class*="primary"] {
+  border-color: #10b981 !important;
+}
+
+/* ═══ Stats Cards (dashboard, all pages) ═══ */
+.stat-card, [class*="stat-card"] {
+  border-radius: 12px !important;
+}
+
+/* ═══ Rejected/Hold/Eligible badge colors ═══ */
+.badge-rejected {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+}
+
+.badge-hold {
+  background: rgba(245, 158, 11, 0.1) !important;
+  color: #f59e0b !important;
+}
+
+.badge-new {
+  background: rgba(59, 130, 246, 0.1) !important;
+  color: #3b82f6 !important;
+}
+
+.badge-hired, .badge-selected {
+  background: rgba(16, 185, 129, 0.1) !important;
+  color: #10b981 !important;
+}
+
+.badge-scheduled {
+  background: rgba(139, 92, 246, 0.1) !important;
+  color: #8b5cf6 !important;
+}
+
+.badge-shortlisted {
+  background: rgba(6, 182, 212, 0.1) !important;
+  color: #06b6d4 !important;
 }
