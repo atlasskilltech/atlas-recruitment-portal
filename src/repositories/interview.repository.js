@@ -248,7 +248,8 @@ class InterviewRepository {
   async getAnswers(interviewId) {
     try {
       const sql = `
-        SELECT ans.*, q.question_text, q.question_type, q.question_order, q.max_score
+        SELECT ans.*, q.question_text, q.question_type, q.question_order,
+               q.max_duration_seconds
         FROM atlas_rec_ai_interview_answers ans
         LEFT JOIN atlas_rec_ai_interview_questions q ON ans.question_id = q.id
         WHERE ans.interview_id = ?

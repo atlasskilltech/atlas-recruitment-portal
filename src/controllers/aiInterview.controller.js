@@ -222,10 +222,14 @@ const submitAnswer = asyncHandler(async (req, res) => {
     try {
       const interview = await interviewService.getInterviewByToken(req.params.token);
       interviewId = interview.id;
+      logger.info(`[INTERVIEW] Answer via token: resolved interviewId=${interviewId}`);
     } catch (err) {
+      logger.error(`[INTERVIEW] Token resolve failed: ${err.message}`);
       return res.status(400).json({ success: false, message: err.message });
     }
   }
+
+  logger.info(`[INTERVIEW] submitAnswer: interviewId=${interviewId}, questionId=${question_id}, answerLen=${(answer_text || '').length}`);
 
   if (!interviewId || !question_id) {
     return res.status(400).json({
@@ -275,10 +279,14 @@ const completeInterview = asyncHandler(async (req, res) => {
     try {
       const interview = await interviewService.getInterviewByToken(req.params.token);
       interviewId = interview.id;
+      logger.info(`[INTERVIEW] Complete via token: resolved interviewId=${interviewId}`);
     } catch (err) {
+      logger.error(`[INTERVIEW] Complete token resolve failed: ${err.message}`);
       return res.status(400).json({ success: false, message: err.message });
     }
   }
+
+  logger.info(`[INTERVIEW] completeInterview called: interviewId=${interviewId}`);
 
   if (!interviewId) {
     return res.status(400).json({
