@@ -19,14 +19,14 @@
 
       <!-- Search -->
       <div class="hidden md:block relative" x-data="{ searchOpen: false }">
-        <div class="relative">
+        <form method="GET" action="/candidates" class="relative">
           <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"></i>
-          <input type="text"
+          <input type="text" name="search"
                  placeholder="Search candidates, jobs..."
                  class="form-input pl-10 pr-4 py-2 w-64 focus:w-80 transition-all duration-300 text-sm"
                  @focus="searchOpen = true"
                  @blur="setTimeout(() => searchOpen = false, 200)">
-        </div>
+        </form>
       </div>
 
       <!-- Dark Mode Toggle -->
