@@ -20,12 +20,13 @@ async function runPendingScreenings() {
   isRunning = true;
 
   try {
-    // Find candidates who have NO screening record yet
+    // Find candidates who have NO screening record yet (only recent applicants)
     const [unscreened] = await pool.query(`
       SELECT dsr.id, dsr.appln_full_name, dsr.appln_applied_for_sub, dsr.appln_cv
       FROM dice_staff_recruitment dsr
       LEFT JOIN atlas_rec_candidate_ai_screening ais ON ais.candidate_id = dsr.id
       WHERE ais.id IS NULL
+        AND dsr.appln_date >= DATE_SUB(CURDATE(), INTERVAL 90 DAY)
       ORDER BY dsr.appln_date DESC
       LIMIT 15
     `);
