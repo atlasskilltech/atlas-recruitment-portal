@@ -278,6 +278,7 @@ class InterviewService {
     const recommendation = scoringService.getRecommendationTag(overallScore);
 
     // Update interview record with all scores
+    const summaryText = typeof summary === 'string' ? summary : JSON.stringify(summary);
     const updated = await interviewRepository.update(interviewId, {
       interview_status: INTERVIEW_STATUSES.EVALUATED,
       overall_score: overallScore,
@@ -286,8 +287,8 @@ class InterviewService {
       problem_solving_score: problemSolvingScore,
       confidence_score: confidenceScore,
       completed_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
-      feedback: typeof summary === 'string' ? summary : JSON.stringify(summary),
-      ai_recommendation: recommendation,
+      feedback: summaryText,
+      ai_summary: `Recommendation: ${recommendation}. ${summaryText}`,
     });
 
     logger.info(`[INTERVIEW] Interview ${interviewId} completed: score=${overallScore}, status=evaluated, recommendation=${recommendation}`);
