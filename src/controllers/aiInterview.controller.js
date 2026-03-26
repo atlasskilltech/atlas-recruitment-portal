@@ -330,18 +330,33 @@ const inviteGet = asyncHandler(async (req, res) => {
     // Check if candidate already has an active interview
     const interviewRepository = require('../repositories/interview.repository');
     const existing = await interviewRepository.findByCandidateId(candidateId);
-    const activeInterview = existing.find(iv => !['expired', 'failed'].includes(iv.status));
+    // Only reuse if candidate has actually started or completed the interview
+    const activeInterview = existing.find(iv => {
+      const s = iv.interview_status || iv.status;
+      return ['in_progress', 'evaluated', 'passed', 'submitted'].includes(s);
+    });
 
     let interviewLink;
     let result;
 
     if (activeInterview) {
-      // Interview exists — just build the link
+      // Interview started/completed — reuse the link
       interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${activeInterview.invitation_token}`;
       result = activeInterview;
-      logger.info(`[INTERVIEW] Existing interview for candidate ${candidateId}: id=${result.id}`);
+      logger.info(`[INTERVIEW] Reusing active interview for candidate ${candidateId}: id=${result.id}`);
     } else {
-      // Create new interview
+      // Delete any old invited/expired/pending interviews and create fresh
+      for (const old of existing) {
+        const s = old.interview_status || old.status;
+        if (['invited', 'expired', 'pending', 'failed'].includes(s)) {
+          logger.info(`[INTERVIEW] Deleting old interview ${old.id} (status=${s}) for candidate ${candidateId}`);
+          await pool.query('DELETE FROM atlas_rec_ai_interview_answers WHERE interview_id = ?', [old.id]);
+          await pool.query('DELETE FROM atlas_rec_ai_interview_questions WHERE interview_id = ?', [old.id]);
+          await pool.query('DELETE FROM atlas_rec_ai_interviews WHERE id = ?', [old.id]);
+        }
+      }
+
+      // Create new interview with fresh AI questions
       result = await interviewService.createInterview(candidateId, null, 'hr');
       interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${result.token}`;
       logger.info(`[INTERVIEW] New interview created for candidate ${candidateId}: id=${result.id}`);
