@@ -331,19 +331,61 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
   background: linear-gradient(-45deg, #0f172a, #1e293b, #064e3b, #10b981, #0f172a, #1e3a5f) !important;
   background-size: 400% 400% !important;
   animation: gradientShift 15s ease infinite !important;
+  min-height: 100vh !important;
+  height: 100vh !important;
+  overflow: auto !important;
 }
 
-/* Login card styling */
-.card.shadow-brand-lg {
+/* Make login page fit on one screen — no scroll */
+.bg-gradient-hero > .relative,
+.bg-gradient-hero > div > .relative {
+  max-width: 400px !important;
+}
+
+/* Login card — compact, no scroll needed */
+.card.shadow-brand-lg,
+.bg-gradient-hero .card {
   background: #ffffff !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 16px !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+  padding: 24px 28px !important;
 }
 
-.dark .card.shadow-brand-lg {
+.dark .card.shadow-brand-lg,
+.dark .bg-gradient-hero .card {
   background: #1e293b !important;
   border-color: #334155 !important;
+}
+
+/* Compact logo area */
+.bg-gradient-hero .card .text-center.mb-8 {
+  margin-bottom: 16px !important;
+}
+
+.bg-gradient-hero .card .inline-flex.w-16.h-16 {
+  width: 48px !important;
+  height: 48px !important;
+  margin-bottom: 8px !important;
+}
+
+.bg-gradient-hero .card .text-2xl {
+  font-size: 1.25rem !important;
+}
+
+/* Compact form spacing */
+.bg-gradient-hero .card .space-y-5 > * + * {
+  margin-top: 12px !important;
+}
+
+.bg-gradient-hero .card .form-group {
+  margin-bottom: 0 !important;
+}
+
+/* Compact footer */
+.bg-gradient-hero .card .mt-8.pt-6 {
+  margin-top: 12px !important;
+  padding-top: 12px !important;
 }
 
 /* Sign In button on login */
@@ -352,8 +394,8 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
   border: none !important;
   border-radius: 10px !important;
   font-weight: 600 !important;
-  font-size: 1rem !important;
-  padding: 12px 24px !important;
+  font-size: 0.95rem !important;
+  padding: 10px 24px !important;
   letter-spacing: 0.01em;
 }
 
@@ -371,8 +413,8 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
   background: #f8fafc !important;
   border: 1px solid #e2e8f0 !important;
   border-radius: 10px !important;
-  padding: 12px 12px 12px 44px !important;
-  font-size: 0.95rem !important;
+  padding: 10px 12px 10px 44px !important;
+  font-size: 0.9rem !important;
 }
 
 .dark .form-input.pl-11 {
@@ -384,6 +426,11 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
 .form-input.pl-11:focus {
   border-color: #10b981 !important;
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Footer links below login card */
+.bg-gradient-hero .mt-6.text-center {
+  margin-top: 12px !important;
 }
 
 /* ═══ Sidebar Active State ═══ */
