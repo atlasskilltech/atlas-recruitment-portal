@@ -109,7 +109,7 @@ Atlas HR Recruitment Team`,
 class NotificationService {
   constructor() {
     // All notifications go ONLY to this email — no candidate/HR emails
-    this.ADMIN_NOTIFY_EMAIL = process.env.ADMIN_NOTIFY_EMAIL || 'meraj.syed@atlasuniversity.edu.in';
+    this.ADMIN_NOTIFY_EMAIL = process.env.ADMIN_NOTIFY_EMAIL || 'meraj.Syed@atlasuniversity.edu.in';
   }
 
   /**
