@@ -133,6 +133,9 @@ app.listen(PORT, () => {
   // Start background cron jobs
   const { startAIScreeningCron } = require('./jobs/aiScreeningCron');
   startAIScreeningCron();
+
+  const { startAIInterviewCron } = require('./jobs/aiInterviewCron');
+  startAIInterviewCron();
 });
 
 module.exports = app;
