@@ -21,6 +21,18 @@
     <p class="text-sm font-semibold text-foreground mt-1"><%= typeof email !== 'undefined' ? email : '' %></p>
   </div>
 
+  <!-- Flash Messages -->
+  <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+    <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+      <p class="text-sm text-red-700 dark:text-red-300"><%= Array.isArray(error) ? error[0] : error %></p>
+    </div>
+  <% } %>
+  <% if (typeof success !== 'undefined' && success && success.length > 0) { %>
+    <div class="mb-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+      <p class="text-sm text-green-700 dark:text-green-300"><%= Array.isArray(success) ? success[0] : success %></p>
+    </div>
+  <% } %>
+
   <!-- OTP Form -->
   <form action="/candidate/verify-otp" method="POST" class="space-y-5">
     <div class="form-group">
