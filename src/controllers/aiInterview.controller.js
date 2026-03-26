@@ -42,9 +42,27 @@ const index = asyncHandler(async (req, res) => {
             applied_for_post_id FROM isdi_admsn_applied_for ORDER BY applied_for_post_id, applied_for_post`
   );
 
+  // Compute interview stats for the summary cards
+  const [statsRows] = await pool.query(`
+    SELECT
+      COUNT(*) AS total,
+      SUM(CASE WHEN aint.status = 'pending' OR aint.status = 'invited' THEN 1 ELSE 0 END) AS pending,
+      SUM(CASE WHEN aint.status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress,
+      SUM(CASE WHEN aint.status IN ('evaluated','submitted') THEN 1 ELSE 0 END) AS completed,
+      SUM(CASE WHEN aint.status = 'passed' OR (aint.status = 'evaluated' AND aint.total_score >= 50) THEN 1 ELSE 0 END) AS passed,
+      SUM(CASE WHEN aint.status = 'failed' OR (aint.status = 'evaluated' AND aint.total_score < 50) THEN 1 ELSE 0 END) AS failed
+    FROM atlas_rec_ai_interviews aint
+    INNER JOIN (
+      SELECT candidate_id, MAX(id) AS max_id
+      FROM atlas_rec_ai_interviews GROUP BY candidate_id
+    ) latest ON aint.id = latest.max_id
+  `);
+  const interviewStats = statsRows[0] || { total: 0, pending: 0, in_progress: 0, completed: 0, passed: 0, failed: 0 };
+
   res.render('ai-interview/index', {
     title: 'AI Interviews',
     interviews,
+    stats: interviewStats,
     jobs,
     filters: req.query,
     interviewStatuses: INTERVIEW_STATUSES_LIST,
