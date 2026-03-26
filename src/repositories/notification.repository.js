@@ -8,22 +8,19 @@ class NotificationRepository {
     try {
       const sql = `
         INSERT INTO atlas_rec_notifications
-        (candidate_id, type, title, message, channel, recipient_email,
-         recipient_mobile, status, sent_at, created_by, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        (candidate_id, channel, template_key, recipient, subject, message, status, sent_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const params = [
         data.candidate_id || null,
-        data.type || 'info',
-        data.title || null,
-        data.message,
         data.channel || 'email',
-        data.recipient_email || null,
-        data.recipient_mobile || null,
-        data.status || 'pending',
+        data.template_key || data.type || null,
+        data.recipient_email || data.recipient || null,
+        data.title || data.subject || null,
+        data.message,
+        data.status || 'queued',
         data.sent_at || null,
-        data.created_by || null,
       ];
 
       const [result] = await pool.query(sql, params);
@@ -132,7 +129,7 @@ class NotificationRepository {
       const params = [];
 
       const allowedFields = [
-        'status', 'sent_at', 'error_message', 'read_at',
+        'status', 'sent_at', 'provider_response',
       ];
 
       for (const field of allowedFields) {

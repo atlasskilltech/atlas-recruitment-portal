@@ -109,7 +109,7 @@ Atlas HR Recruitment Team`,
 class NotificationService {
   constructor() {
     // All notifications go ONLY to this email — no candidate/HR emails
-    this.ADMIN_NOTIFY_EMAIL = process.env.ADMIN_NOTIFY_EMAIL || 'meraj.syed@atlasuniversity.edu.in';
+    this.ADMIN_NOTIFY_EMAIL = process.env.ADMIN_NOTIFY_EMAIL || 'meraj.Syed@atlasuniversity.edu.in';
   }
 
   /**
@@ -160,7 +160,7 @@ class NotificationService {
       // Mark as failed but do not throw
       await notificationRepository.update(notification.id, {
         status: 'failed',
-        error_message: err.message,
+        provider_response: err.message,
       });
       logger.error(`Notification delivery failed: id=${notification.id}`, { error: err.message });
     }
@@ -169,22 +169,41 @@ class NotificationService {
   }
 
   /**
-   * Send an email notification (placeholder implementation).
-   * In production this would integrate with an SMTP service or email API.
-   * @param {string} to - recipient email address
-   * @param {string} subject - email subject
-   * @param {string} message - email body
-   * @returns {Promise<void>}
+   * Send an email notification via SMTP (SendGrid or other).
+   * Falls back to console logging if SMTP is not configured.
    */
   async sendEmailNotification(to, subject, message) {
-    // Placeholder -- logs the email details for development
-    console.log('=== EMAIL NOTIFICATION ===');
-    console.log(`To     : ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Body   : ${message.substring(0, 200)}${message.length > 200 ? '...' : ''}`);
-    console.log('=========================');
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
 
-    logger.info(`Email notification queued: to=${to}, subject=${subject}`);
+    if (smtpHost && smtpUser && smtpPass) {
+      // Use nodemailer-compatible approach via axios to SendGrid API
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: parseInt(process.env.SMTP_PORT, 10) || 587,
+        secure: false,
+        auth: { user: smtpUser, pass: smtpPass },
+      });
+
+      const result = await transporter.sendMail({
+        from: process.env.SMTP_FROM || '"ATLAS HR" <hr@atlasuniversity.edu.in>',
+        to: to,
+        subject: subject,
+        text: message,
+        html: message.replace(/\n/g, '<br>'),
+      });
+
+      logger.info(`Email sent via SMTP: to=${to}, subject=${subject}, messageId=${result.messageId}`);
+      return result;
+    }
+
+    // Fallback: console log
+    console.log('=== EMAIL NOTIFICATION (no SMTP) ===');
+    console.log(`To: ${to} | Subject: ${subject}`);
+    console.log('====================================');
+    logger.info(`Email logged (no SMTP): to=${to}, subject=${subject}`);
     return { success: true, to, subject };
   }
 
