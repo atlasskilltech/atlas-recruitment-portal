@@ -51,23 +51,25 @@
   const isAlreadyCompleted = ['evaluated', 'submitted', 'passed', 'failed'].includes(ivStatus);
 %>
 
-<div id="app" x-data="videoInterview()" x-cloak>
-
-  <% if (isAlreadyCompleted) { %>
-  <!-- Already Completed -->
-  <div class="min-h-screen flex items-center justify-center p-6">
-    <div class="setup-card text-center">
-      <div class="w-20 h-20 rounded-full bg-green-900/30 flex items-center justify-center mx-auto mb-6">
-        <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-      </div>
-      <h2 class="text-2xl font-bold mb-2">Interview Already Completed</h2>
-      <p class="text-slate-400 mb-4">Thank you, <strong class="text-white"><%= candidateName %></strong>. Your interview has been submitted.</p>
-      <% if (_interview.total_score) { %><p class="text-sm text-slate-500">Score: <strong><%= _interview.total_score %>%</strong></p><% } %>
-      <p class="text-sm text-slate-400 mt-6">You may close this window.</p>
+<% if (isAlreadyCompleted) { %>
+<!-- Already Completed — server rendered, no Alpine needed -->
+<div class="min-h-screen flex items-center justify-center p-6" style="background: #0f172a; color: #e2e8f0;">
+  <div class="setup-card" style="background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; max-width: 700px; text-align: center;">
+    <div style="width:80px;height:80px;border-radius:50%;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
+      <svg style="width:40px;height:40px;color:#22c55e;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
     </div>
+    <h2 style="font-size:24px;font-weight:bold;margin-bottom:8px;">Interview Already Completed</h2>
+    <p style="color:#94a3b8;margin-bottom:16px;">Thank you, <strong style="color:#fff;"><%= candidateName %></strong>. Your interview has been submitted and is being reviewed.</p>
+    <% if (_interview.total_score) { %>
+      <p style="color:#64748b;font-size:14px;">Score: <strong><%= _interview.total_score %>%</strong></p>
+    <% } %>
+    <p style="color:#64748b;font-size:14px;margin-top:16px;">You may close this window.</p>
   </div>
+</div>
 
-  <% } else { %>
+<% } else { %>
+
+<div id="app" x-data="videoInterview()" x-cloak>
 
   <!-- ═══ SETUP SCREEN ═══ -->
   <template x-if="phase === 'setup'">
@@ -260,8 +262,8 @@
     </div>
   </template>
 
-  <% } %>
-</div>
+  </div>
+<% } %>
 
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>

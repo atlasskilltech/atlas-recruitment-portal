@@ -312,14 +312,15 @@ const completeInterview = asyncHandler(async (req, res) => {
     });
 
     // Run evaluation in background (after response is sent)
-    setImmediate(async () => {
-      try {
-        const result = await interviewService.completeInterview(interviewId);
-        logger.info(`[INTERVIEW] Background evaluation completed for ${interviewId}: score=${result.overallScore}`);
-      } catch (evalErr) {
-        logger.error(`[INTERVIEW] Background evaluation failed for ${interviewId}: ${evalErr.message}`, { stack: evalErr.stack });
-      }
-    });
+    setTimeout(() => {
+      interviewService.completeInterview(interviewId)
+        .then((result) => {
+          logger.info(`[INTERVIEW] Background evaluation completed for ${interviewId}: score=${result.overallScore}`);
+        })
+        .catch((evalErr) => {
+          logger.error(`[INTERVIEW] Background evaluation FAILED for ${interviewId}: ${evalErr.message}`, { stack: evalErr.stack });
+        });
+    }, 1000);
   } catch (err) {
     logger.error(`Failed to submit interview ${interviewId}`, { error: err.message });
     return res.status(400).json({
