@@ -125,8 +125,7 @@
   </template>
 
   <!-- ═══ INTERVIEW SESSION ═══ -->
-  <template x-if="phase === 'session'">
-    <div class="min-h-screen flex flex-col">
+  <div x-show="phase === 'session'" style="display:none;" class="min-h-screen flex flex-col">
       <!-- Top Bar -->
       <div class="flex items-center justify-between px-6 py-3 border-b border-slate-700 bg-slate-900/80 backdrop-blur">
         <div>
@@ -237,7 +236,7 @@
         </div>
       </div>
     </div>
-  </template>
+  </div>
 
   <!-- ═══ COMPLETED ═══ -->
   <template x-if="phase === 'completed'">
@@ -323,13 +322,15 @@ function videoInterview() {
 
       this.phase = 'session';
       var self = this;
-      // Attach stream to session video after template renders
-      this.$nextTick(function() {
-        if (self.$refs.sessionVideo && self.stream) {
-          self.$refs.sessionVideo.srcObject = self.stream;
+      // Attach stream to session video — use short delay for DOM to update with x-show
+      setTimeout(function() {
+        var video = document.querySelector('[x-ref="sessionVideo"]') || self.$refs.sessionVideo;
+        if (video && self.stream) {
+          video.srcObject = self.stream;
+          video.play().catch(function(){});
         }
         self.startQuestion();
-      });
+      }, 300);
     },
 
     startQuestion() {
