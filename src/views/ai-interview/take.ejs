@@ -277,11 +277,15 @@ function interviewApp() {
 
       this.saving = true;
       try {
-        await fetch('/ai/interview/' + interviewToken + '/answer', {
+        var res = await fetch('/ai/interview/' + interviewToken + '/answer', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ question_id: questionId, answer_text: answerText })
         });
+        var data = await res.json();
+        if (!data.success) {
+          console.error('Answer save failed:', data.message);
+        }
       } catch (e) {
         console.error('Failed to save answer:', e);
       }
@@ -310,11 +314,21 @@ function interviewApp() {
 
       this.saving = true;
       try {
-        await fetch('/ai/interview/' + interviewToken + '/submit', {
+        var res = await fetch('/ai/interview/' + interviewToken + '/submit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' }
         });
-        this.submitted = true;
+        var data = await res.json();
+        console.log('Submit response:', data);
+        if (data.success) {
+          this.submitted = true;
+          // Redirect to candidate dashboard after 3 seconds
+          setTimeout(function() {
+            window.location.href = '/candidate/dashboard';
+          }, 3000);
+        } else {
+          alert('Submission error: ' + (data.message || 'Unknown error'));
+        }
       } catch (e) {
         console.error('Failed to submit interview:', e);
         alert('There was an error submitting your interview. Please try again.');
