@@ -317,8 +317,66 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
   background: rgba(239, 68, 68, 0.08) !important;
 }
 
-/* ═══ Login Page Fix ═══ */
-/* Animated gradient for auth pages */
+/* ═══ Quill Editor Styling ═══ */
+.ql-toolbar.ql-snow {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px 8px 0 0 !important;
+  background: #f8fafc !important;
+}
+
+.ql-container.ql-snow {
+  border: 1px solid #e2e8f0 !important;
+  border-top: none !important;
+  border-radius: 0 0 8px 8px !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.9rem !important;
+  min-height: 200px !important;
+}
+
+.dark .ql-toolbar.ql-snow {
+  background: #1e293b !important;
+  border-color: #334155 !important;
+}
+
+.dark .ql-container.ql-snow {
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+
+.dark .ql-editor {
+  color: #e2e8f0 !important;
+}
+
+.ql-editor {
+  min-height: 200px !important;
+  line-height: 1.6 !important;
+}
+
+.ql-editor.ql-blank::before {
+  color: #94a3b8 !important;
+  font-style: normal !important;
+}
+
+/* File input styling */
+input[type="file"].form-input {
+  padding: 8px 12px !important;
+  background: #f8fafc !important;
+  border: 2px dashed #e2e8f0 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+}
+
+input[type="file"].form-input:hover {
+  border-color: #10b981 !important;
+  background: #f0fdf4 !important;
+}
+
+.dark input[type="file"].form-input {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+/* ═══ Modern Login Page ═══ */
 @keyframes gradientShift {
   0% { background-position: 0% 50%; }
   25% { background-position: 100% 50%; }
@@ -326,36 +384,44 @@ a[href="/logout"]:hover, a[href*="logout"]:hover {
   75% { background-position: 0% 100%; }
   100% { background-position: 0% 50%; }
 }
-
+/* Split layout: left side branding, right side form */
 .bg-gradient-hero {
   background: linear-gradient(-45deg, #0f172a, #1e293b, #064e3b, #10b981, #0f172a, #1e3a5f) !important;
   background-size: 400% 400% !important;
   animation: gradientShift 15s ease infinite !important;
   min-height: 100vh !important;
   height: 100vh !important;
-  overflow: auto !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
 }
 
-/* Make login page fit on one screen — no scroll */
+/* Login wrapper — glass card effect */
 .bg-gradient-hero > .relative,
-.bg-gradient-hero > div > .relative {
-  max-width: 400px !important;
+.bg-gradient-hero > div {
+  width: 100% !important;
+  max-width: 420px !important;
+  padding: 16px !important;
 }
 
-/* Login card — compact, no scroll needed */
 .card.shadow-brand-lg,
 .bg-gradient-hero .card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  border-radius: 16px !important;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-  padding: 24px 28px !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4),
+              0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  padding: 28px 32px !important;
 }
 
 .dark .card.shadow-brand-lg,
 .dark .bg-gradient-hero .card {
-  background: #1e293b !important;
-  border-color: #334155 !important;
+  background: rgba(30, 41, 59, 0.9) !important;
+  border-color: rgba(51, 65, 85, 0.5) !important;
 }
 
 /* Compact logo area */
