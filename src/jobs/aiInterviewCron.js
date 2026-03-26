@@ -2,13 +2,12 @@
 // Atlas HR Recruitment Portal – AI Interview Auto-Invite Cron Job
 // ---------------------------------------------------------------------------
 // Runs every 2 minutes to auto-invite eligible candidates (ai_match_score >= 50)
-// to AI interviews. Only invites candidates who:
-//   1. Have been screened with ai_status = 'eligible'
-//   2. Do NOT already have an AI interview record
+// to AI interviews. Sends interview link email to admin only.
 // ---------------------------------------------------------------------------
 const cron = require('node-cron');
 const pool = require('../config/db');
 const interviewService = require('../services/interview.service');
+const notificationService = require('../services/notification.service');
 const logger = require('../utils/logger');
 
 let isRunning = false;
@@ -66,7 +65,35 @@ async function inviteEligibleCandidates() {
           interviewType
         );
 
-        logger.info(`[INTERVIEW_CRON] Interview created: id=${result.id}, token=${result.token ? result.token.substring(0, 20) + '...' : 'N/A'}`);
+        // Build interview link
+        const appUrl = process.env.APP_URL || 'https://recruitment.atlasskilltech.app';
+        const interviewLink = `${appUrl}/ai/interview/${result.token}`;
+
+        logger.info(`[INTERVIEW_CRON] Interview created: id=${result.id}, link=${interviewLink.substring(0, 80)}...`);
+
+        // Send interview link email to admin only (for testing)
+        try {
+          const templateData = notificationService.getTemplateMessage('ai_interview_invite', {
+            candidateName: candidate.appln_full_name || 'Candidate',
+            jobTitle: 'Position',
+            interviewLink: interviewLink,
+            expiresIn: '10 days',
+          });
+
+          if (templateData) {
+            await notificationService.sendNotification({
+              candidate_id: candidate.candidate_id,
+              type: 'interview_invite',
+              title: templateData.subject,
+              message: templateData.message,
+              channel: 'email',
+            });
+            logger.info(`[INTERVIEW_CRON] Interview link email sent to admin for candidate ${candidate.candidate_id}`);
+          }
+        } catch (emailErr) {
+          logger.warn(`[INTERVIEW_CRON] Email notification failed: ${emailErr.message}`);
+        }
+
         successCount++;
       } catch (err) {
         logger.error(`[INTERVIEW_CRON] Failed to invite candidate ${candidate.candidate_id}: ${err.message}`);
