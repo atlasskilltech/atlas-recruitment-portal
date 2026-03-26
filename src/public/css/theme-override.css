@@ -377,27 +377,9 @@ input[type="file"].form-input:hover {
 }
 
 /* ═══ Modern Login Page ═══ */
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-@keyframes float1 {
-  0%,100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-}
-
-@keyframes float2 {
-  0%,100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(-40px, 30px) scale(1.05); }
-  66% { transform: translate(25px, -40px) scale(0.95); }
-}
-
-/* Fullscreen animated background */
+/* Fullscreen dark background */
 .bg-gradient-hero {
-  background: #0f172a !important;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%) !important;
   min-height: 100vh !important;
   height: 100vh !important;
   overflow: hidden !important;
@@ -405,44 +387,6 @@ input[type="file"].form-input:hover {
   align-items: center !important;
   justify-content: center !important;
   padding: 0 !important;
-  position: relative !important;
-}
-
-/* Animated gradient layer */
-.bg-gradient-hero::before {
-  content: '' !important;
-  position: absolute !important;
-  inset: -50% !important;
-  background: conic-gradient(from 0deg at 50% 50%,
-    #0f172a 0deg,
-    #064e3b 60deg,
-    #10b981 120deg,
-    #1e3a5f 180deg,
-    #0f172a 240deg,
-    #064e3b 300deg,
-    #0f172a 360deg
-  ) !important;
-  animation: gradientShift 20s linear infinite !important;
-  background-size: 100% 100% !important;
-  filter: blur(80px) !important;
-  opacity: 0.6 !important;
-  pointer-events: none !important;
-  z-index: 0 !important;
-}
-
-/* Floating orb 1 */
-.bg-gradient-hero::after {
-  content: '' !important;
-  position: absolute !important;
-  width: 400px !important;
-  height: 400px !important;
-  top: -10% !important;
-  right: -5% !important;
-  border-radius: 50% !important;
-  background: radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%) !important;
-  animation: float1 15s ease-in-out infinite !important;
-  pointer-events: none !important;
-  z-index: 0 !important;
 }
 
 /* Login wrapper — glass card effect */
