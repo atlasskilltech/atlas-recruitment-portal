@@ -442,7 +442,7 @@
 
                 <!-- Applied Role -->
                 <td class="min-w-[160px]">
-                  <span class="text-sm text-foreground"><%= c.applied_job_short_desc_new || '-' %></span>
+                  <span class="text-sm text-foreground"><%= c.job_role_label || c.applied_for_post || c.applied_job_short_desc_new || '-' %></span>
                 </td>
 
                 <!-- Location -->
@@ -452,8 +452,8 @@
 
                 <!-- Qualification -->
                 <td>
-                  <% if (c.appln_high_qualification) { %>
-                    <span class="badge-muted"><%= c.appln_high_qualification %></span>
+                  <% if (c.qualification_label || c.appln_high_qualification) { %>
+                    <span class="badge-muted"><%= c.qualification_label || c.appln_high_qualification %></span>
                   <% } else { %>
                     <span class="text-sm text-muted-foreground">-</span>
                   <% } %>

@@ -88,12 +88,13 @@ const index = asyncHandler(async (req, res) => {
 
   // ---- Chart data ----------------------------------------------------------
 
-  // Applicants by job role
+  // Applicants by job role (use applied_for_post for role name)
   const [applicantsByRole] = await pool.query(`
-    SELECT job.applied_job_short_desc_new AS label, COUNT(dsr.id) AS value
+    SELECT COALESCE(job.applied_for_post, job.applied_job_short_desc_new, 'Unknown') AS label,
+           COUNT(dsr.id) AS value
     FROM dice_staff_recruitment dsr
     LEFT JOIN isdi_admsn_applied_for job ON dsr.appln_applied_for_sub = job.id
-    GROUP BY job.applied_job_short_desc_new
+    GROUP BY label
     ORDER BY value DESC
     LIMIT 10
   `);
@@ -180,7 +181,7 @@ const index = asyncHandler(async (req, res) => {
   const [recentApplicants] = await pool.query(`
     SELECT dsr.id, dsr.appln_id, dsr.appln_full_name, dsr.appln_email,
       dsr.appln_date, dsr.appln_status_new,
-      job.applied_job_short_desc_new AS job_title,
+      COALESCE(job.applied_for_post, job.applied_job_short_desc_new) AS job_title,
       ais.ai_match_score, ais.ai_match_score AS match_score,
       ais.ai_status AS ai_screening_status,
       ais.ai_recommendation_tag AS recommendation_tag,
