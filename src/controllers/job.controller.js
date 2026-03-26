@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const { asyncHandler } = require('../middlewares/error.middleware');
 const { PAGINATION } = require('../config/constants');
+const jobMatchingService = require('../services/jobMatching.service');
 const logger = require('../utils/logger');
 
 // File upload config for JD files
@@ -147,7 +148,17 @@ const store = asyncHandler(async (req, res) => {
   ]);
 
   logger.info(`[JOBS] New job created: ${applied_for_post}`);
-  req.flash('success', `Job opening "${applied_for_post}" created successfully.`);
+
+  // Auto-scan candidates in background
+  const [newJob] = await pool.query('SELECT id FROM isdi_admsn_applied_for WHERE applied_for_post = ? ORDER BY id DESC LIMIT 1', [applied_for_post]);
+  if (newJob[0]) {
+    setTimeout(() => {
+      jobMatchingService.scanCandidatesForJob(newJob[0].id, { limit: 200 })
+        .catch(err => logger.error(`[JOBS] Background scan failed: ${err.message}`));
+    }, 2000);
+  }
+
+  req.flash('success', `Job opening "${applied_for_post}" created. Candidate scanning started in background.`);
   return res.redirect('/jobs');
 });
 
@@ -222,7 +233,14 @@ const update = asyncHandler(async (req, res) => {
   await pool.query(sql, params);
 
   logger.info(`[JOBS] Job updated: id=${id}, ${applied_for_post}`);
-  req.flash('success', `Job opening "${applied_for_post}" updated successfully.`);
+
+  // Re-scan candidates in background after JD update
+  setTimeout(() => {
+    jobMatchingService.scanCandidatesForJob(id, { limit: 200, forceRefresh: true })
+      .catch(err => logger.error(`[JOBS] Background re-scan failed: ${err.message}`));
+  }, 2000);
+
+  req.flash('success', `Job opening "${applied_for_post}" updated. Re-scanning candidates in background.`);
   return res.redirect('/jobs');
 });
 
@@ -241,10 +259,13 @@ const toggleVisibility = asyncHandler(async (req, res) => {
  * GET /jobs/:id/top-matches
  * Show top 20 matching candidates for a specific job role based on AI match scores.
  */
+/**
+ * GET /jobs/:id/top-matches
+ * Show top 20 matching candidates for a specific job role.
+ */
 const topMatches = asyncHandler(async (req, res) => {
   const id = parseInt(req.params.id, 10);
 
-  // Get job details
   const [[job]] = await pool.query(`
     SELECT j.*, s.applied_for_name AS scope_name
     FROM isdi_admsn_applied_for j
@@ -257,54 +278,14 @@ const topMatches = asyncHandler(async (req, res) => {
     return res.redirect('/jobs');
   }
 
-  // Get top 20 candidates matched to this job, sorted by AI match score
-  const [topCandidates] = await pool.query(`
-    SELECT
-      dsr.id, dsr.appln_full_name, dsr.appln_email, dsr.appln_mobile_no,
-      dsr.appln_high_qualification, dsr.appln_specialization,
-      dsr.appln_total_experience, dsr.appln_current_designation,
-      dsr.appln_current_organisation, dsr.appln_cv,
-      ais.ai_match_score, ais.ai_status, ais.ai_recommendation_tag,
-      ais.role_fit_summary, ais.extracted_skills,
-      aint.total_score AS interview_score, aint.status AS interview_status
-    FROM atlas_rec_candidate_ai_screening ais
-    INNER JOIN (
-      SELECT candidate_id, MAX(id) AS max_id
-      FROM atlas_rec_candidate_ai_screening
-      GROUP BY candidate_id
-    ) latest ON ais.id = latest.max_id
-    LEFT JOIN dice_staff_recruitment dsr ON ais.candidate_id = dsr.id
-    LEFT JOIN atlas_rec_ai_interviews aint ON aint.candidate_id = dsr.id
-      AND aint.id = (SELECT MAX(i.id) FROM atlas_rec_ai_interviews i WHERE i.candidate_id = dsr.id)
-    WHERE ais.job_id = ?
-      AND ais.ai_match_score > 0
-    ORDER BY ais.ai_match_score DESC
-    LIMIT 20
-  `, [id]);
+  // Get top candidates from matches table
+  const topCandidates = await jobMatchingService.getTopMatches(id, 20);
+  const stats = await jobMatchingService.getMatchStats(id);
 
-  // Get total applicants for this job
+  // Total applicants who applied for this specific job
   const [[{ total_applicants }]] = await pool.query(
     'SELECT COUNT(*) AS total_applicants FROM dice_staff_recruitment WHERE appln_applied_for_sub = ?', [id]
   );
-
-  // Score distribution
-  const [scoreDist] = await pool.query(`
-    SELECT
-      SUM(CASE WHEN ais.ai_match_score >= 75 THEN 1 ELSE 0 END) AS strong,
-      SUM(CASE WHEN ais.ai_match_score >= 50 AND ais.ai_match_score < 75 THEN 1 ELSE 0 END) AS moderate,
-      SUM(CASE WHEN ais.ai_match_score >= 30 AND ais.ai_match_score < 50 THEN 1 ELSE 0 END) AS hold,
-      SUM(CASE WHEN ais.ai_match_score < 30 THEN 1 ELSE 0 END) AS weak,
-      COUNT(*) AS screened,
-      ROUND(AVG(ais.ai_match_score), 1) AS avg_score
-    FROM atlas_rec_candidate_ai_screening ais
-    INNER JOIN (
-      SELECT candidate_id, MAX(id) AS max_id
-      FROM atlas_rec_candidate_ai_screening GROUP BY candidate_id
-    ) latest ON ais.id = latest.max_id
-    WHERE ais.job_id = ?
-  `, [id]);
-
-  const stats = scoreDist[0] || { strong: 0, moderate: 0, hold: 0, weak: 0, screened: 0, avg_score: 0 };
 
   res.render('jobs/top-matches', {
     title: `Top Matches - ${job.applied_for_post}`,
@@ -316,4 +297,26 @@ const topMatches = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { index, create, store, edit, update, toggleVisibility, topMatches };
+/**
+ * POST /jobs/:id/refresh-matches
+ * Re-scan all candidates against this job's JD.
+ */
+const refreshMatches = asyncHandler(async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  try {
+    const result = await jobMatchingService.scanCandidatesForJob(id, {
+      limit: 500,
+      forceRefresh: true,
+    });
+
+    req.flash('success', `Scan complete: ${result.scanned} candidates scanned, ${result.matched} matched.`);
+  } catch (err) {
+    logger.error(`[JOBS] Refresh scan failed for job ${id}: ${err.message}`);
+    req.flash('error', `Scan failed: ${err.message}`);
+  }
+
+  return res.redirect(`/jobs/${id}/top-matches`);
+});
+
+module.exports = { index, create, store, edit, update, toggleVisibility, topMatches, refreshMatches };
