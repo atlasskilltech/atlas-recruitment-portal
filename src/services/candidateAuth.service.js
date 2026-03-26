@@ -3,8 +3,8 @@ const { generateOTP, isOTPValid, sendOTPEmail } = require('./otp.service');
 const logger = require('../utils/logger');
 
 const OTP_EXPIRY_MINUTES = 10;
-const OTP_COOLDOWN_SECONDS = 60;
-const MAX_OTP_ATTEMPTS = 5;
+const OTP_COOLDOWN_SECONDS = 30; // Reduced: no actual email delivery
+const MAX_OTP_ATTEMPTS = 10;
 
 async function findCandidateByEmail(email) {
   const [rows] = await pool.query(
@@ -41,10 +41,12 @@ async function requestOTP(email) {
     return { success: false, message: 'Your account has been blocked. Please contact support.' };
   }
 
-  // Cooldown check
+  // Cooldown check — skip if elapsed is negative (timezone mismatch) or > 5 min (stale)
   if (account.otp_last_sent_at) {
-    const elapsed = (Date.now() - new Date(account.otp_last_sent_at).getTime()) / 1000;
-    if (elapsed < OTP_COOLDOWN_SECONDS) {
+    const lastSent = new Date(account.otp_last_sent_at).getTime();
+    const elapsed = (Date.now() - lastSent) / 1000;
+    // Only enforce cooldown if elapsed is positive and reasonable (< 5 minutes)
+    if (elapsed >= 0 && elapsed < OTP_COOLDOWN_SECONDS && elapsed < 300) {
       const wait = Math.ceil(OTP_COOLDOWN_SECONDS - elapsed);
       return { success: false, message: `Please wait ${wait} seconds before requesting a new OTP.` };
     }
@@ -54,7 +56,7 @@ async function requestOTP(email) {
   const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
   await pool.query(
-    'UPDATE atlas_rec_candidate_accounts SET otp_code = ?, otp_expires_at = ?, otp_attempts = 0, otp_last_sent_at = NOW() WHERE id = ?',
+    'UPDATE atlas_rec_candidate_accounts SET otp_code = ?, otp_expires_at = ?, otp_attempts = 0, otp_last_sent_at = UTC_TIMESTAMP() WHERE id = ?',
     [otp, expiresAt, account.id]
   );
 
