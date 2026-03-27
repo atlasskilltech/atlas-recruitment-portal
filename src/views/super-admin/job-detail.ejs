@@ -5,6 +5,13 @@
   const _applicantCount = typeof applicantCount !== 'undefined' ? applicantCount : 0;
 
   const fmt = (n) => (n != null ? Number(n).toLocaleString() : '0');
+
+  // Qualification mapping
+  const qualMap = { '1': 'PhD', '2': 'Masters', '3': 'Bachelors', '4': 'Diploma', '5': 'Any others' };
+  function getQual(val) {
+    if (!val) return '--';
+    return qualMap[String(val)] || val;
+  }
   const lastScanned = _stats.last_scanned
     ? new Date(_stats.last_scanned).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })
     : null;
@@ -30,9 +37,18 @@
       <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back
     </a>
     <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin:0;"><%= _job.post_name %></h1>
-    <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;">
-      <%= _job.scope %> &mdash; <%= _job.applied_location || 'Location N/A' %>
-    </p>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap;">
+      <span style="font-size:0.85rem;color:var(--text-secondary);"><%= _job.scope %> &mdash; <%= _job.applied_location || 'Location N/A' %></span>
+      <% if (_job.jd_file_path || _job.jd_file) { %>
+        <a href="<%= _job.jd_file_path || _job.jd_file %>" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:500;color:var(--accent-primary);background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:var(--radius-sm);text-decoration:none;">
+          <i data-lucide="file-text" style="width:13px;height:13px;"></i> JD Attached
+        </a>
+      <% } else { %>
+        <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;color:var(--text-muted);">
+          <i data-lucide="file-x" style="width:13px;height:13px;"></i> No JD File
+        </span>
+      <% } %>
+    </div>
   </div>
   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <% if (lastScanned) { %>
@@ -44,19 +60,6 @@
   </div>
 </div>
 
-<!-- JD File Status -->
-<div class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-  <% if (_job.jd_file_path || _job.jd_file) { %>
-    <i data-lucide="file-check" style="width:18px;height:18px;color:var(--accent-primary);flex-shrink:0;"></i>
-    <span style="font-size:0.85rem;color:var(--accent-primary);font-weight:500;">JD File Attached</span>
-    <a href="<%= _job.jd_file_path || _job.jd_file %>" target="_blank" class="btn btn-outline btn-sm" style="margin-left:auto;">
-      <i data-lucide="download" style="width:14px;height:14px;"></i> View JD
-    </a>
-  <% } else { %>
-    <i data-lucide="file-x" style="width:18px;height:18px;color:var(--text-muted);flex-shrink:0;"></i>
-    <span style="font-size:0.85rem;color:var(--text-muted);font-weight:500;">No JD File Attached</span>
-  <% } %>
-</div>
 
 <!-- Stats Row -->
 <div class="stats-row" style="margin-bottom:20px;">
@@ -153,7 +156,7 @@
               </td>
               <td>
                 <% if (m.appln_high_qualification) { %>
-                  <span class="badge badge-muted"><%= m.appln_high_qualification %></span>
+                  <span class="badge badge-muted"><%= getQual(m.appln_high_qualification) %></span>
                 <% } else { %>
                   <span class="text-xs text-muted">--</span>
                 <% } %>
