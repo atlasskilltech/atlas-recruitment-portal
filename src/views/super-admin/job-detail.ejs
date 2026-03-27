@@ -108,7 +108,7 @@
         const borderColor = mScore >= 75 ? 'var(--accent-primary)' : mScore >= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)';
         const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#ef4444,#dc2626)';
       %>
-      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);border-top:3px solid <%= borderColor %>;padding:20px;transition:all 0.15s ease;"
+      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;"
            onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)';"
            onmouseout="this.style.boxShadow='none';this.style.transform='none';">
 
