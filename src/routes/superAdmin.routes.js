@@ -8,4 +8,7 @@ const superAdminController = require('../controllers/superAdmin.controller');
 // GET /admin/jobs – Job openings card view
 router.get('/jobs', superAdminController.jobOpenings);
 
+// GET /admin/jobs/:id – Job detail with top matches
+router.get('/jobs/:id', superAdminController.jobDetail);
+
 module.exports = router;

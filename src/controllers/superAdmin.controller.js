@@ -78,6 +78,70 @@ const jobOpenings = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * GET /admin/jobs/:id
+ * Job detail with auto-scan and top 50 matching candidates.
+ */
+const jobDetail = asyncHandler(async (req, res) => {
+  const jobId = parseInt(req.params.id, 10);
+  if (!jobId) {
+    req.flash('error', 'Invalid job ID.');
+    return res.redirect('/admin/jobs');
+  }
+
+  // Get job details
+  const [[job]] = await pool.query(`
+    SELECT *,
+      COALESCE(applied_for_post, applied_job_short_desc_new, 'Untitled') AS post_name,
+      CASE COALESCE(applied_for_post_id, 0)
+        WHEN 1 THEN 'Academics / Teaching'
+        WHEN 2 THEN 'Administration / Non-Teaching'
+        ELSE 'Other'
+      END AS scope
+    FROM isdi_admsn_applied_for WHERE id = ?
+  `, [jobId]);
+
+  if (!job) {
+    req.flash('error', 'Job not found.');
+    return res.redirect('/admin/jobs');
+  }
+
+  // Count applicants for this job
+  const [[{ applicant_count }]] = await pool.query(
+    'SELECT COUNT(*) AS applicant_count FROM dice_staff_recruitment WHERE appln_applied_for_sub = ?',
+    [jobId]
+  );
+
+  // Auto-scan: run scan if not scanned yet or if requested
+  const jobMatchingService = require('../services/jobMatching.service');
+  const forceRefresh = req.query.refresh === '1';
+
+  // Check if already scanned
+  let stats = await jobMatchingService.getMatchStats(jobId);
+
+  if (!stats.total_scanned || forceRefresh) {
+    // Run scan
+    try {
+      await jobMatchingService.scanCandidatesForJob(jobId, { limit: 5000, forceRefresh });
+      stats = await jobMatchingService.getMatchStats(jobId);
+    } catch (err) {
+      req.flash('error', 'Scan failed: ' + err.message);
+    }
+  }
+
+  // Get top 50 matches
+  const topMatches = await jobMatchingService.getTopMatches(jobId, 50);
+
+  res.render('super-admin/job-detail', {
+    title: `${job.post_name} - Top Matches`,
+    job,
+    applicantCount: applicant_count || 0,
+    stats,
+    topMatches,
+  });
+});
+
 module.exports = {
   jobOpenings,
+  jobDetail,
 };
