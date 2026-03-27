@@ -99,7 +99,7 @@
 </div>
 
 <!-- Tab: Applied for Position -->
-<div id="content-applied">
+<div id="content-applied" style="display:block;">
   <form id="bulk-invite-form-applied" method="POST" action="/admin/jobs/<%= _job.id %>/bulk-invite">
   <% if (_applied.length > 0) { %>
     <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
@@ -231,11 +231,16 @@ var currentTab = 'applied';
 
 function switchTab(tab) {
   currentTab = tab;
-  document.getElementById('content-applied').style.display = tab === 'applied' ? 'block' : 'none';
-  document.getElementById('content-matches').style.display = tab === 'matches' ? 'block' : 'none';
-  // Re-render icons in newly visible content
+  var elApplied = document.getElementById('content-applied');
+  var elMatches = document.getElementById('content-matches');
+  if (tab === 'applied') {
+    elApplied.style.display = 'block';
+    elMatches.style.display = 'none';
+  } else {
+    elApplied.style.display = 'none';
+    elMatches.style.display = 'block';
+  }
   if (typeof lucide !== 'undefined') lucide.createIcons();
-  // Reset selection
   document.querySelectorAll('.candidate-checkbox').forEach(function(cb) { cb.checked = false; });
   updateSelectionBar();
 }
