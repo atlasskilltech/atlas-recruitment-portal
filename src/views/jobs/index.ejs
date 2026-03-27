@@ -6,50 +6,50 @@
 %>
 
 <!-- Page Header -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="flex flex-wrap items-center justify-between gap-md mb-lg">
   <div>
-    <h1 class="text-2xl font-bold text-foreground tracking-tight">Job Openings Master</h1>
-    <p class="text-sm text-muted-foreground mt-1">Manage job positions and openings for recruitment</p>
+    <h1 class="text-2xl font-bold text-primary">Job Openings Master</h1>
+    <p class="text-sm text-secondary mt-sm">Manage job positions and openings for recruitment</p>
   </div>
-  <a href="/jobs/create" class="btn-primary btn-sm self-start sm:self-auto">
-    <i data-lucide="plus" class="w-4 h-4"></i> Add New Job
+  <a href="/jobs/create" class="btn btn-primary btn-sm">
+    <i data-lucide="plus" style="width:16px;height:16px;"></i> Add New Job
   </a>
 </div>
 
 <!-- Filters -->
-<div class="filter-panel mb-6">
-  <form method="GET" action="/jobs" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-    <div class="form-group">
-      <label class="form-label">Scope</label>
-      <select name="scope" class="form-select">
+<div class="filters-bar mb-lg">
+  <form method="GET" action="/jobs" class="flex flex-wrap items-start gap-md w-full">
+    <div class="filter-item">
+      <label>Scope</label>
+      <select name="scope">
         <option value="">All Scopes</option>
         <% _scopes.forEach(function(s) { %>
           <option value="<%= s.id %>" <%= _filters.scope == s.id ? 'selected' : '' %>><%= s.applied_for_name %></option>
         <% }); %>
       </select>
     </div>
-    <div class="form-group">
-      <label class="form-label">Search</label>
-      <input type="text" name="search" value="<%= _filters.search || '' %>" class="form-input" placeholder="Post name...">
+    <div class="filter-item">
+      <label>Search</label>
+      <input type="text" name="search" value="<%= _filters.search || '' %>" placeholder="Post name...">
     </div>
-    <div class="form-group">
-      <label class="form-label">Location</label>
-      <input type="text" name="location" value="<%= _filters.location || '' %>" class="form-input" placeholder="Mumbai...">
+    <div class="filter-item">
+      <label>Location</label>
+      <input type="text" name="location" value="<%= _filters.location || '' %>" placeholder="Mumbai...">
     </div>
-    <div class="form-group">
-      <label class="form-label">Visible</label>
-      <select name="visible" class="form-select">
+    <div class="filter-item">
+      <label>Visible</label>
+      <select name="visible">
         <option value="">All</option>
         <option value="1" <%= _filters.visible === '1' ? 'selected' : '' %>>Visible</option>
         <option value="0" <%= _filters.visible === '0' ? 'selected' : '' %>>Hidden</option>
       </select>
     </div>
-    <div class="form-group flex items-end gap-2">
-      <button type="submit" class="btn-primary btn-sm flex-1">
-        <i data-lucide="search" class="w-4 h-4"></i> Filter
+    <div class="filter-item flex items-start gap-sm" style="flex-direction:row; align-self:flex-end;">
+      <button type="submit" class="btn btn-primary btn-sm flex-1">
+        <i data-lucide="search" style="width:16px;height:16px;"></i> Filter
       </button>
-      <a href="/jobs" class="btn-outline btn-sm">
-        <i data-lucide="x" class="w-4 h-4"></i> Clear
+      <a href="/jobs" class="btn btn-outline btn-sm">
+        <i data-lucide="x" style="width:16px;height:16px;"></i> Clear
       </a>
     </div>
   </form>
@@ -76,20 +76,20 @@
         <tbody>
           <% _jobs.forEach(function(j) { %>
             <tr>
-              <td class="font-mono text-sm text-muted-foreground"><%= j.id %></td>
+              <td class="text-sm text-muted" style="font-family:var(--font-mono);"><%= j.id %></td>
               <td>
-                <span class="badge-muted"><%= j.scope_name || (j.applied_for_post_id == 1 ? 'Academics' : 'Administration') %></span>
+                <span class="badge badge-muted"><%= j.scope_name || (j.applied_for_post_id == 1 ? 'Academics' : 'Administration') %></span>
               </td>
               <td>
                 <div>
-                  <p class="font-medium text-foreground"><%= j.applied_for_post || '-' %></p>
+                  <p class="font-medium text-primary"><%= j.applied_for_post || '-' %></p>
                   <% if (j.applied_job_short_desc_new && j.applied_job_short_desc_new !== j.applied_for_post) { %>
-                    <p class="text-xs text-muted-foreground truncate max-w-[200px]"><%= j.applied_job_short_desc_new %></p>
+                    <p class="text-xs text-muted truncate" style="max-width:200px;"><%= j.applied_job_short_desc_new %></p>
                   <% } %>
                 </div>
               </td>
-              <td class="text-sm text-muted-foreground"><%= j.applied_location || '-' %></td>
-              <td class="text-sm text-muted-foreground">
+              <td class="text-sm text-secondary"><%= j.applied_location || '-' %></td>
+              <td class="text-sm text-secondary">
                 <% if (j.applied_experience_min || j.applied_experience_max) { %>
                   <%= j.applied_experience_min || 0 %> - <%= j.applied_experience_max || '∞' %> yrs
                 <% } else { %>
@@ -98,34 +98,34 @@
               </td>
               <td>
                 <% if (j.applied_is_visible) { %>
-                  <span class="badge-eligible">Visible</span>
+                  <span class="badge badge-eligible">Visible</span>
                 <% } else { %>
-                  <span class="badge-muted">Hidden</span>
+                  <span class="badge badge-muted">Hidden</span>
                 <% } %>
               </td>
-              <td class="text-sm font-medium text-foreground">-</td>
+              <td class="text-sm font-medium text-primary">-</td>
               <td>
                 <% if (j.applied_job_desc_file) { %>
                   <a href="https://www.atlasskilltech.app/erp/assets/career/<%= j.applied_job_desc_file %>" target="_blank"
-                     class="text-xs text-primary-800 hover:underline flex items-center gap-1">
-                    <i data-lucide="file-text" class="w-3 h-3"></i>
+                     class="text-xs text-accent inline-flex items-center gap-sm" style="text-decoration:none;">
+                    <i data-lucide="file-text" style="width:12px;height:12px;"></i>
                     <%= j.applied_job_desc_file.length > 20 ? j.applied_job_desc_file.substring(0, 20) + '...' : j.applied_job_desc_file %>
                   </a>
                 <% } else { %>
-                  <span class="text-xs text-muted-foreground">-</span>
+                  <span class="text-xs text-muted">-</span>
                 <% } %>
               </td>
               <td>
-                <div class="flex items-center gap-2">
-                  <a href="/jobs/<%= j.id %>/top-matches" class="btn-ghost btn-sm text-blue-600" title="Top Matches">
-                    <i data-lucide="trophy" class="w-4 h-4"></i>
+                <div class="flex items-center gap-sm">
+                  <a href="/jobs/<%= j.id %>/top-matches" class="btn btn-ghost btn-sm" title="Top Matches" style="color:var(--accent-secondary);">
+                    <i data-lucide="trophy" style="width:16px;height:16px;"></i>
                   </a>
-                  <a href="/jobs/<%= j.id %>/edit" class="btn-ghost btn-sm text-primary-800" title="Edit">
-                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                  <a href="/jobs/<%= j.id %>/edit" class="btn btn-ghost btn-sm text-accent" title="Edit">
+                    <i data-lucide="pencil" style="width:16px;height:16px;"></i>
                   </a>
                   <form method="POST" action="/jobs/<%= j.id %>/toggle-visibility" class="inline">
-                    <button type="submit" class="btn-ghost btn-sm" title="Toggle Visibility">
-                      <i data-lucide="<%= j.applied_is_visible ? 'eye-off' : 'eye' %>" class="w-4 h-4"></i>
+                    <button type="submit" class="btn btn-ghost btn-sm" title="Toggle Visibility">
+                      <i data-lucide="<%= j.applied_is_visible ? 'eye-off' : 'eye' %>" style="width:16px;height:16px;"></i>
                     </button>
                   </form>
                 </div>
@@ -138,30 +138,30 @@
 
     <!-- Pagination -->
     <% if (_pagination.totalPages > 1) { %>
-      <div class="flex items-center justify-between px-4 py-3 border-t border-border">
-        <p class="text-sm text-muted-foreground">
+      <div class="flex items-center justify-between border-t p-md">
+        <p class="text-sm text-secondary">
           Showing <span class="font-medium"><%= ((_pagination.page - 1) * _pagination.limit) + 1 %></span>
           to <span class="font-medium"><%= Math.min(_pagination.page * _pagination.limit, _pagination.total) %></span>
           of <span class="font-medium"><%= _pagination.total %></span> jobs
         </p>
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-sm">
           <% if (_pagination.hasPrev) { %>
-            <a href="?page=<%= _pagination.page - 1 %>" class="btn-outline btn-sm">Prev</a>
+            <a href="?page=<%= _pagination.page - 1 %>" class="btn btn-outline btn-sm">Prev</a>
           <% } %>
           <% if (_pagination.hasNext) { %>
-            <a href="?page=<%= _pagination.page + 1 %>" class="btn-outline btn-sm">Next</a>
+            <a href="?page=<%= _pagination.page + 1 %>" class="btn btn-outline btn-sm">Next</a>
           <% } %>
         </div>
       </div>
     <% } %>
   <% } else { %>
-    <div class="empty-state py-20">
-      <div class="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-5">
-        <i data-lucide="briefcase" class="w-10 h-10 text-muted-foreground/30"></i>
+    <div class="empty-state" style="padding:80px 24px;">
+      <div class="flex items-center justify-center mb-md" style="width:80px;height:80px;border-radius:16px;background:var(--bg-tertiary);margin:0 auto 20px;">
+        <i data-lucide="briefcase" style="width:40px;height:40px;color:var(--text-muted);opacity:0.3;"></i>
       </div>
-      <h3 class="text-lg font-semibold text-foreground mb-1">No Job Openings</h3>
-      <p class="text-sm text-muted-foreground max-w-sm mb-6">Create your first job opening to start receiving applications.</p>
-      <a href="/jobs/create" class="btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> Add New Job</a>
+      <h3 class="text-lg font-semibold text-primary mb-sm">No Job Openings</h3>
+      <p class="text-sm text-secondary" style="max-width:24rem;margin:0 auto 24px;">Create your first job opening to start receiving applications.</p>
+      <a href="/jobs/create" class="btn btn-primary"><i data-lucide="plus" style="width:16px;height:16px;"></i> Add New Job</a>
     </div>
   <% } %>
 </div>
