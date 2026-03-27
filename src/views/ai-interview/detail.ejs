@@ -21,21 +21,10 @@
   const ivType = interview.interview_type || interview.type || 'hr';
   const typeBadgeClass = 'badge-muted';
 
-  // Try DB columns first, then fall back to parsed feedback scores
-  const fbScores = feedbackObj?.competencyRatings || summaryObj?.competencyRatings || {};
-  const fbOverall = parseFloat(feedbackObj?.overallScore || feedbackObj?.averageScore || summaryObj?.overallScore || summaryObj?.averageScore) || 0;
-
-  const totalScore = parseFloat(interview.total_score) || parseFloat(interview.overall_score) || fbOverall || 0;
-  const commScore = parseFloat(interview.communication_score) || (parseFloat(fbScores.communication) / 5 * 100) || 0;
-  const domainScore = parseFloat(interview.domain_knowledge_score) || parseFloat(interview.domain_score) || (parseFloat(fbScores.domainExpertise || fbScores.technicalKnowledge) / 5 * 100) || 0;
-  const problemScore = parseFloat(interview.problem_solving_score) || (parseFloat(fbScores.problemSolving) / 5 * 100) || 0;
-  const confidenceScore = parseFloat(interview.confidence_score) || (parseFloat(fbScores.leadership || fbScores.adaptability) / 5 * 100) || 0;
-
   // Parse JSON feedback safely, handling nested { raw: "..." } structures
   function safeParse(val) {
     if (!val) return null;
     if (typeof val === 'object' && val !== null) {
-      // Handle { raw: "{...}" } wrapper
       if (val.raw && typeof val.raw === 'string') {
         try { return JSON.parse(val.raw); } catch(e) { return val; }
       }
@@ -43,7 +32,6 @@
     }
     try {
       const parsed = JSON.parse(val);
-      // Handle double-wrapped: string -> { raw: "..." }
       if (parsed && parsed.raw && typeof parsed.raw === 'string') {
         try { return JSON.parse(parsed.raw); } catch(e) { return parsed; }
       }
@@ -55,6 +43,16 @@
   const summaryRaw = interview.ai_summary || '';
   const feedbackObj = safeParse(feedbackRaw);
   const summaryObj = safeParse(summaryRaw);
+
+  // Try DB columns first, then fall back to parsed feedback scores
+  const fbScores = feedbackObj?.competencyRatings || summaryObj?.competencyRatings || {};
+  const fbOverall = parseFloat(feedbackObj?.overallScore || feedbackObj?.averageScore || summaryObj?.overallScore || summaryObj?.averageScore) || 0;
+
+  const totalScore = parseFloat(interview.total_score) || parseFloat(interview.overall_score) || fbOverall || 0;
+  const commScore = parseFloat(interview.communication_score) || (parseFloat(fbScores.communication) / 5 * 100) || 0;
+  const domainScore = parseFloat(interview.domain_knowledge_score) || parseFloat(interview.domain_score) || (parseFloat(fbScores.domainExpertise || fbScores.technicalKnowledge) / 5 * 100) || 0;
+  const problemScore = parseFloat(interview.problem_solving_score) || (parseFloat(fbScores.problemSolving) / 5 * 100) || 0;
+  const confidenceScore = parseFloat(interview.confidence_score) || (parseFloat(fbScores.leadership || fbScores.adaptability) / 5 * 100) || 0;
 
   // Extract readable fields from JSON
   const performanceSummary = feedbackObj?.performanceSummary || summaryObj?.performanceSummary || '';
