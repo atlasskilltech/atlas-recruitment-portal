@@ -7,20 +7,14 @@
   function fmtScore(s) { return s != null ? parseFloat(s).toFixed(1) : '0.0'; }
   function scoreColor(s) {
     const n = parseFloat(s) || 0;
-    if (n >= 75) return 'text-green-600';
-    if (n >= 50) return 'text-yellow-600';
-    return 'text-red-600';
-  }
-  function scoreBg(s) {
-    const n = parseFloat(s) || 0;
-    if (n >= 75) return 'bg-green-100 text-green-700 border-green-200';
-    if (n >= 50) return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-    return 'bg-red-100 text-red-700 border-red-200';
+    if (n >= 75) return 'text-success';
+    if (n >= 50) return 'text-warning';
+    return 'text-danger';
   }
   function recBadge(tag) {
-    if (tag === 'strong_fit') return 'badge-strong-fit';
-    if (tag === 'moderate_fit') return 'badge-moderate-fit';
-    return 'badge-weak-fit';
+    if (tag === 'strong_fit') return 'badge badge-success';
+    if (tag === 'moderate_fit') return 'badge badge-warning';
+    return 'badge badge-danger';
   }
   function initials(name) {
     if (!name) return '?';
@@ -29,58 +23,58 @@
 %>
 
 <!-- Page Header -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-  <div class="flex items-center gap-4">
-    <a href="/jobs" class="btn-outline btn-sm">
-      <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+<div class="flex flex-wrap items-center justify-between gap-md mb-lg">
+  <div class="flex items-center gap-md">
+    <a href="/jobs" class="btn btn-outline btn-sm">
+      <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back
     </a>
     <div>
-      <h1 class="text-2xl font-bold text-foreground tracking-tight">Top Matching Candidates</h1>
-    <p class="text-sm text-muted-foreground mt-1">
-      <strong><%= _job.applied_for_post %></strong> — <%= _job.scope_name || 'Academics' %> — <%= _job.applied_location || 'Mumbai' %>
-      <% if (_job.applied_experience_min || _job.applied_experience_max) { %>
-        — <%= _job.applied_experience_min || 0 %>-<%= _job.applied_experience_max || '∞' %> yrs
-      <% } %>
-    </p>
+      <h1 class="text-2xl font-bold text-primary">Top Matching Candidates</h1>
+      <p class="text-sm text-secondary mt-sm">
+        <strong><%= _job.applied_for_post %></strong> — <%= _job.scope_name || 'Academics' %> — <%= _job.applied_location || 'Mumbai' %>
+        <% if (_job.applied_experience_min || _job.applied_experience_max) { %>
+          — <%= _job.applied_experience_min || 0 %>-<%= _job.applied_experience_max || '∞' %> yrs
+        <% } %>
+      </p>
     </div>
   </div>
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-sm">
     <% if (_stats.last_scanned) { %>
-      <span class="text-xs text-muted-foreground">Last scanned: <%= new Date(_stats.last_scanned).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) %></span>
+      <span class="text-xs text-muted">Last scanned: <%= new Date(_stats.last_scanned).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) %></span>
     <% } %>
     <form method="POST" action="/jobs/<%= _job.id %>/refresh-matches" class="inline">
-      <button type="submit" class="btn-primary btn-sm">
-        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh Scan
+      <button type="submit" class="btn btn-primary btn-sm">
+        <i data-lucide="refresh-cw" style="width:16px;height:16px;"></i> Refresh Scan
       </button>
     </form>
   </div>
 </div>
 
 <!-- Stats Overview -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-  <div class="card p-4 text-center">
-    <p class="text-2xl font-bold text-foreground"><%= _stats.total_applicants || 0 %></p>
-    <p class="text-xs text-muted-foreground">Applied for this Job</p>
+<div class="stats-row mb-lg">
+  <div class="stat-card" style="text-align:center;flex-direction:column;align-items:center;">
+    <p class="stat-value"><%= _stats.total_applicants || 0 %></p>
+    <p class="stat-label">Applied for this Job</p>
   </div>
-  <div class="card p-4 text-center">
-    <p class="text-2xl font-bold text-foreground"><%= _stats.total_scanned || 0 %></p>
-    <p class="text-xs text-muted-foreground">Candidates Scanned</p>
+  <div class="stat-card" style="text-align:center;flex-direction:column;align-items:center;">
+    <p class="stat-value"><%= _stats.total_scanned || 0 %></p>
+    <p class="stat-label">Candidates Scanned</p>
   </div>
-  <div class="card p-4 text-center">
-    <p class="text-2xl font-bold text-green-600"><%= _stats.strong_fit || 0 %></p>
-    <p class="text-xs text-muted-foreground">Strong Fit (≥75)</p>
+  <div class="stat-card" style="text-align:center;flex-direction:column;align-items:center;">
+    <p class="stat-value text-success"><%= _stats.strong_fit || 0 %></p>
+    <p class="stat-label">Strong Fit (>=75)</p>
   </div>
-  <div class="card p-4 text-center">
-    <p class="text-2xl font-bold text-yellow-600"><%= _stats.moderate_fit || 0 %></p>
-    <p class="text-xs text-muted-foreground">Moderate (50-74)</p>
+  <div class="stat-card" style="text-align:center;flex-direction:column;align-items:center;">
+    <p class="stat-value text-warning"><%= _stats.moderate_fit || 0 %></p>
+    <p class="stat-label">Moderate (50-74)</p>
   </div>
-  <div class="card p-4 text-center">
-    <p class="text-2xl font-bold text-red-600"><%= _stats.weak_fit || 0 %></p>
-    <p class="text-xs text-muted-foreground">Weak (&lt;50)</p>
+  <div class="stat-card" style="text-align:center;flex-direction:column;align-items:center;">
+    <p class="stat-value text-danger"><%= _stats.weak_fit || 0 %></p>
+    <p class="stat-label">Weak (&lt;50)</p>
   </div>
-  <div class="card p-4 text-center">
-    <p class="text-2xl font-bold text-foreground"><%= _stats.avg_score || 0 %>%</p>
-    <p class="text-xs text-muted-foreground">Avg Match Score</p>
+  <div class="stat-card" style="text-align:center;flex-direction:column;align-items:center;">
+    <p class="stat-value"><%= _stats.avg_score || 0 %>%</p>
+    <p class="stat-label">Avg Match Score</p>
   </div>
 </div>
 
@@ -102,39 +96,39 @@
 
   <!-- Bulk Action Bar -->
   <div x-show="selected.length > 0" x-cloak
-       class="card p-3 mb-4 flex flex-wrap items-center gap-3 border-primary-300 bg-primary-50 dark:bg-primary-900/30"
+       class="card flex flex-wrap items-center gap-sm mb-md" style="padding:12px 16px;border-color:var(--accent-primary);background:rgba(16,185,129,0.05);"
        x-transition>
-    <span class="text-sm font-semibold text-primary-800 dark:text-primary-200">
+    <span class="text-sm font-semibold text-primary">
       <span x-text="selected.length"></span> selected
     </span>
-    <div class="flex items-center gap-2 ml-auto">
+    <div class="flex items-center gap-sm" style="margin-left:auto;">
       <form method="POST" action="/jobs/<%= _job.id %>/bulk-invite" class="inline">
         <template x-for="id in selected" :key="id">
           <input type="hidden" name="candidate_ids[]" :value="id">
         </template>
-        <button type="submit" class="btn-primary btn-sm">
-          <i data-lucide="video" class="w-4 h-4"></i> Send Interview to Selected
+        <button type="submit" class="btn btn-primary btn-sm">
+          <i data-lucide="video" style="width:16px;height:16px;"></i> Send Interview to Selected
         </button>
       </form>
     </div>
   </div>
 
 <div class="card overflow-hidden">
-  <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-    <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
-      <i data-lucide="trophy" class="w-5 h-5 text-yellow-500"></i>
+  <div class="card-header">
+    <h2 class="card-title">
+      <i data-lucide="trophy" style="width:20px;height:20px;color:var(--accent-warning);"></i>
       Top <%= _candidates.length %> Matching Candidates
     </h2>
-    <span class="text-xs text-muted-foreground">Ranked by AI Match Score</span>
+    <span class="text-xs text-muted">Ranked by AI Match Score</span>
   </div>
   <div class="overflow-x-auto">
     <table class="data-table">
       <thead>
         <tr>
-          <th class="w-10">
-            <input type="checkbox" class="rounded border-border" :checked="selectAll" @change="toggleAll($event.target.checked)">
+          <th style="width:40px;">
+            <input type="checkbox" :checked="selectAll" @change="toggleAll($event.target.checked)">
           </th>
-          <th class="w-10">#</th>
+          <th style="width:40px;">#</th>
           <th>Candidate</th>
           <th>Qualification</th>
           <th>Experience</th>
@@ -150,7 +144,7 @@
           <tr>
             <!-- Checkbox -->
             <td>
-              <input type="checkbox" class="rounded border-border"
+              <input type="checkbox"
                      value="<%= c.candidate_id %>"
                      :checked="selected.includes('<%= c.candidate_id %>')"
                      @change="toggleOne('<%= c.candidate_id %>')">
@@ -158,48 +152,47 @@
             <!-- Rank -->
             <td>
               <% if (idx < 3) { %>
-                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold
-                  <%= idx === 0 ? 'bg-yellow-100 text-yellow-700' : idx === 1 ? 'bg-gray-100 text-gray-600' : 'bg-orange-100 text-orange-700' %>">
+                <span class="avatar avatar-sm" style="<%= idx === 0 ? 'background:rgba(245,158,11,0.15);color:var(--accent-warning);' : idx === 1 ? 'background:var(--bg-tertiary);color:var(--text-secondary);' : 'background:rgba(245,158,11,0.1);color:var(--accent-warning);' %>font-size:0.75rem;">
                   <%= idx + 1 %>
                 </span>
               <% } else { %>
-                <span class="text-sm text-muted-foreground font-medium"><%= idx + 1 %></span>
+                <span class="text-sm text-muted font-medium"><%= idx + 1 %></span>
               <% } %>
             </td>
 
             <!-- Candidate -->
             <td>
-              <a href="/candidates/<%= c.id %>" class="flex items-center gap-3 group">
-                <div class="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-800 flex items-center justify-center flex-shrink-0">
-                  <span class="text-xs font-semibold text-primary-800 dark:text-primary-200"><%= initials(c.appln_full_name) %></span>
+              <a href="/candidates/<%= c.id %>" class="flex items-center gap-sm" style="text-decoration:none;">
+                <div class="avatar avatar-sm avatar-gradient shrink-0">
+                  <span class="text-xs font-semibold"><%= initials(c.appln_full_name) %></span>
                 </div>
                 <div>
-                  <p class="text-sm font-medium text-foreground group-hover:text-primary-800 transition-colors"><%= c.appln_full_name || 'Unknown' %></p>
-                  <p class="text-xs text-muted-foreground"><%= c.appln_email || '' %></p>
+                  <p class="text-sm font-medium text-primary"><%= c.appln_full_name || 'Unknown' %></p>
+                  <p class="text-xs text-muted"><%= c.appln_email || '' %></p>
                 </div>
               </a>
             </td>
 
             <!-- Qualification -->
             <td>
-              <span class="badge-muted"><%= QUAL_MAP[String(c.appln_high_qualification)] || c.appln_high_qualification || '-' %></span>
+              <span class="badge badge-muted"><%= QUAL_MAP[String(c.appln_high_qualification)] || c.appln_high_qualification || '-' %></span>
             </td>
 
             <!-- Experience -->
-            <td class="text-sm text-foreground"><%= c.appln_total_experience || 0 %> yr</td>
+            <td class="text-sm text-primary"><%= c.appln_total_experience || 0 %> yr</td>
 
             <!-- Current Role -->
-            <td class="min-w-[140px]">
-              <p class="text-sm text-foreground truncate max-w-[160px]"><%= c.appln_current_designation || '-' %></p>
-              <p class="text-xs text-muted-foreground truncate max-w-[160px]"><%= c.appln_current_organisation || '' %></p>
+            <td style="min-width:140px;">
+              <p class="text-sm text-primary truncate" style="max-width:160px;"><%= c.appln_current_designation || '-' %></p>
+              <p class="text-xs text-muted truncate" style="max-width:160px;"><%= c.appln_current_organisation || '' %></p>
             </td>
 
             <!-- Match Score -->
             <td class="text-center">
               <div class="inline-flex flex-col items-center">
                 <span class="text-lg font-bold <%= scoreColor(c.match_score) %>"><%= fmtScore(c.match_score) %>%</span>
-                <div class="w-16 h-1.5 bg-muted rounded-full overflow-hidden mt-1">
-                  <div class="h-full rounded-full <%= parseFloat(c.match_score) >= 75 ? 'bg-green-500' : parseFloat(c.match_score) >= 50 ? 'bg-yellow-500' : 'bg-red-500' %>"
+                <div class="progress-bar" style="width:64px;height:6px;margin-top:4px;">
+                  <div class="progress-fill <%= parseFloat(c.match_score) >= 75 ? 'green' : parseFloat(c.match_score) >= 50 ? 'yellow' : 'red' %>"
                        style="width: <%= Math.min(100, parseFloat(c.match_score) || 0) %>%"></div>
                 </div>
               </div>
@@ -207,13 +200,13 @@
 
             <!-- Status -->
             <td>
-              <div class="flex flex-col gap-1">
+              <div class="flex flex-col" style="gap:4px;">
                 <span class="<%= recBadge(c.match_status) %>" style="font-size:0.7rem;">
                   <%= (c.match_status || 'weak_fit').replace(/_/g, ' ').replace(/\b\w/g, function(x){return x.toUpperCase();}) %>
                 </span>
                 <% if (c.has_applied) { %>
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
-                    ✓ Applied
+                  <span class="badge badge-info" style="font-size:0.75rem;">
+                    &#10003; Applied
                   </span>
                 <% } %>
               </div>
@@ -224,20 +217,20 @@
               <% if (c.interview_score) { %>
                 <span class="text-sm font-semibold <%= scoreColor(c.interview_score) %>"><%= fmtScore(c.interview_score) %>%</span>
               <% } else if (c.interview_status) { %>
-                <span class="badge-muted"><%= c.interview_status %></span>
+                <span class="badge badge-muted"><%= c.interview_status %></span>
               <% } else { %>
-                <span class="text-xs text-muted-foreground">—</span>
+                <span class="text-xs text-muted">&mdash;</span>
               <% } %>
             </td>
 
             <!-- Actions -->
             <td>
-              <div class="flex items-center gap-1">
-                <a href="/candidates/<%= c.id %>" class="btn-ghost btn-sm" title="View Profile">
-                  <i data-lucide="eye" class="w-4 h-4"></i>
+              <div class="flex items-center gap-sm">
+                <a href="/candidates/<%= c.id %>" class="btn btn-ghost btn-sm" title="View Profile">
+                  <i data-lucide="eye" style="width:16px;height:16px;"></i>
                 </a>
-                <a href="/ai-interviews/invite/<%= c.id %>" class="btn-ghost btn-sm text-primary-800" title="Invite Interview">
-                  <i data-lucide="video" class="w-4 h-4"></i>
+                <a href="/ai-interviews/invite/<%= c.id %>" class="btn btn-ghost btn-sm" title="Invite Interview" style="color:var(--accent-secondary);">
+                  <i data-lucide="video" style="width:16px;height:16px;"></i>
                 </a>
               </div>
             </td>
@@ -250,12 +243,12 @@
 </div>
 <% } else { %>
 <div class="card">
-  <div class="empty-state py-16">
-    <div class="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-      <i data-lucide="search-x" class="w-8 h-8 text-muted-foreground/30"></i>
+  <div class="empty-state" style="padding:64px 24px;">
+    <div class="flex items-center justify-center mb-md" style="width:64px;height:64px;border-radius:16px;background:var(--bg-tertiary);margin:0 auto 16px;">
+      <i data-lucide="search-x" style="width:32px;height:32px;color:var(--text-muted);opacity:0.3;"></i>
     </div>
-    <h3 class="text-lg font-semibold text-foreground mb-1">No Matching Candidates</h3>
-    <p class="text-sm text-muted-foreground max-w-sm">
+    <h3 class="text-lg font-semibold text-primary mb-sm">No Matching Candidates</h3>
+    <p class="text-sm text-secondary" style="max-width:24rem;margin:0 auto;">
       No candidates have been screened for this job yet. Run AI screening from the Candidates page first.
     </p>
   </div>
@@ -264,12 +257,12 @@
 
 <!-- JD Summary -->
 <% if (_job.applied_job_desc) { %>
-<div class="card p-6 mt-6">
-  <h3 class="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-    <i data-lucide="file-text" class="w-5 h-5 text-muted-foreground"></i>
+<div class="card p-lg mt-lg">
+  <h3 class="card-title mb-md">
+    <i data-lucide="file-text" style="width:20px;height:20px;color:var(--text-muted);"></i>
     Job Description
   </h3>
-  <div class="text-sm text-muted-foreground leading-relaxed prose max-w-none">
+  <div class="text-sm text-secondary" style="line-height:1.7;">
     <%- _job.applied_job_desc %>
   </div>
 </div>
