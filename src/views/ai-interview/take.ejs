@@ -89,19 +89,11 @@
           </div>
         </div>
 
-        <!-- Permission Status -->
-        <div x-show="!cameraReady" style="margin-bottom:20px;">
-          <button @click="checkCamera()" style="padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;background:#334155;color:#e2e8f0;display:inline-flex;align-items:center;gap:8px;">
-            <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
-            Allow Camera &amp; Microphone
-          </button>
-          <p style="font-size:0.75rem;color:#64748b;margin-top:8px;">Please allow access to start</p>
-        </div>
-
-        <!-- Start Button (only visible when camera ready) -->
-        <div x-show="cameraReady" style="margin-bottom:12px;">
+        <!-- Start Button - always visible, requests permissions then starts -->
+        <div style="margin-bottom:12px;">
           <p style="font-size:0.75rem;color:#64748b;margin-bottom:12px;"><%= _questions.length %> questions</p>
-          <button @click="startVideoInterview()" style="width:100%;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;border:none;background:#2563eb;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+          <button @click="await checkCamera(); startVideoInterview();"
+                  style="width:100%;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;border:none;background:#10b981;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
             <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
             Start Interview
           </button>
@@ -287,20 +279,21 @@ function videoInterview() {
     },
 
     async checkCamera() {
+      // Try video+audio
       try {
-        // Try video+audio first
         this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-        this.$refs.setupVideo.srcObject = this.stream;
+        if (this.$refs.setupVideo) this.$refs.setupVideo.srcObject = this.stream;
         this.cameraReady = true;
-      } catch (e1) {
-        // If video fails, try audio only (some mobile browsers block video)
-        try {
-          this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          this.cameraReady = true;
-        } catch (e2) {
-          alert('Camera/microphone access denied. Please allow access and try again.');
-        }
-      }
+        return;
+      } catch (e) {}
+      // Try audio only
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        this.cameraReady = true;
+        return;
+      } catch (e) {}
+      // All failed - still allow to proceed (typing mode)
+      this.cameraReady = true;
     },
 
     async startVideoInterview() {
