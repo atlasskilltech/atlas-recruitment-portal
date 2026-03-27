@@ -105,6 +105,8 @@ const show = asyncHandler(async (req, res) => {
     res.render('ai-interview/detail', {
       title: `AI Interview – ${interview.candidate_name || 'Candidate'}`,
       interview,
+      questions: interview.questions || [],
+      answers: interview.answers || [],
       success: req.flash('success'),
       error: req.flash('error'),
     });

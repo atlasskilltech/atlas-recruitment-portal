@@ -132,6 +132,73 @@ const index = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * GET /reports/export/:format
+ * Export report data as CSV, PDF, or Excel.
+ */
+const exportReport = asyncHandler(async (req, res) => {
+  const format = (req.params.format || '').toLowerCase();
+  const { exportCSV, exportExcel, exportPDF } = require('../utils/export');
+
+  // Fetch all candidates with their scores for the export
+  const [rows] = await pool.query(`
+    SELECT dsr.id, dsr.appln_full_name AS name, dsr.appln_email AS email,
+           dsr.appln_mobile_no AS mobile,
+           COALESCE(job.applied_for_post, job.applied_job_short_desc_new, 'N/A') AS job_title,
+           dsr.appln_total_experience AS experience,
+           dsr.appln_high_qualification AS qualification,
+           DATE_FORMAT(dsr.appln_date, '%Y-%m-%d') AS application_date,
+           dsr.appln_status_new AS hr_status,
+           ais.ai_status,
+           ais.ai_match_score AS match_score,
+           aint.total_score AS interview_score
+    FROM dice_staff_recruitment dsr
+    LEFT JOIN isdi_admsn_applied_for job ON dsr.appln_applied_for_sub = job.id
+    LEFT JOIN (
+      SELECT candidate_id, ai_status, ai_match_score
+      FROM atlas_rec_candidate_ai_screening s1
+      WHERE s1.id = (SELECT MAX(s2.id) FROM atlas_rec_candidate_ai_screening s2 WHERE s2.candidate_id = s1.candidate_id)
+    ) ais ON dsr.id = ais.candidate_id
+    LEFT JOIN (
+      SELECT candidate_id, total_score
+      FROM atlas_rec_ai_interviews i1
+      WHERE i1.id = (SELECT MAX(i2.id) FROM atlas_rec_ai_interviews i2 WHERE i2.candidate_id = i1.candidate_id)
+    ) aint ON dsr.id = aint.candidate_id
+    ORDER BY dsr.appln_date DESC
+    LIMIT 5000
+  `);
+
+  const columns = [
+    { id: 'id', title: 'ID', width: 10 },
+    { id: 'name', title: 'Name', width: 25 },
+    { id: 'email', title: 'Email', width: 30 },
+    { id: 'mobile', title: 'Mobile', width: 15 },
+    { id: 'job_title', title: 'Job Title', width: 25 },
+    { id: 'experience', title: 'Experience', width: 12 },
+    { id: 'qualification', title: 'Qualification', width: 20 },
+    { id: 'application_date', title: 'Application Date', width: 15 },
+    { id: 'hr_status', title: 'HR Status', width: 12 },
+    { id: 'ai_status', title: 'AI Status', width: 12 },
+    { id: 'match_score', title: 'Match Score', width: 12 },
+    { id: 'interview_score', title: 'Interview Score', width: 14 },
+  ];
+
+  const timestamp = new Date().toISOString().slice(0, 10);
+  const filename = `recruitment_report_${timestamp}`;
+
+  if (format === 'csv') {
+    return exportCSV(rows, columns, filename, res);
+  } else if (format === 'excel') {
+    return await exportExcel(rows, columns, 'Recruitment Report', filename, res);
+  } else if (format === 'pdf') {
+    return exportPDF(rows, columns, 'Atlas HR Recruitment Report', filename, res);
+  } else {
+    req.flash('error', 'Unsupported export format.');
+    return res.redirect('/reports');
+  }
+});
+
 module.exports = {
   index,
+  exportReport,
 };

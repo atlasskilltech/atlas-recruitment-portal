@@ -21,17 +21,34 @@
   const ivType = interview.interview_type || interview.type || 'hr';
   const typeBadgeClass = 'badge-muted';
 
-  const totalScore = parseFloat(interview.total_score) || parseFloat(interview.overall_score) || 0;
-  const commScore = parseFloat(interview.communication_score) || 0;
-  const domainScore = parseFloat(interview.domain_knowledge_score) || parseFloat(interview.domain_score) || 0;
-  const problemScore = parseFloat(interview.problem_solving_score) || 0;
-  const confidenceScore = parseFloat(interview.confidence_score) || 0;
+  // Try DB columns first, then fall back to parsed feedback scores
+  const fbScores = feedbackObj?.competencyRatings || summaryObj?.competencyRatings || {};
+  const fbOverall = parseFloat(feedbackObj?.overallScore || feedbackObj?.averageScore || summaryObj?.overallScore || summaryObj?.averageScore) || 0;
 
-  // Parse JSON feedback safely
+  const totalScore = parseFloat(interview.total_score) || parseFloat(interview.overall_score) || fbOverall || 0;
+  const commScore = parseFloat(interview.communication_score) || (parseFloat(fbScores.communication) / 5 * 100) || 0;
+  const domainScore = parseFloat(interview.domain_knowledge_score) || parseFloat(interview.domain_score) || (parseFloat(fbScores.domainExpertise || fbScores.technicalKnowledge) / 5 * 100) || 0;
+  const problemScore = parseFloat(interview.problem_solving_score) || (parseFloat(fbScores.problemSolving) / 5 * 100) || 0;
+  const confidenceScore = parseFloat(interview.confidence_score) || (parseFloat(fbScores.leadership || fbScores.adaptability) / 5 * 100) || 0;
+
+  // Parse JSON feedback safely, handling nested { raw: "..." } structures
   function safeParse(val) {
     if (!val) return null;
-    if (typeof val === 'object') return val;
-    try { return JSON.parse(val); } catch(e) { return null; }
+    if (typeof val === 'object' && val !== null) {
+      // Handle { raw: "{...}" } wrapper
+      if (val.raw && typeof val.raw === 'string') {
+        try { return JSON.parse(val.raw); } catch(e) { return val; }
+      }
+      return val;
+    }
+    try {
+      const parsed = JSON.parse(val);
+      // Handle double-wrapped: string -> { raw: "..." }
+      if (parsed && parsed.raw && typeof parsed.raw === 'string') {
+        try { return JSON.parse(parsed.raw); } catch(e) { return parsed; }
+      }
+      return parsed;
+    } catch(e) { return null; }
   }
 
   const feedbackRaw = interview.ai_feedback || '';
@@ -296,13 +313,13 @@
     <div class="space-y-6">
       <% questions.forEach(function(q, idx) { %>
         <%
-          const answer = answers.find(function(a) {
+          const answer = q.answer || answers.find(function(a) {
             return a.question_id === q.id || a.questionId === q.id;
           }) || {};
           const answerText = answer.answer_text || answer.answer || '';
-          const answerScore = answer.score || answer.answer_score || 0;
+          const answerScore = parseFloat(answer.score) || parseFloat(answer.answer_score) || parseFloat(answer.ai_score) || 0;
           const answerFeedback = answer.ai_feedback || answer.feedback || '';
-          const keywordRelevance = answer.keyword_relevance || answer.keyword_relevance_score || 0;
+          const keywordRelevance = parseFloat(answer.keyword_relevance) || parseFloat(answer.keyword_relevance_score) || 0;
         %>
         <div class="border border-border rounded-xl overflow-hidden">
           <!-- Question Header -->
