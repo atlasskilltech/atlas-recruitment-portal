@@ -118,13 +118,10 @@
         <tbody>
           <% _matches.forEach(function(m, idx) { %>
             <%
-              // Use AI screening score if available, otherwise fall back to heuristic match score
-              const aiScore = parseFloat(m.screening_score) || 0;
-              const heuristicScore = parseFloat(m.match_score) || 0;
-              const mScore = aiScore > 0 ? aiScore : heuristicScore;
+              // Show match score and status from job-candidate matching (for THIS job)
+              const mScore = parseFloat(m.match_score) || 0;
               const iScore = parseFloat(m.interview_score) || 0;
-              // AI status: use screening_status (actual AI result) if available
-              const aiStatus = m.screening_status || (aiScore === 0 ? m.match_status : null);
+              const aiStatus = m.match_status || null;
             %>
             <tr style="cursor:pointer;" onclick="window.location.href='/candidates/<%= m.candidate_id %>'">
               <td>
