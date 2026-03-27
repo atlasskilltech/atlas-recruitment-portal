@@ -108,52 +108,38 @@
         const isTop3 = idx < 3;
         const borderColor = mScore >= 75 ? 'var(--accent-primary)' : mScore >= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)';
       %>
-      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);border-left:4px solid <%= borderColor %>;padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.15s ease;flex-wrap:wrap;"
+      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);border-left:4px solid <%= borderColor %>;padding:14px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.15s ease;"
            onclick="window.location.href='/candidates/<%= m.candidate_id %>'"
            onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-1px)';"
            onmouseout="this.style.boxShadow='none';this.style.transform='none';">
 
-        <!-- Rank Badge -->
-        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
-          <span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:28px;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:700;padding:0 8px;
-            <%= isTop3 ? 'background:var(--accent-primary);color:white;' : 'background:var(--bg-tertiary);color:var(--text-secondary);' %>">
-            #<%= idx + 1 %>
-          </span>
-
-          <!-- Score pill (like time in faculty schedule) -->
-          <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.85rem;font-weight:700;<%= scoreColor(mScore) %>">
-            <%= Number(mScore).toFixed(1) %>%
-          </span>
+        <!-- Rank + Score pill (like "#1  27 Mar 2026 · 07:30 - 10:00") -->
+        <div style="display:inline-flex;align-items:center;gap:0;background:linear-gradient(135deg,#1e293b,#334155);border-radius:20px;padding:6px 16px 6px 6px;flex-shrink:0;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent-primary);color:white;font-size:0.7rem;font-weight:700;margin-right:10px;">#<%= idx + 1 %></span>
+          <span style="font-size:0.8rem;font-weight:600;color:white;<%= scoreColor(mScore).replace('color:','color:') %>"><%= Number(mScore).toFixed(1) %>%</span>
+          <span style="color:rgba(255,255,255,0.4);margin:0 6px;">·</span>
+          <span style="font-size:0.75rem;color:rgba(255,255,255,0.7);"><%= getQual(m.appln_high_qualification) %></span>
         </div>
 
-        <!-- Candidate Name (like subject name in faculty schedule) -->
+        <!-- Name + Details (like "Sartorial Mastery  TAKEN") -->
         <div style="flex:1;min-width:0;">
-          <div style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></div>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap;font-size:0.8rem;color:var(--text-secondary);">
-            <span style="display:inline-flex;align-items:center;gap:4px;">
-              <i data-lucide="mail" style="width:12px;height:12px;color:var(--text-muted);"></i>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></span>
+            <% if (aiStatus) { %>
+              <span class="badge <%= statusBadge(aiStatus) %>" style="font-size:0.65rem;"><%= statusLabel(aiStatus) %></span>
+            <% } %>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:3px;font-size:0.75rem;color:var(--text-muted);flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:3px;">
+              <i data-lucide="mail" style="width:11px;height:11px;"></i>
               <%= m.appln_email || '--' %>
             </span>
-            <span style="display:inline-flex;align-items:center;gap:4px;">
-              <i data-lucide="graduation-cap" style="width:12px;height:12px;color:var(--text-muted);"></i>
-              <%= getQual(m.appln_high_qualification) %>
-            </span>
-            <% if (aiStatus) { %>
-              <span class="badge <%= statusBadge(aiStatus) %>"><%= statusLabel(aiStatus) %></span>
-            <% } %>
             <% if (iScore > 0) { %>
-              <span style="display:inline-flex;align-items:center;gap:4px;">
-                <i data-lucide="message-square" style="width:12px;height:12px;color:var(--text-muted);"></i>
+              <span style="display:inline-flex;align-items:center;gap:3px;">
+                <i data-lucide="message-square" style="width:11px;height:11px;"></i>
                 Interview: <strong style="<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</strong>
               </span>
             <% } %>
-          </div>
-        </div>
-
-        <!-- Score Bar (right side) -->
-        <div style="width:100px;flex-shrink:0;">
-          <div class="progress-bar" style="height:6px;">
-            <div class="progress-fill <%= mScore >= 75 ? 'green' : mScore >= 50 ? 'yellow' : 'red' %>" style="width:<%= mScore %>%;"></div>
           </div>
         </div>
       </div>
