@@ -12,7 +12,7 @@ const jobOpenings = asyncHandler(async (req, res) => {
   // Filters
   const scopeFilter = req.query.scope || '';       // 1=Academics, 2=Administration
   const searchFilter = req.query.search || '';
-  const locationFilter = req.query.location || '';
+  const roleFilter = req.query.role || '';          // Job role (post name)
 
   let where = [];
   let params = [];
@@ -25,9 +25,9 @@ const jobOpenings = asyncHandler(async (req, res) => {
     where.push('(job.applied_for_post LIKE ? OR job.applied_job_short_desc_new LIKE ?)');
     params.push(`%${searchFilter}%`, `%${searchFilter}%`);
   }
-  if (locationFilter) {
-    where.push('job.applied_location LIKE ?');
-    params.push(`%${locationFilter}%`);
+  if (roleFilter) {
+    where.push('job.applied_for_post = ?');
+    params.push(roleFilter);
   }
 
   const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
@@ -62,8 +62,14 @@ const jobOpenings = asyncHandler(async (req, res) => {
   const adminJobs = jobs.filter(j => j.scope_id === 2).length;
   const totalApplicants = jobs.reduce((s, j) => s + (j.applicant_count || 0), 0);
 
-  // Unique locations for filter
-  const locations = [...new Set(jobs.map(j => j.location).filter(Boolean))].sort();
+  // Unique job roles (post names) for filter dropdown
+  const [allRoles] = await pool.query(`
+    SELECT DISTINCT applied_for_post AS role_name
+    FROM isdi_admsn_applied_for
+    WHERE applied_for_post IS NOT NULL AND applied_for_post != ''
+    ORDER BY applied_for_post
+  `);
+  const jobRoles = allRoles.map(r => r.role_name);
 
   res.render('super-admin/jobs', {
     title: 'Job Openings',
@@ -72,7 +78,7 @@ const jobOpenings = asyncHandler(async (req, res) => {
     academicJobs,
     adminJobs,
     totalApplicants,
-    locations,
+    jobRoles,
     filters: req.query,
   });
 });
