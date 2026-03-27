@@ -80,7 +80,7 @@
   </div>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
   <div style="flex:1;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;">
-    <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">AI Interview 75%+</div>
+    <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">AI Interview Result 75%+</div>
     <div style="font-size:1.6rem;font-weight:700;color:#ef4444;"><%= fmt(_funnel.interviewPass) %></div>
   </div>
 </div>
@@ -233,6 +233,8 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('content-applied').style.display = tab === 'applied' ? 'block' : 'none';
   document.getElementById('content-matches').style.display = tab === 'matches' ? 'block' : 'none';
+  // Re-render icons in newly visible content
+  if (typeof lucide !== 'undefined') lucide.createIcons();
   // Reset selection
   document.querySelectorAll('.candidate-checkbox').forEach(function(cb) { cb.checked = false; });
   updateSelectionBar();
