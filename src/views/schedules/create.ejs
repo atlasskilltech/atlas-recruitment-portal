@@ -1,14 +1,18 @@
 <%
-  const candidate = locals.candidate || {};
+  const candidate = locals.candidate || null;
+  const candidates = locals.candidates || [];
   const job = locals.job || {};
 
-  const candidateName = candidate.appln_full_name
-    || (candidate.first_name ? candidate.first_name + ' ' + (candidate.last_name || '') : '')
-    || candidate.name || 'Unknown Candidate';
-  const candidateEmail = candidate.appln_email || candidate.email || '';
-  const jobTitle = candidate.job_title || job.title || job.job_title || 'N/A';
-  const aiScore = candidate.match_score || candidate.ai_score || 0;
-  const interviewScore = candidate.interview_score || candidate.overall_score || 0;
+  const hasCandidate = candidate && candidate.id;
+  const candidateName = hasCandidate
+    ? (candidate.appln_full_name
+      || (candidate.first_name ? candidate.first_name + ' ' + (candidate.last_name || '') : '')
+      || candidate.name || 'Select a Candidate')
+    : 'Select a Candidate';
+  const candidateEmail = hasCandidate ? (candidate.appln_email || candidate.email || '') : '';
+  const jobTitle = hasCandidate ? (candidate.applied_job_short_desc_new || candidate.job_title || job.title || 'N/A') : 'N/A';
+  const aiScore = hasCandidate ? (candidate.ai_match_score || candidate.match_score || candidate.ai_score || 0) : 0;
+  const interviewScore = hasCandidate ? (candidate.total_score || candidate.interview_score || candidate.overall_score || 0) : 0;
   const aiScoreColor = aiScore >= 75 ? 'text-success' : aiScore >= 50 ? 'text-warning' : 'text-destructive';
   const intScoreColor = interviewScore >= 75 ? 'text-success' : interviewScore >= 50 ? 'text-warning' : 'text-destructive';
 %>
@@ -29,44 +33,43 @@
   </div>
 </div>
 
-<!-- Candidate Info Header Card -->
-<div class="card p-6 mb-6">
-  <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-    <!-- Avatar -->
-    <% const nameParts = candidateName.trim().split(/\s+/); %>
-    <div class="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0">
-      <span class="text-lg font-bold text-white">
-        <%= nameParts[0].charAt(0).toUpperCase() %><%= nameParts.length > 1 ? nameParts[nameParts.length - 1].charAt(0).toUpperCase() : '' %>
-      </span>
-    </div>
-
-    <!-- Info -->
-    <div class="flex-1 min-w-0">
-      <h2 class="text-lg font-semibold text-foreground"><%= candidateName %></h2>
-      <% if (candidateEmail) { %>
-        <p class="text-sm text-muted-foreground"><%= candidateEmail %></p>
-      <% } %>
-      <p class="text-sm text-muted-foreground mt-0.5">
-        <i data-lucide="briefcase" class="w-3.5 h-3.5 inline-block mr-1"></i>
-        <%= jobTitle %>
-      </p>
-    </div>
-
-    <!-- Scores -->
-    <div class="flex items-center gap-6">
-      <div class="text-center">
-        <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">AI Score</p>
-        <p class="text-2xl font-bold <%= aiScoreColor %>"><%= aiScore %>%</p>
+<% if (hasCandidate) { %>
+  <!-- Pre-selected Candidate Info Card -->
+  <div class="card p-6 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+      <% const nameParts = candidateName.trim().split(/\s+/); %>
+      <div class="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+        <span class="text-lg font-bold text-white">
+          <%= nameParts[0].charAt(0).toUpperCase() %><%= nameParts.length > 1 ? nameParts[nameParts.length - 1].charAt(0).toUpperCase() : '' %>
+        </span>
       </div>
-      <% if (interviewScore > 0) { %>
-        <div class="text-center">
-          <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">Interview</p>
-          <p class="text-2xl font-bold <%= intScoreColor %>"><%= interviewScore %>%</p>
-        </div>
-      <% } %>
+      <div class="flex-1 min-w-0">
+        <h2 class="text-lg font-semibold text-foreground"><%= candidateName %></h2>
+        <% if (candidateEmail) { %>
+          <p class="text-sm text-muted-foreground"><%= candidateEmail %></p>
+        <% } %>
+        <p class="text-sm text-muted-foreground mt-0.5">
+          <i data-lucide="briefcase" class="w-3.5 h-3.5 inline-block mr-1"></i>
+          <%= jobTitle %>
+        </p>
+      </div>
+      <div class="flex items-center gap-6">
+        <% if (aiScore > 0) { %>
+          <div class="text-center">
+            <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">AI Score</p>
+            <p class="text-2xl font-bold <%= aiScoreColor %>"><%= aiScore %>%</p>
+          </div>
+        <% } %>
+        <% if (interviewScore > 0) { %>
+          <div class="text-center">
+            <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">Interview</p>
+            <p class="text-2xl font-bold <%= intScoreColor %>"><%= interviewScore %>%</p>
+          </div>
+        <% } %>
+      </div>
     </div>
   </div>
-</div>
+<% } %>
 
 <!-- Schedule Form -->
 <div class="card p-6" x-data="{ mode: 'offline' }">
@@ -76,11 +79,28 @@
   </h2>
 
   <form action="/schedules" method="POST">
-    <!-- Hidden fields -->
-    <input type="hidden" name="candidate_id" value="<%= candidate.id || '' %>">
-    <input type="hidden" name="job_id" value="<%= candidate.appln_applied_for_sub || job.id || '' %>">
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <% if (hasCandidate) { %>
+        <!-- Hidden fields for pre-selected candidate -->
+        <input type="hidden" name="candidate_id" value="<%= candidate.id %>">
+        <input type="hidden" name="job_id" value="<%= candidate.appln_applied_for_sub || job.id || '' %>">
+      <% } else { %>
+        <!-- Candidate Selection Dropdown -->
+        <div class="form-group md:col-span-2">
+          <label class="form-label" for="candidate_id">
+            Select Candidate <span class="text-destructive">*</span>
+          </label>
+          <select id="candidate_id" name="candidate_id" class="form-select" required>
+            <option value="">-- Choose a candidate --</option>
+            <% candidates.forEach(function(c) { %>
+              <option value="<%= c.id %>"><%= c.appln_full_name %> — <%= c.job_title || 'N/A' %> (<%= c.appln_email || '' %>)</option>
+            <% }); %>
+          </select>
+          <p class="text-xs text-muted-foreground mt-1">Only shortlisted, selected, and scheduled candidates are shown</p>
+        </div>
+      <% } %>
+
       <!-- Date -->
       <div class="form-group">
         <label class="form-label" for="scheduled_date">

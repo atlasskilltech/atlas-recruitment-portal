@@ -390,7 +390,7 @@ const inviteGet = asyncHandler(async (req, res) => {
 
       const templateData = notificationService.getTemplateMessage('ai_interview_invite', {
         candidateName: candidateName,
-        jobTitle: candidate?.applied_for_post || candidate?.applied_job_short_desc_new || 'Position',
+        jobTitle: candidate?.applied_for_post || candidate?.applied_job_short_desc_new || candidate?.job_title || 'the applied position',
         interviewLink: interviewLink,
         expiresIn: '10 days',
       });
