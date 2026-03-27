@@ -44,13 +44,19 @@
   </div>
 </div>
 
-<!-- Short JD -->
-<% if (_job.applied_job_short_desc_new || _job.applied_job_desc) { %>
-  <div class="card" style="padding:16px;margin-bottom:16px;border-left:3px solid var(--accent-primary);">
-    <div style="font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Job Description</div>
-    <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;"><%= _job.applied_job_short_desc_new || _job.applied_job_desc %></p>
-  </div>
-<% } %>
+<!-- JD File Status -->
+<div class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+  <% if (_job.jd_file_path || _job.jd_file) { %>
+    <i data-lucide="file-check" style="width:18px;height:18px;color:var(--accent-primary);flex-shrink:0;"></i>
+    <span style="font-size:0.85rem;color:var(--accent-primary);font-weight:500;">JD File Attached</span>
+    <a href="<%= _job.jd_file_path || _job.jd_file %>" target="_blank" class="btn btn-outline btn-sm" style="margin-left:auto;">
+      <i data-lucide="download" style="width:14px;height:14px;"></i> View JD
+    </a>
+  <% } else { %>
+    <i data-lucide="file-x" style="width:18px;height:18px;color:var(--text-muted);flex-shrink:0;"></i>
+    <span style="font-size:0.85rem;color:var(--text-muted);font-weight:500;">No JD File Attached</span>
+  <% } %>
+</div>
 
 <!-- Stats Row -->
 <div class="stats-row" style="margin-bottom:20px;">
