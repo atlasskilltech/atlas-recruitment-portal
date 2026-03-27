@@ -394,12 +394,10 @@
       Shortlist
     </button>
   </form>
-  <form action="/ai-interview/<%= interview.id %>/schedule" method="POST" class="inline">
-    <button type="submit" class="btn-outline">
-      <i data-lucide="calendar" class="w-4 h-4"></i>
-      Schedule Interview
-    </button>
-  </form>
+  <a href="/schedules/create/<%= interview.candidate_id %>" class="btn-outline inline-flex items-center gap-2">
+    <i data-lucide="calendar" class="w-4 h-4"></i>
+    Schedule Interview
+  </a>
   <form action="/ai-interview/<%= interview.id %>/reject" method="POST" class="inline"
         onsubmit="return confirm('Are you sure you want to reject this candidate?')">
     <button type="submit" class="btn-outline text-destructive border-destructive hover:bg-destructive hover:text-white">
