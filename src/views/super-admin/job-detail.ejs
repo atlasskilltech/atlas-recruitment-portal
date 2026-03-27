@@ -53,7 +53,16 @@
   </div>
 </div>
 
-<!-- Funnel Stats (like Applications > Paid Apps > Challenge Done) -->
+<!-- View Selector Dropdown (after header, before funnel) -->
+<div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+  <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);white-space:nowrap;">Show Candidates:</label>
+  <select id="view-selector" onchange="switchTab(this.value)" style="padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:0.85rem;font-family:inherit;background:var(--bg-secondary);color:var(--text-primary);min-width:280px;cursor:pointer;">
+    <option value="applied">Applied for Position (<%= _applied.length %>)</option>
+    <option value="matches">AI Matches from Entire Database (<%= _matches.length %>)</option>
+  </select>
+</div>
+
+<!-- Funnel Stats --> (like Applications > Paid Apps > Challenge Done) -->
 <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:0;margin-bottom:24px;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden;">
   <div style="padding:20px;text-align:center;border-right:1px solid var(--border-color);position:relative;">
     <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Applied</div>
@@ -74,18 +83,6 @@
     <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">AI Interview 75%+</div>
     <div style="font-size:1.75rem;font-weight:700;color:var(--accent-danger);"><%= fmt(_funnel.interviewPass) %></div>
   </div>
-</div>
-
-<!-- Two Tabs: Applied for Position | AI Matches from Entire Database -->
-<div style="display:flex;gap:4px;margin-bottom:20px;background:var(--bg-secondary);padding:4px;border-radius:var(--radius-lg);border:1px solid var(--border-color);">
-  <button onclick="switchTab('applied')" id="tab-applied" style="flex:1;padding:10px;border:none;border-radius:var(--radius-md);font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;background:var(--accent-primary);color:white;transition:all 0.15s ease;">
-    <i data-lucide="users" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:4px;"></i>
-    Applied for Position (<%= _applied.length %>)
-  </button>
-  <button onclick="switchTab('matches')" id="tab-matches" style="flex:1;padding:10px;border:none;border-radius:var(--radius-md);font-family:inherit;font-size:0.85rem;font-weight:500;cursor:pointer;background:transparent;color:var(--text-secondary);transition:all 0.15s ease;">
-    <i data-lucide="brain" style="width:15px;height:15px;display:inline;vertical-align:middle;margin-right:4px;"></i>
-    AI Matches from Entire Database (<%= _matches.length %>)
-  </button>
 </div>
 
 <!-- Selection Action Bar -->
@@ -236,16 +233,6 @@ function switchTab(tab) {
   currentTab = tab;
   document.getElementById('content-applied').style.display = tab === 'applied' ? 'block' : 'none';
   document.getElementById('content-matches').style.display = tab === 'matches' ? 'block' : 'none';
-
-  var btnApplied = document.getElementById('tab-applied');
-  var btnMatches = document.getElementById('tab-matches');
-  if (tab === 'applied') {
-    btnApplied.style.background = 'var(--accent-primary)'; btnApplied.style.color = 'white'; btnApplied.style.fontWeight = '600';
-    btnMatches.style.background = 'transparent'; btnMatches.style.color = 'var(--text-secondary)'; btnMatches.style.fontWeight = '500';
-  } else {
-    btnMatches.style.background = 'var(--accent-primary)'; btnMatches.style.color = 'white'; btnMatches.style.fontWeight = '600';
-    btnApplied.style.background = 'transparent'; btnApplied.style.color = 'var(--text-secondary)'; btnApplied.style.fontWeight = '500';
-  }
   // Reset selection
   document.querySelectorAll('.candidate-checkbox').forEach(function(cb) { cb.checked = false; });
   updateSelectionBar();

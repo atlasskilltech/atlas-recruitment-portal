@@ -136,8 +136,8 @@ const jobDetail = asyncHandler(async (req, res) => {
     }
   }
 
-  // Get top 50 matches (from entire database scan)
-  const topMatches = await jobMatchingService.getTopMatches(jobId, 50);
+  // Get ALL matches from entire database (no limit)
+  const topMatches = await jobMatchingService.getTopMatches(jobId, 5000);
 
   // Get candidates who APPLIED for this specific job
   const [appliedCandidates] = await pool.query(`
