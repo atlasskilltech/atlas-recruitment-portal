@@ -2,17 +2,19 @@
   const tix = typeof tickets !== 'undefined' ? tickets : [];
 %>
 
-<div class="mb-6">
-  <h1 class="text-2xl font-bold text-foreground">Help & Support</h1>
-  <p class="text-sm text-muted-foreground mt-1">Get help with your application or contact HR</p>
+<div class="mb-lg">
+  <h1 class="text-2xl font-bold">Help & Support</h1>
+  <p class="text-sm text-secondary mt-sm">Get help with your application or contact HR</p>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid-3" style="grid-template-columns:2fr 1fr;">
   <!-- FAQ -->
-  <div class="lg:col-span-2 space-y-6">
-    <div class="card p-5">
-      <h2 class="font-semibold text-foreground mb-4">Frequently Asked Questions</h2>
-      <div x-data="{open: null}" class="space-y-2">
+  <div class="flex flex-col gap-lg">
+    <div class="card">
+      <div class="card-header">
+        <h2 class="card-title">Frequently Asked Questions</h2>
+      </div>
+      <div class="card-body">
         <% const faqs = [
           { q: 'How do I check my application status?', a: 'Go to My Applications from the dashboard and click on any application to see its detailed status.' },
           { q: 'What is AI Screening?', a: 'AI Screening is an automated process that evaluates your resume against the job requirements to determine eligibility.' },
@@ -20,35 +22,38 @@
           { q: 'When will I know the result?', a: 'Results are typically communicated within 2-3 weeks. You will receive a notification when your status is updated.' },
           { q: 'How can I contact HR?', a: 'Use the contact form on this page to submit a query. Our HR team will respond within 2 business days.' },
         ]; %>
-        <% faqs.forEach(function(faq, idx) { %>
-          <div class="border border-border rounded-xl">
-            <button @click="open === <%= idx %> ? open = null : open = <%= idx %>" class="w-full flex items-center justify-between p-4 text-left">
-              <span class="text-sm font-medium text-foreground"><%= faq.q %></span>
-              <i data-lucide="chevron-down" class="w-4 h-4 text-muted-foreground transition-transform" :class="open === <%= idx %> && 'rotate-180'"></i>
-            </button>
-            <div x-show="open === <%= idx %>" x-cloak class="px-4 pb-4">
-              <p class="text-sm text-muted-foreground"><%= faq.a %></p>
+        <div class="flex flex-col gap-sm">
+          <% faqs.forEach(function(faq, idx) { %>
+            <div style="border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden;">
+              <button class="faq-toggle flex justify-between items-center w-full" style="padding:14px 16px;background:none;border:none;cursor:pointer;text-align:left;font-family:inherit;" data-faq="<%= idx %>">
+                <span class="text-sm font-medium"><%= faq.q %></span>
+                <i data-lucide="chevron-down" style="width:16px;height:16px;color:var(--text-muted);transition:transform 0.2s;flex-shrink:0;margin-left:8px;"></i>
+              </button>
+              <div class="faq-answer" id="faq-<%= idx %>" style="display:none;padding:0 16px 14px;">
+                <p class="text-sm text-secondary"><%= faq.a %></p>
+              </div>
             </div>
-          </div>
-        <% }); %>
+          <% }); %>
+        </div>
       </div>
     </div>
 
     <!-- Past Tickets -->
     <% if (tix.length > 0) { %>
-      <div class="card p-5">
-        <h2 class="font-semibold text-foreground mb-4">Your Support Tickets</h2>
-        <div class="space-y-3">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Your Support Tickets</h2>
+        </div>
+        <div class="card-body flex flex-col gap-sm">
           <% tix.forEach(function(t) { %>
-            <div class="p-3 border border-border rounded-xl">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-sm font-medium text-foreground"><%= t.subject %></span>
-                <span class="text-xs px-2 py-0.5 rounded-full
-                  <%= t.status === 'open' ? 'bg-amber-50 text-amber-700' : t.status === 'resolved' ? 'bg-green-50 text-green-700' : 'bg-muted text-muted-foreground' %>">
+            <div style="padding:12px 16px;border:1px solid var(--border-color);border-radius:var(--radius-lg);">
+              <div class="flex items-center justify-between mb-sm">
+                <span class="text-sm font-medium"><%= t.subject %></span>
+                <span class="badge <%= t.status === 'open' ? 'badge-warning' : t.status === 'resolved' ? 'badge-success' : 'badge-muted' %>">
                   <%= t.status %>
                 </span>
               </div>
-              <p class="text-xs text-muted-foreground"><%= t.created_at ? new Date(t.created_at).toLocaleDateString() : '' %></p>
+              <p class="text-xs text-muted"><%= t.created_at ? new Date(t.created_at).toLocaleDateString() : '' %></p>
             </div>
           <% }); %>
         </div>
@@ -57,30 +62,55 @@
   </div>
 
   <!-- Contact Form -->
-  <div class="card p-5 h-fit">
-    <h2 class="font-semibold text-foreground mb-4">Contact HR</h2>
-    <form action="/candidate/help/contact" method="POST" class="space-y-4">
-      <div class="form-group">
-        <label for="category" class="form-label">Category</label>
-        <select id="category" name="category" class="form-select">
-          <option value="general">General Query</option>
-          <option value="application">Application Issue</option>
-          <option value="interview">Interview Related</option>
-          <option value="documents">Documents</option>
-          <option value="technical">Technical Issue</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="subject" class="form-label">Subject</label>
-        <input type="text" id="subject" name="subject" required class="form-input" placeholder="Brief description">
-      </div>
-      <div class="form-group">
-        <label for="message" class="form-label">Message</label>
-        <textarea id="message" name="message" required rows="4" class="form-input" placeholder="Describe your issue..."></textarea>
-      </div>
-      <button type="submit" class="btn-primary w-full">
-        <i data-lucide="send" class="w-4 h-4"></i> Submit
-      </button>
-    </form>
+  <div class="card" style="align-self:flex-start;">
+    <div class="card-header">
+      <h2 class="card-title">Contact HR</h2>
+    </div>
+    <div class="card-body">
+      <form action="/candidate/help/contact" method="POST">
+        <div class="form-group">
+          <label for="category" class="form-label">Category</label>
+          <select id="category" name="category" class="form-select">
+            <option value="general">General Query</option>
+            <option value="application">Application Issue</option>
+            <option value="interview">Interview Related</option>
+            <option value="documents">Documents</option>
+            <option value="technical">Technical Issue</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="subject" class="form-label">Subject</label>
+          <input type="text" id="subject" name="subject" required class="form-input" placeholder="Brief description">
+        </div>
+        <div class="form-group">
+          <label for="message" class="form-label">Message</label>
+          <textarea id="message" name="message" required rows="4" class="form-textarea" placeholder="Describe your issue..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary w-full">
+          <i data-lucide="send" style="width:16px;height:16px;"></i> Submit
+        </button>
+      </form>
+    </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.faq-toggle').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = this.getAttribute('data-faq');
+        var answer = document.getElementById('faq-' + idx);
+        var icon = this.querySelector('[data-lucide]');
+        var isOpen = answer.style.display !== 'none';
+        // Close all
+        document.querySelectorAll('.faq-answer').forEach(function(el) { el.style.display = 'none'; });
+        document.querySelectorAll('.faq-toggle [data-lucide]').forEach(function(el) { el.style.transform = 'rotate(0deg)'; });
+        // Toggle current
+        if (!isOpen) {
+          answer.style.display = 'block';
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+  });
+</script>
