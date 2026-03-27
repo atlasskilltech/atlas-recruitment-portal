@@ -100,15 +100,21 @@
         </div>
 
         <!-- Row 3: Details -->
-        <div style="display:flex;flex-direction:column;gap:4px;font-size:0.75rem;color:var(--text-secondary);padding-top:8px;border-top:1px solid var(--border-light);">
-          <div style="display:flex;align-items:center;gap:6px;">
-            <i data-lucide="layers" style="width:13px;height:13px;color:var(--accent-primary);flex-shrink:0;"></i>
-            <span style="color:var(--accent-primary);"><%= job.scope %></span>
+        <div style="display:flex;flex-direction:column;gap:4px;font-size:0.75rem;padding-top:8px;border-top:1px solid var(--border-light);">
+          <div style="display:flex;align-items:center;gap:6px;color:var(--accent-primary);">
+            <i data-lucide="layers" style="width:13px;height:13px;flex-shrink:0;"></i>
+            <span><%= job.scope %></span>
           </div>
-          <div style="display:flex;align-items:center;gap:6px;">
-            <i data-lucide="users" style="width:13px;height:13px;color:var(--accent-primary);flex-shrink:0;"></i>
-            <span style="color:var(--accent-primary);"><%= job.applicant_count %> Applicants</span>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--text-secondary);">
+            <i data-lucide="users" style="width:13px;height:13px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span><%= job.applicant_count %> Applicants</span>
           </div>
+          <% if (job.ai_matched > 0) { %>
+          <div style="display:flex;align-items:center;gap:6px;color:var(--accent-primary);">
+            <i data-lucide="brain" style="width:13px;height:13px;flex-shrink:0;"></i>
+            <span><%= job.ai_matched %> AI Resume Matched</span>
+          </div>
+          <% } %>
         </div>
       </a>
     <% }); %>

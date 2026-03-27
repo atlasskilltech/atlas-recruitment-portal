@@ -43,12 +43,19 @@ const jobOpenings = asyncHandler(async (req, res) => {
       COALESCE(job.applied_for_post, job.applied_job_short_desc_new, 'Untitled') AS post_name,
       job.applied_job_short_desc_new AS short_desc,
       job.applied_location AS location,
-      COUNT(dsr.id) AS applicant_count
+      COUNT(dsr.id) AS applicant_count,
+      COALESCE(jcm.ai_matched, 0) AS ai_matched
     FROM isdi_admsn_applied_for job
     LEFT JOIN dice_staff_recruitment dsr ON dsr.appln_applied_for_sub = job.id
+    LEFT JOIN (
+      SELECT job_id, COUNT(*) AS ai_matched
+      FROM atlas_rec_job_candidate_matches
+      WHERE match_score >= 50
+      GROUP BY job_id
+    ) jcm ON jcm.job_id = job.id
     ${whereClause}
     GROUP BY job.id, job.applied_for_post_id, job.applied_for_post,
-             job.applied_job_short_desc_new, job.applied_job_desc, job.applied_location
+             job.applied_job_short_desc_new, job.applied_job_desc, job.applied_location, jcm.ai_matched
     ORDER BY applicant_count DESC
   `, params);
 

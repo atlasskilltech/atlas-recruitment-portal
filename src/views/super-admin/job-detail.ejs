@@ -154,7 +154,7 @@
               </td>
               <td>
                 <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-size:0.95rem;font-weight:700;<%= scoreColor(mScore) %>"><%= mScore.toFixed(1) %>%</span>
+                  <span style="font-size:0.95rem;font-weight:700;<%= scoreColor(mScore) %>"><%= Number(mScore).toFixed(1) %>%</span>
                   <div style="flex:1;max-width:80px;">
                     <div class="progress-bar" style="height:5px;">
                       <div class="progress-fill <%= mScore >= 75 ? 'green' : mScore >= 50 ? 'yellow' : 'red' %>" style="width:<%= mScore %>%;"></div>
@@ -173,7 +173,7 @@
               </td>
               <td>
                 <% if (iScore > 0) { %>
-                  <span style="font-weight:600;<%= scoreColor(iScore) %>"><%= iScore.toFixed(1) %>%</span>
+                  <span style="font-weight:600;<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</span>
                   <% if (m.interview_status) { %>
                     <span class="badge badge-muted" style="margin-left:4px;font-size:0.65rem;"><%= m.interview_status %></span>
                   <% } %>
