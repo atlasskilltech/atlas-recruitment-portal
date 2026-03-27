@@ -22,8 +22,10 @@ const notificationRoutes = require('./notification.routes');
 const reportRoutes = require('./report.routes');
 const apiRoutes = require('./api.routes');
 
+const superAdminRoutes = require('./superAdmin.routes');
+
 // ---- Root redirect --------------------------------------------------------
-router.get('/', (req, res) => res.redirect('/dashboard'));
+router.get('/', (req, res) => res.redirect('/admin/jobs'));
 
 // ---- Auth routes (login / logout) – no auth guard -------------------------
 router.use('/', authRoutes);
@@ -46,5 +48,8 @@ router.use('/schedules', isAuthenticated, scheduleRoutes);
 router.use('/notifications', isAuthenticated, notificationRoutes);
 router.use('/reports', isAuthenticated, reportRoutes);
 router.use('/api', isAuthenticated, apiRoutes);
+
+// ---- Super Admin routes ---------------------------------------------------
+router.use('/admin', isAuthenticated, superAdminRoutes);
 
 module.exports = router;
