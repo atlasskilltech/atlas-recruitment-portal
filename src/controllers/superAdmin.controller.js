@@ -136,8 +136,37 @@ const jobDetail = asyncHandler(async (req, res) => {
     }
   }
 
-  // Get top 50 matches
+  // Get top 50 matches (from entire database scan)
   const topMatches = await jobMatchingService.getTopMatches(jobId, 50);
+
+  // Get candidates who APPLIED for this specific job
+  const [appliedCandidates] = await pool.query(`
+    SELECT dsr.id AS candidate_id, dsr.appln_full_name, dsr.appln_email, dsr.appln_mobile_no,
+           dsr.appln_high_qualification, dsr.appln_total_experience,
+           ais.ai_match_score AS screening_score, ais.ai_status AS screening_status,
+           aint.total_score AS interview_score, aint.status AS interview_status,
+           jcm.match_score, jcm.match_status
+    FROM dice_staff_recruitment dsr
+    LEFT JOIN (
+      SELECT candidate_id, ai_match_score, ai_status
+      FROM atlas_rec_candidate_ai_screening s1
+      WHERE s1.id = (SELECT MAX(s2.id) FROM atlas_rec_candidate_ai_screening s2 WHERE s2.candidate_id = s1.candidate_id)
+    ) ais ON dsr.id = ais.candidate_id
+    LEFT JOIN (
+      SELECT candidate_id, total_score, status
+      FROM atlas_rec_ai_interviews i1
+      WHERE i1.id = (SELECT MAX(i2.id) FROM atlas_rec_ai_interviews i2 WHERE i2.candidate_id = i1.candidate_id)
+    ) aint ON dsr.id = aint.candidate_id
+    LEFT JOIN atlas_rec_job_candidate_matches jcm ON jcm.candidate_id = dsr.id AND jcm.job_id = ?
+    WHERE dsr.appln_applied_for_sub = ?
+    ORDER BY COALESCE(jcm.match_score, ais.ai_match_score, 0) DESC
+  `, [jobId, jobId]);
+
+  // Funnel stats
+  const funnelApplied = applicant_count || 0;
+  const funnelCVMatch = appliedCandidates.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50).length;
+  const funnelInterviewTaken = appliedCandidates.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status)).length;
+  const funnelInterviewPass = appliedCandidates.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length;
 
   res.render('super-admin/job-detail', {
     title: `${job.post_name} - Top Matches`,
@@ -145,6 +174,13 @@ const jobDetail = asyncHandler(async (req, res) => {
     applicantCount: applicant_count || 0,
     stats,
     topMatches,
+    appliedCandidates,
+    funnel: {
+      applied: funnelApplied,
+      cvMatch: funnelCVMatch,
+      interviewTaken: funnelInterviewTaken,
+      interviewPass: funnelInterviewPass,
+    },
   });
 });
 
