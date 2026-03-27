@@ -17,16 +17,16 @@
 
   /* Stat card definitions */
   const statCards = [
-    { key: 'total_applicants',  label: 'Total Applicants',  icon: 'users',        bg: 'bg-blue-500',    light: 'bg-blue-50 dark:bg-blue-950/30',    text: 'text-blue-600 dark:text-blue-400' },
-    { key: 'new_applicants',    label: 'New Applicants',     icon: 'user-plus',    bg: 'bg-green-500',   light: 'bg-green-50 dark:bg-green-950/30',  text: 'text-green-600 dark:text-green-400' },
-    { key: 'ai_eligible',       label: 'AI Eligible',        icon: 'check-circle', bg: 'bg-emerald-500', light: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-600 dark:text-emerald-400' },
-    { key: 'ai_rejected',       label: 'AI Rejected',        icon: 'x-circle',     bg: 'bg-red-500',     light: 'bg-red-50 dark:bg-red-950/30',      text: 'text-red-600 dark:text-red-400' },
-    { key: 'interview_pending', label: 'Interview Pending',  icon: 'clock',        bg: 'bg-amber-500',   light: 'bg-amber-50 dark:bg-amber-950/30',  text: 'text-amber-600 dark:text-amber-400' },
-    { key: 'interview_passed',  label: 'Interview Passed',   icon: 'award',        bg: 'bg-green-500',   light: 'bg-green-50 dark:bg-green-950/30',  text: 'text-green-600 dark:text-green-400' },
-    { key: 'shortlisted',       label: 'Shortlisted',        icon: 'list-checks',  bg: 'bg-blue-500',    light: 'bg-blue-50 dark:bg-blue-950/30',    text: 'text-blue-600 dark:text-blue-400' },
-    { key: 'scheduled',         label: 'Scheduled',          icon: 'calendar',     bg: 'bg-purple-500',  light: 'bg-purple-50 dark:bg-purple-950/30',text: 'text-purple-600 dark:text-purple-400' },
-    { key: 'hired',             label: 'Hired',              icon: 'trophy',       bg: 'bg-accent',      light: 'bg-accent-50 dark:bg-accent-700/20',text: 'text-accent-600 dark:text-accent-400' },
-    { key: 'rejected',          label: 'Rejected',           icon: 'ban',          bg: 'bg-red-500',     light: 'bg-red-50 dark:bg-red-950/30',      text: 'text-red-600 dark:text-red-400' },
+    { key: 'total_applicants',  label: 'Total Applicants',  icon: 'users',        color: 'blue' },
+    { key: 'new_applicants',    label: 'New Applicants',     icon: 'user-plus',    color: 'green' },
+    { key: 'ai_eligible',       label: 'AI Eligible',        icon: 'check-circle', color: 'green' },
+    { key: 'ai_rejected',       label: 'AI Rejected',        icon: 'x-circle',     color: 'red' },
+    { key: 'interview_pending', label: 'Interview Pending',  icon: 'clock',        color: 'orange' },
+    { key: 'interview_passed',  label: 'Interview Passed',   icon: 'award',        color: 'green' },
+    { key: 'shortlisted',       label: 'Shortlisted',        icon: 'list-checks',  color: 'blue' },
+    { key: 'scheduled',         label: 'Scheduled',          icon: 'calendar',     color: 'purple' },
+    { key: 'hired',             label: 'Hired',              icon: 'trophy',       color: 'green' },
+    { key: 'rejected',          label: 'Rejected',           icon: 'ban',          color: 'red' },
   ];
 
   /* Badge helper */
@@ -51,17 +51,17 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      Page Header
      ═══════════════════════════════════════════════════════════════════════ -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="flex items-center justify-between mb-lg">
   <div>
-    <h1 class="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
-    <p class="text-sm text-muted-foreground mt-1">
-      Welcome back, <span class="font-medium text-foreground"><%= userName %></span>
-      <span class="mx-1.5 text-border">|</span>
+    <h1 class="text-2xl font-bold">Dashboard</h1>
+    <p class="text-sm text-secondary" style="margin-top: 4px;">
+      Welcome back, <span class="font-medium text-primary"><%= userName %></span>
+      <span style="margin: 0 6px; color: var(--border-color);">|</span>
       <%= dateStr %>
     </p>
   </div>
-  <a href="/candidates" class="btn-primary btn-sm self-start sm:self-auto">
-    <i data-lucide="plus" class="w-4 h-4"></i>
+  <a href="/candidates" class="btn btn-primary btn-sm">
+    <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
     View All Candidates
   </a>
 </div>
@@ -69,16 +69,16 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      Stat Cards Grid
      ═══════════════════════════════════════════════════════════════════════ -->
-<div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
+<div class="stats-row">
   <% statCards.forEach(function(card, idx) { %>
-    <div class="stat-card animate-slide-up" style="animation-delay: <%= idx * 60 %>ms">
-      <div class="flex items-start justify-between mb-3">
-        <div class="stat-icon <%= card.bg %>">
-          <i data-lucide="<%= card.icon %>" class="w-5 h-5"></i>
-        </div>
+    <div class="stat-card" style="animation: fadeIn 0.3s ease <%= idx * 60 %>ms both;">
+      <div class="stat-icon <%= card.color %>">
+        <i data-lucide="<%= card.icon %>"></i>
       </div>
-      <div class="stat-value text-foreground"><%= fmt(s[card.key]) %></div>
-      <div class="stat-label"><%= card.label %></div>
+      <div class="stat-info">
+        <div class="stat-value"><%= fmt(s[card.key]) %></div>
+        <div class="stat-label"><%= card.label %></div>
+      </div>
     </div>
   <% }); %>
 </div>
@@ -86,106 +86,122 @@
 <!-- ═══════════════════════════════════════════════════════════════════════
      Charts Row 1 – Applicants by Role & AI Match Score Distribution
      ═══════════════════════════════════════════════════════════════════════ -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<div class="grid-2 mb-lg" style="grid-template-columns: 1fr 1fr;">
 
   <!-- Applicants by Job Role (Horizontal Bar) -->
-  <div class="card p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-      <i data-lucide="bar-chart-3" class="w-5 h-5 text-primary-400"></i>
-      Applicants by Job Role
-    </h2>
-    <% if (c.applicantsByRole && c.applicantsByRole.length > 0) { %>
-      <div id="chart-role" class="min-h-[320px]"></div>
-    <% } else { %>
-      <div class="empty-state py-12">
-        <i data-lucide="bar-chart-3" class="empty-state-icon"></i>
-        <p class="text-sm text-muted-foreground">No role data available yet.</p>
-      </div>
-    <% } %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="bar-chart-3"></i>
+        Applicants by Job Role
+      </h2>
+    </div>
+    <div class="card-body">
+      <% if (c.applicantsByRole && c.applicantsByRole.length > 0) { %>
+        <div id="chart-role" class="chart-container" style="min-height: 320px;"></div>
+      <% } else { %>
+        <div class="empty-state">
+          <i data-lucide="bar-chart-3"></i>
+          <p class="text-sm text-muted">No role data available yet.</p>
+        </div>
+      <% } %>
+    </div>
   </div>
 
   <!-- AI Match Score Distribution (Donut) -->
-  <div class="card p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-      <i data-lucide="pie-chart" class="w-5 h-5 text-emerald-500"></i>
-      AI Match Score Distribution
-    </h2>
-    <% if (c.matchScoreDist && c.matchScoreDist.length > 0) { %>
-      <div id="chart-score" class="min-h-[320px]"></div>
-    <% } else { %>
-      <div class="empty-state py-12">
-        <i data-lucide="pie-chart" class="empty-state-icon"></i>
-        <p class="text-sm text-muted-foreground">No screening data available yet.</p>
-      </div>
-    <% } %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="pie-chart"></i>
+        AI Match Score Distribution
+      </h2>
+    </div>
+    <div class="card-body">
+      <% if (c.matchScoreDist && c.matchScoreDist.length > 0) { %>
+        <div id="chart-score" class="chart-container" style="min-height: 320px;"></div>
+      <% } else { %>
+        <div class="empty-state">
+          <i data-lucide="pie-chart"></i>
+          <p class="text-sm text-muted">No screening data available yet.</p>
+        </div>
+      <% } %>
+    </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      Charts Row 2 – Monthly Trend & Hiring Funnel
      ═══════════════════════════════════════════════════════════════════════ -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<div class="grid-2 mb-lg" style="grid-template-columns: 1fr 1fr;">
 
   <!-- Monthly Applications Trend (Area) -->
-  <div class="card p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-      <i data-lucide="trending-up" class="w-5 h-5 text-blue-500"></i>
-      Monthly Applications Trend
-    </h2>
-    <% if (c.monthlyTrend && c.monthlyTrend.length > 0) { %>
-      <div id="chart-trend" class="min-h-[300px]"></div>
-    <% } else { %>
-      <div class="empty-state py-12">
-        <i data-lucide="trending-up" class="empty-state-icon"></i>
-        <p class="text-sm text-muted-foreground">No trend data available yet.</p>
-      </div>
-    <% } %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="trending-up"></i>
+        Monthly Applications Trend
+      </h2>
+    </div>
+    <div class="card-body">
+      <% if (c.monthlyTrend && c.monthlyTrend.length > 0) { %>
+        <div id="chart-trend" class="chart-container"></div>
+      <% } else { %>
+        <div class="empty-state">
+          <i data-lucide="trending-up"></i>
+          <p class="text-sm text-muted">No trend data available yet.</p>
+        </div>
+      <% } %>
+    </div>
   </div>
 
   <!-- Hiring Funnel (Horizontal Bar) -->
-  <div class="card p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-      <i data-lucide="filter" class="w-5 h-5 text-purple-500"></i>
-      Hiring Funnel
-    </h2>
-    <% if (c.statusFunnel && c.statusFunnel.length > 0) { %>
-      <div id="chart-funnel" class="min-h-[300px]"></div>
-    <% } else { %>
-      <div class="empty-state py-12">
-        <i data-lucide="filter" class="empty-state-icon"></i>
-        <p class="text-sm text-muted-foreground">No funnel data available yet.</p>
-      </div>
-    <% } %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="filter"></i>
+        Hiring Funnel
+      </h2>
+    </div>
+    <div class="card-body">
+      <% if (c.statusFunnel && c.statusFunnel.length > 0) { %>
+        <div id="chart-funnel" class="chart-container"></div>
+      <% } else { %>
+        <div class="empty-state">
+          <i data-lucide="filter"></i>
+          <p class="text-sm text-muted">No funnel data available yet.</p>
+        </div>
+      <% } %>
+    </div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════
      Recent Applicants Table & Top Matched Candidates
      ═══════════════════════════════════════════════════════════════════════ -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+<div class="grid-3 mb-lg" style="grid-template-columns: 2fr 1fr;">
 
-  <!-- Recent Applicants Table (2/3 width on xl) -->
-  <div class="xl:col-span-2 card overflow-hidden">
-    <div class="px-5 py-4 border-b border-border flex items-center justify-between">
-      <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
-        <i data-lucide="clock" class="w-5 h-5 text-muted-foreground"></i>
+  <!-- Recent Applicants Table -->
+  <div class="card" style="overflow: hidden;">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="clock"></i>
         Recent Applicants
       </h2>
-      <a href="/candidates" class="text-sm text-primary-400 hover:text-primary-300 font-medium transition-colors">
+      <a href="/candidates" class="text-sm text-accent font-medium">
         View all &rarr;
       </a>
     </div>
 
     <% if (recent.length > 0) { %>
-      <div class="overflow-x-auto custom-scrollbar">
+      <div class="table-responsive">
         <table class="data-table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Role Applied</th>
-              <th class="hidden md:table-cell">AI Score</th>
+              <th>AI Score</th>
               <th>Status</th>
-              <th class="hidden sm:table-cell">Date</th>
+              <th>Date</th>
               <th class="text-right">Action</th>
             </tr>
           </thead>
@@ -193,44 +209,42 @@
             <% recent.forEach(function(a) { %>
               <tr>
                 <td>
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0 shadow-sm">
-                      <span class="text-xs font-bold text-white leading-none"><%
-                        if (a.appln_full_name) {
-                          const parts = a.appln_full_name.trim().split(/\s+/);
-                          %><%= parts[0].charAt(0).toUpperCase() %><%= parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '' %><%
-                        } else { %>?<% } %></span>
-                    </div>
-                    <div class="min-w-0">
-                      <p class="text-sm font-medium text-foreground truncate max-w-[160px]"><%= a.appln_full_name || 'N/A' %></p>
-                      <p class="text-xxs text-muted-foreground truncate max-w-[160px]"><%= a.appln_email || '' %></p>
+                  <div class="flex items-center gap-sm">
+                    <div class="avatar avatar-sm avatar-gradient"><%
+                      if (a.appln_full_name) {
+                        const parts = a.appln_full_name.trim().split(/\s+/);
+                        %><%= parts[0].charAt(0).toUpperCase() %><%= parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '' %><%
+                      } else { %>?<% } %></div>
+                    <div style="min-width: 0;">
+                      <p class="text-sm font-medium truncate" style="max-width: 160px;"><%= a.appln_full_name || 'N/A' %></p>
+                      <p class="text-xs text-muted truncate" style="max-width: 160px;"><%= a.appln_email || '' %></p>
                     </div>
                   </div>
                 </td>
                 <td>
-                  <span class="text-sm text-foreground"><%= a.job_title || 'N/A' %></span>
+                  <span class="text-sm"><%= a.job_title || 'N/A' %></span>
                 </td>
-                <td class="hidden md:table-cell">
+                <td>
                   <% if (a.match_score != null) { %>
-                    <span class="inline-flex items-center gap-1.5 text-sm font-semibold <%= a.match_score >= 70 ? 'text-green-600 dark:text-green-400' : a.match_score >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400' %>">
+                    <span class="text-sm font-semibold" style="color: <%= a.match_score >= 70 ? 'var(--accent-primary)' : a.match_score >= 40 ? 'var(--accent-warning)' : 'var(--accent-danger)' %>;">
                       <%= a.match_score %>%
                     </span>
                   <% } else { %>
-                    <span class="text-xs text-muted-foreground">--</span>
+                    <span class="text-xs text-muted">--</span>
                   <% } %>
                 </td>
                 <td>
-                  <span class="<%= statusBadge(a.appln_status_new) %>">
+                  <span class="badge <%= statusBadge(a.appln_status_new) %>">
                     <%= a.appln_status_new ? String(a.appln_status_new).charAt(0).toUpperCase() + String(a.appln_status_new).slice(1) : 'New' %>
                   </span>
                 </td>
-                <td class="hidden sm:table-cell">
-                  <span class="text-xs text-muted-foreground">
+                <td>
+                  <span class="text-xs text-muted">
                     <%= a.appln_date ? new Date(a.appln_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '--' %>
                   </span>
                 </td>
                 <td class="text-right">
-                  <a href="/candidates/<%= a.id %>" class="btn-ghost btn-sm text-primary-400 hover:text-primary-300">
+                  <a href="/candidates/<%= a.id %>" class="btn btn-ghost btn-sm text-accent">
                     View
                   </a>
                 </td>
@@ -240,19 +254,19 @@
         </table>
       </div>
     <% } else { %>
-      <div class="empty-state py-12">
-        <i data-lucide="users" class="empty-state-icon"></i>
-        <p class="text-sm text-muted-foreground mb-1">No applicants yet</p>
-        <p class="text-xs text-muted-foreground">Applicants will appear here once they apply.</p>
+      <div class="empty-state">
+        <i data-lucide="users"></i>
+        <p class="text-sm text-muted">No applicants yet</p>
+        <p class="text-xs text-muted">Applicants will appear here once they apply.</p>
       </div>
     <% } %>
   </div>
 
-  <!-- Top Matched Candidates Leaderboard (1/3 width on xl) -->
-  <div class="card overflow-hidden">
-    <div class="px-5 py-4 border-b border-border">
-      <h2 class="text-base font-semibold text-foreground flex items-center gap-2">
-        <i data-lucide="trophy" class="w-5 h-5 text-accent"></i>
+  <!-- Top Matched Candidates Leaderboard -->
+  <div class="card" style="overflow: hidden;">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="trophy"></i>
         Top Matched Candidates
       </h2>
     </div>
@@ -269,49 +283,50 @@
     %>
 
     <% if (leaderboard.length > 0) { %>
-      <div class="divide-y divide-border">
+      <div>
         <% leaderboard.forEach(function(cand, rank) { %>
-          <div class="px-5 py-4 flex items-center gap-4 hover:bg-muted/30 transition-colors">
+          <div class="flex items-center gap-md" style="padding: 16px 20px; border-bottom: 1px solid var(--border-light);">
             <!-- Rank Badge -->
-            <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-              <%= rank === 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
-                   rank === 1 ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300' :
-                   rank === 2 ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400' :
-                   'bg-muted text-muted-foreground' %>">
+            <div class="shrink-0 flex items-center justify-center font-bold" style="width: 28px; height: 28px; border-radius: 50%; font-size: 0.75rem;
+              <% if (rank === 0) { %>background: rgba(245,158,11,0.1); color: #b45309;
+              <% } else if (rank === 1) { %>background: var(--bg-tertiary); color: var(--text-secondary);
+              <% } else if (rank === 2) { %>background: rgba(234,88,12,0.1); color: #c2410c;
+              <% } else { %>background: var(--bg-tertiary); color: var(--text-muted);
+              <% } %>">
               <%= rank + 1 %>
             </div>
 
             <!-- Candidate Info -->
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-foreground truncate"><%= cand.appln_full_name || cand.name || 'N/A' %></p>
-              <p class="text-xxs text-muted-foreground truncate"><%= cand.job_title || cand.role || '' %></p>
+            <div class="flex-1" style="min-width: 0;">
+              <p class="text-sm font-medium truncate"><%= cand.appln_full_name || cand.name || 'N/A' %></p>
+              <p class="text-xs text-muted truncate"><%= cand.job_title || cand.role || '' %></p>
             </div>
 
             <!-- Score Ring -->
-            <div class="flex-shrink-0 relative inline-flex items-center justify-center" title="AI Match Score: <%= cand.match_score || cand.score || 0 %>%">
-              <%
-                const score = cand.match_score || cand.score || 0;
-                const ringRadius = 20;
-                const circumference = 2 * Math.PI * ringRadius;
-                const offset = circumference - (score / 100) * circumference;
-                const ringColor = score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#ef4444';
-                const ringBg = score >= 70 ? 'rgba(16,185,129,0.1)' : score >= 40 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
-              %>
-              <svg width="52" height="52" viewBox="0 0 52 52" style="transform: rotate(-90deg);">
+            <%
+              const score = cand.match_score || cand.score || 0;
+              const ringRadius = 20;
+              const circumference = 2 * Math.PI * ringRadius;
+              const offset = circumference - (score / 100) * circumference;
+              const ringColor = score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#ef4444';
+              const ringBg = score >= 70 ? 'rgba(16,185,129,0.1)' : score >= 40 ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)';
+            %>
+            <div class="score-ring shrink-0" title="AI Match Score: <%= score %>%">
+              <svg width="52" height="52" viewBox="0 0 52 52">
                 <circle cx="26" cy="26" r="<%= ringRadius %>" fill="<%= ringBg %>" stroke="#e2e8f0" stroke-width="3" />
                 <circle cx="26" cy="26" r="<%= ringRadius %>" fill="none" stroke="<%= ringColor %>" stroke-width="3"
                   stroke-dasharray="<%= circumference %>" stroke-dashoffset="<%= offset %>"
                   stroke-linecap="round" />
               </svg>
-              <span class="absolute inset-0 flex items-center justify-center text-xs font-bold" style="color: <%= ringColor %>;"><%= score %>%</span>
+              <span class="score-value text-xs font-bold" style="color: <%= ringColor %>;"><%= score %>%</span>
             </div>
           </div>
         <% }); %>
       </div>
     <% } else { %>
-      <div class="empty-state py-12">
-        <i data-lucide="award" class="empty-state-icon"></i>
-        <p class="text-sm text-muted-foreground">No scored candidates yet.</p>
+      <div class="empty-state">
+        <i data-lucide="award"></i>
+        <p class="text-sm text-muted">No scored candidates yet.</p>
       </div>
     <% } %>
   </div>

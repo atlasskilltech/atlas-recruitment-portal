@@ -10,56 +10,56 @@
 
 <div class="login-card-animate">
   <!-- Header -->
-  <div class="text-center mb-8">
-    <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-brand rounded-2xl mb-4 shadow-brand">
-      <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+  <div class="login-logo">
+    <div class="logo-icon" style="width:56px;height:56px;font-size:1.5rem;margin:0 auto 12px;border-radius:14px;">
+      <svg style="width:28px;height:28px;color:white;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
       </svg>
     </div>
-    <h1 class="text-2xl font-bold text-foreground tracking-tight">Verify OTP</h1>
-    <p class="text-muted-foreground text-sm mt-1">Enter the 6-digit code sent to</p>
-    <p class="text-sm font-semibold text-foreground mt-1"><%= typeof email !== 'undefined' ? email : '' %></p>
+    <h2>Verify OTP</h2>
+    <p>Enter the 6-digit code sent to</p>
+    <p class="font-semibold" style="margin-top:4px;color:var(--text-primary);"><%= typeof email !== 'undefined' ? email : '' %></p>
   </div>
 
   <!-- Flash Messages -->
   <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
-    <div class="mb-4 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
-      <p class="text-sm text-red-700 dark:text-red-300"><%= Array.isArray(error) ? error[0] : error %></p>
+    <div class="alert alert-error mb-md">
+      <span class="text-sm"><%= Array.isArray(error) ? error[0] : error %></span>
     </div>
   <% } %>
   <% if (typeof success !== 'undefined' && success && success.length > 0) { %>
-    <div class="mb-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-      <p class="text-sm text-green-700 dark:text-green-300"><%= Array.isArray(success) ? success[0] : success %></p>
+    <div class="alert alert-success mb-md">
+      <span class="text-sm"><%= Array.isArray(success) ? success[0] : success %></span>
     </div>
   <% } %>
 
   <!-- OTP Form -->
-  <form action="/candidate/verify-otp" method="POST" class="space-y-5">
+  <form action="/candidate/verify-otp" method="POST">
     <div class="form-group">
       <label for="otp" class="form-label">One-Time Password</label>
-      <div class="relative">
-        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+      <div style="position:relative;">
+        <div style="position:absolute;top:50%;left:14px;transform:translateY(-50%);pointer-events:none;">
+          <svg style="width:16px;height:16px;color:var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
           </svg>
         </div>
         <input type="text" id="otp" name="otp" required maxlength="6" pattern="[0-9]{6}"
-          class="form-input pl-11 text-center text-2xl tracking-[0.5em] font-mono"
+          class="form-input" style="padding-left:40px;text-align:center;font-size:1.5rem;letter-spacing:0.5em;font-family:var(--font-mono);"
           placeholder="000000" autocomplete="one-time-code" inputmode="numeric"
           value="<%= typeof devOTP !== 'undefined' && devOTP ? devOTP : '' %>">
       </div>
       <% if (typeof devOTP !== 'undefined' && devOTP) { %>
-        <div class="mt-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-center">
-          <p class="text-xs text-amber-700 dark:text-amber-300">
-            <strong>Dev/Test Mode:</strong> OTP is <span class="font-mono font-bold text-sm"><%= devOTP %></span>
-          </p>
+        <div class="alert alert-warning mt-sm" style="padding:8px 12px;">
+          <span class="text-xs">
+            <strong>Dev/Test Mode:</strong> OTP is <span style="font-family:var(--font-mono);font-weight:700;font-size:0.9rem;"><%= devOTP %></span>
+          </span>
         </div>
       <% } %>
     </div>
 
     <!-- Submit Button -->
-    <button type="submit" class="btn-primary w-full py-3 text-base font-semibold">
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+    <button type="submit" class="btn btn-primary btn-lg w-full font-semibold">
+      <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
       Verify & Login
@@ -67,15 +67,15 @@
   </form>
 
   <!-- Footer -->
-  <div class="mt-8 pt-6 border-t border-border text-center space-y-3">
-    <form action="/candidate/send-otp" method="POST" class="inline">
+  <div class="border-t text-center" style="margin-top:24px;padding-top:20px;">
+    <form action="/candidate/send-otp" method="POST" style="display:inline;">
       <input type="hidden" name="email" value="<%= typeof email !== 'undefined' ? email : '' %>">
-      <button type="submit" class="text-sm text-primary-800 dark:text-primary-200 font-medium hover:underline">
+      <button type="submit" class="text-sm text-accent font-medium" style="background:none;border:none;cursor:pointer;text-decoration:underline;">
         Resend OTP
       </button>
     </form>
-    <p class="text-xs text-muted-foreground">OTP is valid for 10 minutes</p>
-    <a href="/candidate/login" class="text-xs text-muted-foreground hover:text-foreground transition-colors block mt-2">
+    <p class="text-xs text-muted" style="margin-top:8px;">OTP is valid for 10 minutes</p>
+    <a href="/candidate/login" class="text-xs text-muted" style="display:block;margin-top:8px;">
       &larr; Use a different email
     </a>
   </div>

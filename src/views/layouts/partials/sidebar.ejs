@@ -10,7 +10,6 @@
     { path: '/reports', icon: 'bar-chart-3', label: 'Reports' },
     { path: '/notifications', icon: 'bell', label: 'Notifications' },
   ];
-
   const isActive = (itemPath) => {
     if (!currentPath) return false;
     if (itemPath === '/dashboard') return currentPath === '/' || currentPath === '/dashboard';
@@ -18,73 +17,43 @@
   };
 %>
 
-<!-- Sidebar overlay -->
-<div x-show="sidebarOpen" x-transition:enter="transition-opacity ease-linear duration-300"
-     x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-     x-transition:leave="transition-opacity ease-linear duration-300"
-     x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30"
-     @click="sidebarOpen = false">
-</div>
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
-<!-- Sidebar -->
-<aside class="sidebar custom-scrollbar -translate-x-full"
-       :class="sidebarOpen && '!translate-x-0'"
-       x-cloak>
-  <div class="flex flex-col h-full">
-
-    <!-- Logo / Brand -->
-    <div class="flex items-center gap-3 px-5 py-5 border-b border-white/10">
-      <div class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
-        <i data-lucide="graduation-cap" class="w-6 h-6 text-accent"></i>
-      </div>
-      <div class="overflow-hidden">
-        <h1 class="text-base font-bold tracking-tight text-white truncate">ATLAS SkillTech University</h1>
-        <p class="text-xxs text-white/50 uppercase tracking-widest">HR Recruitment</p>
-      </div>
-      <!-- Close button -->
-      <button @click="sidebarOpen = false" class="ml-auto text-white/50 hover:text-white transition-colors">
-        <i data-lucide="x" class="w-5 h-5"></i>
-      </button>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-icon">A</div>
+    <div style="flex:1;overflow:hidden;">
+      <div class="logo-text">ATLAS SkillTech Uni...</div>
+      <div class="logo-sub">HR Recruitment</div>
     </div>
+    <button class="sidebar-close" id="sidebar-close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
 
-    <!-- Navigation -->
-    <nav class="flex-1 py-4 space-y-1">
-      <p class="px-6 mb-2 text-xxs font-semibold text-white/30 uppercase tracking-widest">Main Menu</p>
-
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-section-title">Main Menu</div>
       <% navItems.forEach(function(item) { %>
-        <a href="<%= item.path %>"
-           class="sidebar-link<%= isActive(item.path) ? ' active' : '' %>">
-          <i data-lucide="<%= item.icon %>" class="w-5 h-5 flex-shrink-0"></i>
+        <a href="<%= item.path %>" class="nav-tab<%= isActive(item.path) ? ' active' : '' %>">
+          <i data-lucide="<%= item.icon %>"></i>
           <span><%= item.label %></span>
-          <% if (item.path === '/notifications' && typeof notificationCount !== 'undefined' && notificationCount > 0) { %>
-            <span class="ml-auto bg-destructive text-white text-xxs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-              <%= notificationCount > 99 ? '99+' : notificationCount %>
-            </span>
-          <% } %>
         </a>
       <% }); %>
-    </nav>
+    </div>
+  </nav>
 
-    <!-- User Info -->
-    <% if (typeof currentUser !== 'undefined' && currentUser) { %>
-      <div class="border-t border-white/10 p-4">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center flex-shrink-0 shadow-lg ring-2 ring-white/20">
-            <span class="text-sm font-bold text-white leading-none">
-              <%= currentUser.first_name ? currentUser.first_name.charAt(0).toUpperCase() : 'U' %><%= currentUser.last_name ? currentUser.last_name.charAt(0).toUpperCase() : '' %>
-            </span>
-          </div>
-          <div class="overflow-hidden flex-1">
-            <p class="text-sm font-semibold text-white truncate">
-              <%= currentUser.first_name %> <%= currentUser.last_name %>
-            </p>
-            <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xxs font-medium px-2 py-0.5 rounded-full mt-0.5">
-              <%= currentUser.role ? currentUser.role.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'User' %>
-            </span>
-          </div>
+  <% if (typeof currentUser !== 'undefined' && currentUser) { %>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">
+          <%= currentUser.first_name ? currentUser.first_name.charAt(0).toUpperCase() : 'U' %><%= currentUser.last_name ? currentUser.last_name.charAt(0).toUpperCase() : '' %>
+        </div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name"><%= currentUser.first_name %> <%= currentUser.last_name %></div>
+          <div class="sidebar-user-role"><%= currentUser.role ? currentUser.role.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'User' %></div>
         </div>
       </div>
-    <% } %>
-  </div>
+    </div>
+  <% } %>
 </aside>

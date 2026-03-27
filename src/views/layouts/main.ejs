@@ -1,74 +1,74 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
   <%- include('./partials/header') %>
-
-  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="/css/output.css">
-
-  <!-- Theme Override — Professional Light Theme -->
-  <link rel="stylesheet" href="/css/theme-override.css">
-
-  <!-- Page-specific styles -->
+  <link rel="stylesheet" href="/css/atlas-theme.css">
   <%- style %>
 </head>
-<body x-data="{ sidebarOpen: false, darkMode: localStorage.getItem('darkMode') === 'true' }"
-      x-init="if (darkMode) document.documentElement.classList.add('dark')"
-      class="min-h-screen flex flex-col">
-
-  <!-- Sidebar -->
-  <%- include('./partials/sidebar') %>
-
-  <!-- Main wrapper -->
-  <div class="flex flex-col min-h-screen transition-all duration-300">
-
-    <!-- Top bar -->
-    <%- include('./partials/topbar') %>
-
-    <!-- Page content -->
-    <main class="flex-1 p-4 sm:p-6">
-      <%- include('./partials/alerts') %>
-      <%- body %>
-    </main>
-
-    <!-- Footer -->
-    <%- include('./partials/footer') %>
+<body>
+  <div class="app-container">
+    <%- include('./partials/sidebar') %>
+    <div class="main-content">
+      <%- include('./partials/topbar') %>
+      <main class="page-content">
+        <%- include('./partials/alerts') %>
+        <%- body %>
+      </main>
+      <%- include('./partials/footer') %>
+    </div>
   </div>
 
-  <!-- ApexCharts -->
+  <div class="toast-container" id="toast-container"></div>
+
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-
-  <!-- Lucide Icons -->
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-
-  <!-- Alpine.js -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-  <!-- Initialize Lucide icons -->
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       lucide.createIcons();
-    });
-  </script>
 
-  <!-- Dark mode initialization (runs before Alpine to prevent flash) -->
-  <script>
-    (function () {
-      var darkMode = localStorage.getItem('darkMode') === 'true';
-      if (darkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
+      // Sidebar toggle
+      var hamburger = document.getElementById('hamburger-btn');
+      var sidebar = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebar-overlay');
+      var closeBtn = document.getElementById('sidebar-close');
+
+      function openSidebar() { sidebar.classList.add('open'); overlay.classList.add('active'); }
+      function closeSidebar() { sidebar.classList.remove('open'); overlay.classList.remove('active'); }
+
+      if (hamburger) hamburger.addEventListener('click', openSidebar);
+      if (overlay) overlay.addEventListener('click', closeSidebar);
+      if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+
+      // User dropdown
+      var userBtn = document.getElementById('user-dropdown-btn');
+      var userMenu = document.getElementById('user-dropdown-menu');
+      if (userBtn && userMenu) {
+        userBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          userMenu.classList.toggle('open');
+        });
+        document.addEventListener('click', function() { userMenu.classList.remove('open'); });
       }
-    })();
-  </script>
 
-  <!-- Page-specific scripts -->
+      // Auto-dismiss alerts
+      document.querySelectorAll('.alert[data-auto-dismiss]').forEach(function(el) {
+        setTimeout(function() { el.style.opacity = '0'; el.style.transform = 'translateY(-8px)'; setTimeout(function() { el.remove(); }, 300); }, 5000);
+      });
+    });
+
+    // Toast helper
+    function showToast(message, type) {
+      var container = document.getElementById('toast-container');
+      var toast = document.createElement('div');
+      toast.className = 'toast ' + (type || 'success');
+      toast.innerHTML = '<span style="font-size:0.85rem;">' + message + '</span>';
+      container.appendChild(toast);
+      setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 300); }, 4000);
+    }
+  </script>
   <%- script %>
 </body>
 </html>

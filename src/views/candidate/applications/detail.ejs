@@ -5,158 +5,187 @@
 %>
 
 <!-- Back -->
-<div class="mb-4">
-  <a href="/candidate/applications" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors">
-    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Applications
+<div class="mb-md">
+  <a href="/candidate/applications" class="flex items-center gap-sm text-sm text-secondary" style="text-decoration:none;">
+    <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back to Applications
   </a>
 </div>
 
 <!-- Header -->
-<div class="card p-5 mb-6">
-  <div class="flex flex-col sm:flex-row justify-between gap-3">
+<div class="card mb-lg">
+  <div class="card-body flex justify-between" style="flex-wrap:wrap;gap:12px;">
     <div>
-      <h1 class="text-xl font-bold text-foreground"><%= a.job_title || 'Applied Position' %></h1>
-      <div class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+      <h1 class="text-xl font-bold"><%= a.job_title || 'Applied Position' %></h1>
+      <div class="flex items-center gap-md mt-sm text-sm text-secondary" style="flex-wrap:wrap;">
         <% if (a.appln_id) { %><span>Application ID: <strong><%= a.appln_id %></strong></span><% } %>
-        <% if (a.job_location) { %><span><i data-lucide="map-pin" class="w-3 h-3 inline"></i> <%= a.job_location %></span><% } %>
+        <% if (a.job_location) { %><span class="flex items-center gap-sm"><i data-lucide="map-pin" style="width:12px;height:12px;display:inline;"></i> <%= a.job_location %></span><% } %>
         <span>Applied: <%= a.appln_date ? new Date(a.appln_date).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '--' %></span>
       </div>
     </div>
-    <span class="self-start inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium
-      <%= si.isRejected ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' %>">
+    <span class="badge <%= si.isRejected ? 'badge-danger' : 'badge-info' %>" style="align-self:flex-start;padding:6px 14px;font-size:0.85rem;">
       <%= si.friendlyStatus %>
     </span>
   </div>
 </div>
 
 <!-- Status Stepper -->
-<div class="card p-5 mb-6">
-  <h2 class="font-semibold text-foreground mb-4">Application Progress</h2>
-  <div class="flex items-center gap-0">
-    <% si.stages.forEach(function(stage, idx) { %>
-      <div class="flex-1 text-center relative">
-        <div class="mx-auto w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold
-          <%= idx < si.currentStageIndex ? 'bg-blue-600 text-white'
-            : idx === si.currentStageIndex ? (si.isRejected ? 'bg-red-500 text-white' : 'bg-blue-600 text-white ring-4 ring-blue-200 dark:ring-blue-800')
-            : 'bg-muted text-muted-foreground' %>">
-          <% if (idx < si.currentStageIndex) { %>
-            <i data-lucide="check" class="w-5 h-5"></i>
-          <% } else if (si.isRejected && idx === si.currentStageIndex) { %>
-            <i data-lucide="x" class="w-5 h-5"></i>
-          <% } else { %>
-            <i data-lucide="<%= stage.icon %>" class="w-4 h-4"></i>
-          <% } %>
+<div class="card mb-lg">
+  <div class="card-body">
+    <h2 class="font-semibold mb-md">Application Progress</h2>
+    <div class="flex items-center">
+      <% si.stages.forEach(function(stage, idx) { %>
+        <div style="flex:1;text-align:center;position:relative;">
+          <div style="margin:0 auto;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;
+            <% if (idx < si.currentStageIndex) { %>background:var(--accent-secondary);color:white;
+            <% } else if (idx === si.currentStageIndex) { %>background:<%= si.isRejected ? 'var(--accent-danger)' : 'var(--accent-secondary)' %>;color:white;box-shadow:0 0 0 4px <%= si.isRejected ? 'rgba(239,68,68,0.2)' : 'rgba(59,130,246,0.2)' %>;
+            <% } else { %>background:var(--bg-tertiary);color:var(--text-muted);
+            <% } %>">
+            <% if (idx < si.currentStageIndex) { %>
+              <i data-lucide="check" style="width:18px;height:18px;"></i>
+            <% } else if (si.isRejected && idx === si.currentStageIndex) { %>
+              <i data-lucide="x" style="width:18px;height:18px;"></i>
+            <% } else { %>
+              <i data-lucide="<%= stage.icon %>" style="width:16px;height:16px;"></i>
+            <% } %>
+          </div>
+          <p class="text-xs" style="margin-top:8px;<%= idx <= si.currentStageIndex ? 'font-weight:500;color:var(--text-primary);' : 'color:var(--text-muted);' %>">
+            <%= stage.label %>
+          </p>
         </div>
-        <p class="text-[10px] sm:text-xs mt-2 <%= idx <= si.currentStageIndex ? 'font-medium text-foreground' : 'text-muted-foreground' %>">
-          <%= stage.label %>
-        </p>
-      </div>
-      <% if (idx < si.stages.length - 1) { %>
-        <div class="flex-1 h-0.5 -mt-5 <%= idx < si.currentStageIndex ? 'bg-blue-600' : 'bg-border' %>"></div>
-      <% } %>
-    <% }); %>
+        <% if (idx < si.stages.length - 1) { %>
+          <div style="flex:1;height:2px;margin-top:-20px;background:<%= idx < si.currentStageIndex ? 'var(--accent-secondary)' : 'var(--border-color)' %>;"></div>
+        <% } %>
+      <% }); %>
+    </div>
   </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="grid-2">
   <!-- AI Screening -->
-  <div class="card p-5">
-    <h2 class="font-semibold text-foreground mb-3 flex items-center gap-2">
-      <i data-lucide="brain" class="w-4 h-4 text-purple-600"></i> AI Screening
-    </h2>
-    <% if (a.ai_status) { %>
-      <div class="space-y-3">
-        <div class="flex justify-between items-center">
-          <span class="text-sm text-muted-foreground">Status</span>
-          <span class="text-sm font-medium <%= String(a.ai_status).toLowerCase() === 'eligible' ? 'text-green-600' : String(a.ai_status).toLowerCase() === 'rejected' ? 'text-red-600' : 'text-amber-600' %>">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="brain"></i> AI Screening
+      </h2>
+    </div>
+    <div class="card-body">
+      <% if (a.ai_status) { %>
+        <div class="flex justify-between items-center mb-md">
+          <span class="text-sm text-secondary">Status</span>
+          <span class="text-sm font-medium <%= String(a.ai_status).toLowerCase() === 'eligible' ? 'text-success' : String(a.ai_status).toLowerCase() === 'rejected' ? 'text-danger' : 'text-warning' %>">
             <%= String(a.ai_status).charAt(0).toUpperCase() + String(a.ai_status).slice(1) %>
           </span>
         </div>
         <% if (a.ai_match_score) { %>
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-muted-foreground">Match Score</span>
+          <div class="flex justify-between items-center mb-sm">
+            <span class="text-sm text-secondary">Match Score</span>
             <span class="text-sm font-bold"><%= a.ai_match_score %>%</span>
           </div>
-          <div class="w-full bg-muted rounded-full h-2">
-            <div class="h-2 rounded-full <%= a.ai_match_score >= 75 ? 'bg-green-500' : a.ai_match_score >= 50 ? 'bg-amber-500' : 'bg-red-500' %>"
+          <div class="progress-bar mb-md">
+            <div class="progress-fill <%= a.ai_match_score >= 75 ? 'green' : a.ai_match_score >= 50 ? 'yellow' : 'red' %>"
                  style="width: <%= Math.min(a.ai_match_score, 100) %>%"></div>
           </div>
         <% } %>
         <% if (a.role_fit_summary) { %>
-          <div class="mt-2">
-            <p class="text-xs text-muted-foreground mb-1">Summary</p>
-            <p class="text-sm text-foreground"><%= a.role_fit_summary %></p>
+          <div class="mt-md">
+            <p class="text-xs text-muted mb-sm">Summary</p>
+            <p class="text-sm"><%= a.role_fit_summary %></p>
           </div>
         <% } %>
-      </div>
-    <% } else { %>
-      <p class="text-sm text-muted-foreground">AI screening has not been completed yet.</p>
-    <% } %>
+      <% } else { %>
+        <p class="text-sm text-secondary">AI screening has not been completed yet.</p>
+      <% } %>
+    </div>
   </div>
 
   <!-- AI Interview -->
-  <div class="card p-5">
-    <h2 class="font-semibold text-foreground mb-3 flex items-center gap-2">
-      <i data-lucide="message-square" class="w-4 h-4 text-indigo-600"></i> AI Interview
-    </h2>
-    <% if (a.interview_status) { %>
-      <div class="space-y-3">
-        <div class="flex justify-between items-center">
-          <span class="text-sm text-muted-foreground">Status</span>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="message-square"></i> AI Interview
+      </h2>
+    </div>
+    <div class="card-body">
+      <% if (a.interview_status) { %>
+        <div class="flex justify-between items-center mb-md">
+          <span class="text-sm text-secondary">Status</span>
           <span class="text-sm font-medium"><%= String(a.interview_status).charAt(0).toUpperCase() + String(a.interview_status).slice(1) %></span>
         </div>
         <% if (a.interview_score) { %>
-          <div class="flex justify-between items-center">
-            <span class="text-sm text-muted-foreground">Score</span>
+          <div class="flex justify-between items-center mb-md">
+            <span class="text-sm text-secondary">Score</span>
             <span class="text-sm font-bold"><%= a.interview_score %>/100</span>
           </div>
         <% } %>
         <% if (['invited', 'pending'].includes(String(a.interview_status).toLowerCase()) && a.invitation_token) { %>
-          <a href="/ai/interview/<%= a.invitation_token %>" class="btn-primary w-full mt-2">
-            <i data-lucide="play" class="w-4 h-4"></i> Start AI Interview
+          <a href="/ai/interview/<%= a.invitation_token %>" class="btn btn-primary w-full mt-md">
+            <i data-lucide="play" style="width:16px;height:16px;"></i> Start AI Interview
           </a>
         <% } %>
-      </div>
-    <% } else { %>
-      <p class="text-sm text-muted-foreground">No AI interview scheduled yet.</p>
-    <% } %>
+      <% } else { %>
+        <p class="text-sm text-secondary">No AI interview scheduled yet.</p>
+      <% } %>
+    </div>
   </div>
 
   <!-- Schedule -->
-  <div class="card p-5">
-    <h2 class="font-semibold text-foreground mb-3 flex items-center gap-2">
-      <i data-lucide="calendar" class="w-4 h-4 text-blue-600"></i> Interview Schedule
-    </h2>
-    <% if (a.scheduled_date) { %>
-      <div class="space-y-2 text-sm">
-        <div class="flex justify-between"><span class="text-muted-foreground">Date</span><span class="font-medium"><%= new Date(a.scheduled_date).toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}) %></span></div>
-        <% if (a.scheduled_time) { %><div class="flex justify-between"><span class="text-muted-foreground">Time</span><span class="font-medium"><%= a.scheduled_time %></span></div><% } %>
-        <% if (a.schedule_mode) { %><div class="flex justify-between"><span class="text-muted-foreground">Mode</span><span class="font-medium"><%= a.schedule_mode === 'online' ? 'Online' : 'In-Person' %></span></div><% } %>
-        <% if (a.schedule_location) { %><div class="flex justify-between"><span class="text-muted-foreground">Location</span><span class="font-medium"><%= a.schedule_location %></span></div><% } %>
-        <% if (a.meeting_link) { %><a href="<%= a.meeting_link %>" target="_blank" class="btn-primary w-full mt-2"><i data-lucide="video" class="w-4 h-4"></i> Join Meeting</a><% } %>
-      </div>
-    <% } else { %>
-      <p class="text-sm text-muted-foreground">No interview scheduled yet.</p>
-    <% } %>
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="calendar"></i> Interview Schedule
+      </h2>
+    </div>
+    <div class="card-body">
+      <% if (a.scheduled_date) { %>
+        <div class="flex justify-between text-sm mb-md" style="padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+          <span class="text-secondary">Date</span>
+          <span class="font-medium"><%= new Date(a.scheduled_date).toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'}) %></span>
+        </div>
+        <% if (a.scheduled_time) { %>
+          <div class="flex justify-between text-sm mb-md" style="padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+            <span class="text-secondary">Time</span><span class="font-medium"><%= a.scheduled_time %></span>
+          </div>
+        <% } %>
+        <% if (a.schedule_mode) { %>
+          <div class="flex justify-between text-sm mb-md" style="padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+            <span class="text-secondary">Mode</span><span class="font-medium"><%= a.schedule_mode === 'online' ? 'Online' : 'In-Person' %></span>
+          </div>
+        <% } %>
+        <% if (a.schedule_location) { %>
+          <div class="flex justify-between text-sm mb-md" style="padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+            <span class="text-secondary">Location</span><span class="font-medium"><%= a.schedule_location %></span>
+          </div>
+        <% } %>
+        <% if (a.meeting_link) { %>
+          <a href="<%= a.meeting_link %>" target="_blank" class="btn btn-primary w-full mt-md">
+            <i data-lucide="video" style="width:16px;height:16px;"></i> Join Meeting
+          </a>
+        <% } %>
+      <% } else { %>
+        <p class="text-sm text-secondary">No interview scheduled yet.</p>
+      <% } %>
+    </div>
   </div>
 
   <!-- Documents -->
-  <div class="card p-5">
-    <h2 class="font-semibold text-foreground mb-3 flex items-center gap-2">
-      <i data-lucide="folder" class="w-4 h-4 text-amber-600"></i> Documents
-    </h2>
-    <div class="space-y-2">
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i data-lucide="folder"></i> Documents
+      </h2>
+    </div>
+    <div class="card-body">
       <% docs.forEach(function(doc) { %>
-        <div class="flex items-center justify-between py-1.5">
-          <div class="flex items-center gap-2">
+        <div class="flex items-center justify-between" style="padding:8px 0;border-bottom:1px solid var(--border-light);">
+          <div class="flex items-center gap-sm">
             <i data-lucide="<%= doc.available ? 'file-check' : 'file-x' %>"
-               class="w-4 h-4 <%= doc.available ? 'text-green-500' : 'text-muted-foreground' %>"></i>
-            <span class="text-sm <%= doc.available ? 'text-foreground' : 'text-muted-foreground' %>"><%= doc.type %></span>
+               style="width:16px;height:16px;color:<%= doc.available ? 'var(--accent-primary)' : 'var(--text-muted)' %>;"></i>
+            <span class="text-sm" style="color:<%= doc.available ? 'var(--text-primary)' : 'var(--text-muted)' %>;"><%= doc.type %></span>
           </div>
           <% if (doc.available && doc.url) { %>
-            <a href="<%= doc.url %>" target="_blank" class="text-xs text-primary-800 dark:text-primary-200 hover:underline">View</a>
+            <a href="<%= doc.url %>" target="_blank" class="text-xs text-accent">View</a>
           <% } else { %>
-            <span class="text-xs text-muted-foreground">Not uploaded</span>
+            <span class="text-xs text-muted">Not uploaded</span>
           <% } %>
         </div>
       <% }); %>

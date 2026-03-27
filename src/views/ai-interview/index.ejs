@@ -6,101 +6,89 @@
 %>
 
 <!-- Page Header -->
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+<div class="flex items-center justify-between mb-lg">
   <div>
-    <h1 class="text-2xl font-bold text-foreground tracking-tight">AI Interviews</h1>
-    <p class="text-sm text-muted-foreground mt-1">Manage and review AI-powered candidate interviews</p>
+    <h1 class="text-2xl font-bold">AI Interviews</h1>
+    <p class="text-sm text-secondary mt-sm">Manage and review AI-powered candidate interviews</p>
   </div>
 </div>
 
 <!-- Summary Cards -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+<div class="stats-row">
   <!-- Total -->
   <div class="stat-card">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="stat-value text-foreground"><%= stats.total || 0 %></p>
-        <p class="stat-label">Total</p>
-      </div>
-      <div class="stat-icon bg-primary-800">
-        <i data-lucide="monitor" class="w-5 h-5"></i>
-      </div>
+    <div class="stat-icon blue">
+      <i data-lucide="monitor"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value"><%= stats.total || 0 %></p>
+      <p class="stat-label">Total</p>
     </div>
   </div>
 
   <!-- Pending -->
   <div class="stat-card">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="stat-value text-warning"><%= stats.pending || 0 %></p>
-        <p class="stat-label">Pending</p>
-      </div>
-      <div class="stat-icon bg-warning">
-        <i data-lucide="clock" class="w-5 h-5"></i>
-      </div>
+    <div class="stat-icon orange">
+      <i data-lucide="clock"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value" style="color: var(--accent-warning)"><%= stats.pending || 0 %></p>
+      <p class="stat-label">Pending</p>
     </div>
   </div>
 
   <!-- In Progress -->
   <div class="stat-card">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="stat-value text-info"><%= stats.in_progress || 0 %></p>
-        <p class="stat-label">In Progress</p>
-      </div>
-      <div class="stat-icon bg-info">
-        <i data-lucide="loader" class="w-5 h-5"></i>
-      </div>
+    <div class="stat-icon blue">
+      <i data-lucide="loader"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value" style="color: var(--accent-secondary)"><%= stats.in_progress || 0 %></p>
+      <p class="stat-label">In Progress</p>
     </div>
   </div>
 
   <!-- Completed -->
   <div class="stat-card">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="stat-value text-muted-foreground"><%= stats.completed || 0 %></p>
-        <p class="stat-label">Completed</p>
-      </div>
-      <div class="stat-icon bg-muted">
-        <i data-lucide="check-square" class="w-5 h-5"></i>
-      </div>
+    <div class="stat-icon purple">
+      <i data-lucide="check-square"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value"><%= stats.completed || 0 %></p>
+      <p class="stat-label">Completed</p>
     </div>
   </div>
 
   <!-- Passed -->
   <div class="stat-card">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="stat-value text-success"><%= stats.passed || 0 %></p>
-        <p class="stat-label">Passed</p>
-      </div>
-      <div class="stat-icon bg-success">
-        <i data-lucide="check-circle" class="w-5 h-5"></i>
-      </div>
+    <div class="stat-icon green">
+      <i data-lucide="check-circle"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value" style="color: var(--accent-primary)"><%= stats.passed || 0 %></p>
+      <p class="stat-label">Passed</p>
     </div>
   </div>
 
   <!-- Failed -->
   <div class="stat-card">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="stat-value text-destructive"><%= stats.failed || 0 %></p>
-        <p class="stat-label">Failed</p>
-      </div>
-      <div class="stat-icon bg-destructive">
-        <i data-lucide="x-circle" class="w-5 h-5"></i>
-      </div>
+    <div class="stat-icon red">
+      <i data-lucide="x-circle"></i>
+    </div>
+    <div class="stat-info">
+      <p class="stat-value" style="color: var(--accent-danger)"><%= stats.failed || 0 %></p>
+      <p class="stat-label">Failed</p>
     </div>
   </div>
 </div>
 
 <!-- Filter Bar -->
-<div class="filter-panel">
-  <form method="GET" action="/ai-interviews" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+<div class="filters-bar">
+  <form method="GET" action="/ai-interviews" style="display: contents;">
     <!-- Status -->
-    <div class="form-group">
-      <label class="form-label">Status</label>
-      <select name="interview_status" class="form-select">
+    <div class="filter-item">
+      <label>Status</label>
+      <select name="interview_status">
         <option value="">All Statuses</option>
         <option value="invited" <%= filters.interview_status === 'invited' ? 'selected' : '' %>>Invited</option>
         <option value="in_progress" <%= filters.interview_status === 'in_progress' ? 'selected' : '' %>>In Progress</option>
@@ -111,30 +99,26 @@
       </select>
     </div>
 
-    <!-- Interview Type — removed, always HR -->
-
     <!-- Min Score -->
-    <div class="form-group">
-      <label class="form-label">Min Score</label>
-      <input type="number" name="score_min" min="0" max="100" placeholder="0"
-             class="form-input" value="<%= filters.score_min || '' %>">
+    <div class="filter-item">
+      <label>Min Score</label>
+      <input type="number" name="score_min" min="0" max="100" placeholder="0" value="<%= filters.score_min || '' %>">
     </div>
 
     <!-- Max Score -->
-    <div class="form-group">
-      <label class="form-label">Max Score</label>
-      <input type="number" name="score_max" min="0" max="100" placeholder="100"
-             class="form-input" value="<%= filters.score_max || '' %>">
+    <div class="filter-item">
+      <label>Max Score</label>
+      <input type="number" name="score_max" min="0" max="100" placeholder="100" value="<%= filters.score_max || '' %>">
     </div>
 
     <!-- Actions -->
-    <div class="form-group flex items-end gap-2">
-      <button type="submit" class="btn-primary btn-sm flex-1">
-        <i data-lucide="search" class="w-4 h-4"></i>
+    <div class="filter-item" style="flex-direction: row; align-items: flex-end; gap: 8px;">
+      <button type="submit" class="btn btn-primary btn-sm flex-1">
+        <i data-lucide="search"></i>
         Filter
       </button>
-      <a href="/ai-interviews" class="btn-outline btn-sm">
-        <i data-lucide="x" class="w-4 h-4"></i>
+      <a href="/ai-interviews" class="btn btn-outline btn-sm">
+        <i data-lucide="x"></i>
         Clear
       </a>
     </div>
@@ -168,38 +152,36 @@
               const jobTitle = iv.job_title || (iv.job ? iv.job.title : 'N/A');
 
               const ivType = iv.interview_type || iv.type || 'hr';
-              const typeBadgeClass = 'badge-muted';
+              const typeBadgeClass = 'badge badge-muted';
 
               const ivStatus = iv.interview_status || iv.status || 'invited';
-              const ivStatusBadge = ivStatus === 'evaluated' ? 'badge-success'
-                : ivStatus === 'passed' ? 'badge-success'
-                : ivStatus === 'failed' ? 'badge-danger'
-                : ivStatus === 'in_progress' ? 'badge-info'
-                : ivStatus === 'invited' ? 'badge-warning'
-                : 'badge-muted';
+              const ivStatusBadge = ivStatus === 'evaluated' ? 'badge badge-success'
+                : ivStatus === 'passed' ? 'badge badge-success'
+                : ivStatus === 'failed' ? 'badge badge-danger'
+                : ivStatus === 'in_progress' ? 'badge badge-info'
+                : ivStatus === 'invited' ? 'badge badge-warning'
+                : 'badge badge-muted';
 
               const totalScore = iv.total_score || iv.overall_score || 0;
               const commScore = iv.communication_score || 0;
               const domainScore = iv.domain_score || 0;
               const problemScore = iv.problem_solving_score || 0;
 
-              const totalScoreColor = totalScore >= 75 ? 'text-success' : totalScore >= 50 ? 'text-warning' : 'text-destructive';
+              const totalScoreColor = totalScore >= 75 ? 'text-success' : totalScore >= 50 ? 'text-warning' : 'text-danger';
             %>
             <tr>
               <!-- Candidate Name -->
               <td>
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center flex-shrink-0">
-                    <span class="text-xs font-semibold text-primary-800 dark:text-primary-200">
-                      <%= candidateName.charAt(0).toUpperCase() %>
-                    </span>
+                <div class="flex items-center gap-sm">
+                  <div class="avatar avatar-sm avatar-gradient">
+                    <%= candidateName.charAt(0).toUpperCase() %>
                   </div>
-                  <span class="font-medium text-foreground"><%= candidateName %></span>
+                  <span class="font-medium"><%= candidateName %></span>
                 </div>
               </td>
 
               <!-- Job Role -->
-              <td class="text-muted-foreground"><%= jobTitle %></td>
+              <td class="text-secondary"><%= jobTitle %></td>
 
               <!-- Interview Type -->
               <td>
@@ -212,15 +194,15 @@
               <td>
                 <span class="<%= ivStatusBadge %>">
                   <% if (ivStatus === 'evaluated' || ivStatus === 'passed') { %>
-                    <i data-lucide="check" class="w-3 h-3"></i>
+                    <i data-lucide="check" style="width:12px;height:12px;"></i>
                   <% } else if (ivStatus === 'in_progress') { %>
-                    <i data-lucide="loader" class="w-3 h-3 animate-spin-slow"></i>
+                    <i data-lucide="loader" style="width:12px;height:12px;"></i>
                   <% } else if (ivStatus === 'failed') { %>
-                    <i data-lucide="x" class="w-3 h-3"></i>
+                    <i data-lucide="x" style="width:12px;height:12px;"></i>
                   <% } else if (ivStatus === 'invited') { %>
-                    <i data-lucide="mail" class="w-3 h-3"></i>
+                    <i data-lucide="mail" style="width:12px;height:12px;"></i>
                   <% } else { %>
-                    <i data-lucide="clock" class="w-3 h-3"></i>
+                    <i data-lucide="clock" style="width:12px;height:12px;"></i>
                   <% } %>
                   <%= ivStatus.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) %>
                 </span>
@@ -232,16 +214,16 @@
               </td>
 
               <!-- Communication -->
-              <td class="text-sm text-muted-foreground"><%= commScore %>%</td>
+              <td class="text-sm text-secondary"><%= commScore %>%</td>
 
               <!-- Domain -->
-              <td class="text-sm text-muted-foreground"><%= domainScore %>%</td>
+              <td class="text-sm text-secondary"><%= domainScore %>%</td>
 
               <!-- Problem Solving -->
-              <td class="text-sm text-muted-foreground"><%= problemScore %>%</td>
+              <td class="text-sm text-secondary"><%= problemScore %>%</td>
 
               <!-- Started At -->
-              <td class="text-muted-foreground text-sm">
+              <td class="text-secondary text-sm">
                 <% if (iv.started_at) { %>
                   <%= new Date(iv.started_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
                 <% } else { %>
@@ -250,7 +232,7 @@
               </td>
 
               <!-- Completed At -->
-              <td class="text-muted-foreground text-sm">
+              <td class="text-secondary text-sm">
                 <% if (iv.completed_at) { %>
                   <%= new Date(iv.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
                 <% } else { %>
@@ -260,8 +242,8 @@
 
               <!-- Actions -->
               <td>
-                <a href="/ai-interviews/<%= iv.id %>" class="btn-ghost btn-sm text-primary-800 dark:text-primary-200" title="View Details">
-                  <i data-lucide="eye" class="w-4 h-4"></i>
+                <a href="/ai-interviews/<%= iv.id %>" class="btn btn-ghost btn-sm" title="View Details">
+                  <i data-lucide="eye"></i>
                 </a>
               </td>
             </tr>
@@ -272,37 +254,34 @@
 
     <!-- Pagination -->
     <% if (pagination.totalPages > 1) { %>
-      <div class="flex items-center justify-between px-4 py-3 border-t border-border">
-        <p class="text-sm text-muted-foreground">
+      <div class="flex items-center justify-between border-t" style="padding: 12px 16px;">
+        <p class="text-sm text-secondary">
           Showing <span class="font-medium"><%= ((pagination.page - 1) * pagination.limit) + 1 %></span>
           to <span class="font-medium"><%= Math.min(pagination.page * pagination.limit, pagination.total) %></span>
           of <span class="font-medium"><%= pagination.total %></span> results
         </p>
-        <div class="flex items-center gap-1">
+        <div class="pagination">
           <% if (pagination.page > 1) { %>
-            <a href="?page=<%= pagination.page - 1 %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>"
-               class="btn-outline btn-sm">
-              <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            <a href="?page=<%= pagination.page - 1 %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>">
+              <i data-lucide="chevron-left" style="width:16px;height:16px;"></i>
               Prev
             </a>
           <% } %>
 
           <% for (let i = 1; i <= pagination.totalPages; i++) { %>
             <% if (i === pagination.page) { %>
-              <span class="btn-primary btn-sm"><%= i %></span>
+              <span class="active"><%= i %></span>
             <% } else if (Math.abs(i - pagination.page) <= 2 || i === 1 || i === pagination.totalPages) { %>
-              <a href="?page=<%= i %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>"
-                 class="btn-outline btn-sm"><%= i %></a>
+              <a href="?page=<%= i %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>"><%= i %></a>
             <% } else if (Math.abs(i - pagination.page) === 3) { %>
-              <span class="px-1 text-muted-foreground">&hellip;</span>
+              <span class="disabled">&hellip;</span>
             <% } %>
           <% } %>
 
           <% if (pagination.page < pagination.totalPages) { %>
-            <a href="?page=<%= pagination.page + 1 %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>"
-               class="btn-outline btn-sm">
+            <a href="?page=<%= pagination.page + 1 %><%= filters.status ? '&status=' + filters.status : '' %><%= filters.type ? '&type=' + filters.type : '' %><%= filters.minScore ? '&minScore=' + filters.minScore : '' %><%= filters.maxScore ? '&maxScore=' + filters.maxScore : '' %>">
               Next
-              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+              <i data-lucide="chevron-right" style="width:16px;height:16px;"></i>
             </a>
           <% } %>
         </div>
@@ -311,16 +290,14 @@
 
   <% } else { %>
     <!-- Empty State -->
-    <div class="empty-state py-20">
-      <div class="w-20 h-20 rounded-2xl bg-muted/50 flex items-center justify-center mb-5">
-        <i data-lucide="monitor" class="w-10 h-10 text-muted-foreground/30"></i>
-      </div>
-      <h3 class="text-lg font-semibold text-foreground mb-1">No AI Interviews</h3>
-      <p class="text-sm text-muted-foreground max-w-sm mb-6">
+    <div class="empty-state" style="padding: 80px 24px;">
+      <i data-lucide="monitor"></i>
+      <h3 class="text-lg font-semibold mb-sm">No AI Interviews</h3>
+      <p class="text-sm text-secondary" style="max-width: 360px; margin: 0 auto 24px;">
         No AI interviews found. Interviews will appear here once candidates are invited.
       </p>
-      <a href="/ai-screening" class="btn-primary">
-        <i data-lucide="brain" class="w-4 h-4"></i>
+      <a href="/ai-screening" class="btn btn-primary">
+        <i data-lucide="brain"></i>
         View Screenings
       </a>
     </div>

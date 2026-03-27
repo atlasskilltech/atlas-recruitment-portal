@@ -8,20 +8,20 @@
 %>
 
 <!-- Page Header -->
-<div class="flex items-center gap-4 mb-6">
-  <a href="/jobs" class="btn-outline btn-sm">
-    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Jobs
+<div class="flex items-center gap-md mb-lg">
+  <a href="/jobs" class="btn btn-outline btn-sm">
+    <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back to Jobs
   </a>
   <div>
-    <h1 class="text-2xl font-bold text-foreground tracking-tight"><%= isEdit ? 'Edit Job Opening' : 'Add New Job Opening' %></h1>
-    <p class="text-sm text-muted-foreground mt-1"><%= isEdit ? 'Update job details — visible on atlasuniversity.edu.in/job-openings' : 'Create a new job position visible on the careers page' %></p>
+    <h1 class="text-2xl font-bold text-primary"><%= isEdit ? 'Edit Job Opening' : 'Add New Job Opening' %></h1>
+    <p class="text-sm text-secondary mt-sm"><%= isEdit ? 'Update job details — visible on atlasuniversity.edu.in/job-openings' : 'Create a new job position visible on the careers page' %></p>
   </div>
 </div>
 
 <!-- Form -->
-<div class="card p-6">
+<div class="card p-lg">
   <form method="POST" action="<%= isEdit ? '/jobs/' + _job.id : '/jobs' %>" enctype="multipart/form-data">
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="form-grid mb-lg">
 
       <!-- Scope -->
       <div class="form-group">
@@ -32,7 +32,7 @@
             <option value="<%= s.id %>" <%= _job && _job.applied_for_post_id == s.id ? 'selected' : '' %>><%= s.applied_for_name %></option>
           <% }); %>
         </select>
-        <p class="text-xs text-muted-foreground mt-1">Academics/Teaching or Administration/Non-teaching</p>
+        <p class="text-xs text-muted mt-sm">Academics/Teaching or Administration/Non-teaching</p>
       </div>
 
       <!-- Post Name -->
@@ -43,11 +43,11 @@
       </div>
 
       <!-- Job Title (Short Desc) -->
-      <div class="form-group md:col-span-2">
+      <div class="form-group full-width">
         <label class="form-label">Applied Job Short Desc New</label>
         <input type="text" name="applied_job_short_desc_new" class="form-input"
                value="<%= _job ? (_job.applied_job_short_desc_new || '') : '' %>" placeholder="Short title for display (35 words max)">
-        <p class="text-xs text-muted-foreground mt-1">Short description shown in listings</p>
+        <p class="text-xs text-muted mt-sm">Short description shown in listings</p>
       </div>
 
       <!-- Location -->
@@ -69,7 +69,7 @@
           <option value="1" <%= (!_job || _job.applied_is_visible) ? 'selected' : '' %>>Yes — Visible</option>
           <option value="0" <%= (_job && !_job.applied_is_visible) ? 'selected' : '' %>>No — Hidden</option>
         </select>
-        <p class="text-xs text-muted-foreground mt-1">Controls visibility on atlasuniversity.edu.in/job-openings</p>
+        <p class="text-xs text-muted mt-sm">Controls visibility on atlasuniversity.edu.in/job-openings</p>
       </div>
 
       <!-- Experience Min -->
@@ -87,34 +87,34 @@
       </div>
 
       <!-- Job Description (HTML) -->
-      <div class="form-group md:col-span-2">
+      <div class="form-group full-width">
         <label class="form-label">Job Description (HTML supported)</label>
-        <div id="jobDescEditor" style="min-height: 250px; border: 1px solid var(--border, #e2e8f0); border-radius: 8px;"></div>
+        <div id="jobDescEditor" style="min-height: 250px; border: 1px solid var(--border-color); border-radius: 8px;"></div>
         <textarea name="applied_job_desc" id="jobDescHidden" class="hidden"><%- _job ? (_job.applied_job_desc || '') : '' %></textarea>
-        <p class="text-xs text-muted-foreground mt-1">Supports HTML — use &lt;ul&gt;&lt;li&gt; for bullet points. This content appears on the public job page.</p>
+        <p class="text-xs text-muted mt-sm">Supports HTML — use &lt;ul&gt;&lt;li&gt; for bullet points. This content appears on the public job page.</p>
       </div>
 
       <!-- Job Desc File -->
-      <div class="form-group md:col-span-2">
+      <div class="form-group full-width">
         <label class="form-label">Job Description File (DOCX/PDF)</label>
         <% if (jdFileUrl) { %>
-          <div class="flex items-center gap-3 mb-2 p-3 rounded-lg bg-muted/50 border border-border">
-            <i data-lucide="file-text" class="w-5 h-5 text-primary-800"></i>
-            <a href="<%= jdFileUrl %>" target="_blank" class="text-sm text-primary-800 hover:underline font-medium"><%= _job.applied_job_desc_file %></a>
-            <span class="text-xs text-muted-foreground">— Current file</span>
+          <div class="flex items-center gap-sm mb-sm p-md" style="border-radius:var(--radius-md);background:var(--bg-tertiary);border:1px solid var(--border-color);">
+            <i data-lucide="file-text" style="width:20px;height:20px;color:var(--text-primary);"></i>
+            <a href="<%= jdFileUrl %>" target="_blank" class="text-sm text-primary font-medium" style="text-decoration:none;"><%= _job.applied_job_desc_file %></a>
+            <span class="text-xs text-muted">— Current file</span>
           </div>
         <% } %>
         <input type="file" name="applied_job_desc_file" class="form-input" accept=".docx,.doc,.pdf">
-        <p class="text-xs text-muted-foreground mt-1">Upload JD file (stored in erp/assets/career/). Leave empty to keep current file.</p>
+        <p class="text-xs text-muted mt-sm">Upload JD file (stored in erp/assets/career/). Leave empty to keep current file.</p>
       </div>
     </div>
 
-    <div class="flex items-center gap-3 pt-4 border-t border-border">
-      <button type="submit" class="btn-primary">
-        <i data-lucide="<%= isEdit ? 'save' : 'plus' %>" class="w-4 h-4"></i>
+    <div class="flex items-center gap-sm border-t" style="padding-top:16px;">
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="<%= isEdit ? 'save' : 'plus' %>" style="width:16px;height:16px;"></i>
         <%= isEdit ? 'Save Changes' : 'Create Job Opening' %>
       </button>
-      <a href="/jobs" class="btn-outline">Cancel</a>
+      <a href="/jobs" class="btn btn-outline">Cancel</a>
     </div>
   </form>
 </div>

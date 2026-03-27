@@ -12,9 +12,9 @@
   }
   function qvScoreColor(s) {
     const n = parseFloat(s) || 0;
-    if (n >= 75) return 'text-green-600 dark:text-green-400';
-    if (n >= 50) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+    if (n >= 75) return 'text-success';
+    if (n >= 50) return 'text-warning';
+    return 'text-danger';
   }
   function qvScoreBg(s) {
     const n = parseFloat(s) || 0;
@@ -47,7 +47,7 @@
      x-transition:leave-start="opacity-100"
      x-transition:leave-end="opacity-0"
      @click="quickView = null"
-     class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50">
+     style="position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:50;">
 </div>
 
 <!-- Drawer Panel -->
@@ -58,79 +58,79 @@
      x-transition:leave="transition ease-in duration-200"
      x-transition:leave-start="translate-x-0"
      x-transition:leave-end="translate-x-full"
-     class="fixed top-0 right-0 h-full w-full max-w-md bg-card shadow-brand-lg z-50 overflow-y-auto custom-scrollbar">
+     style="position:fixed;top:0;right:0;height:100%;width:100%;max-width:28rem;z-index:50;overflow-y:auto;background:var(--bg-secondary);box-shadow:var(--shadow-lg);">
 
   <% _qvCandidates.forEach(function(c) { %>
     <template x-if="quickView === '<%= c.id %>'">
-      <div class="flex flex-col h-full">
+      <div class="flex flex-col" style="height:100%;">
         <!-- Drawer Header -->
-        <div class="flex items-center justify-between p-5 border-b border-border bg-gradient-brand text-white">
-          <div class="flex items-center gap-3 min-w-0">
-            <div class="w-12 h-12 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
-              <span class="text-sm font-bold text-white"><%= qvInitials(c.appln_full_name) %></span>
+        <div class="gradient-header flex items-center justify-between" style="border-radius:0;margin-bottom:0;padding:20px;">
+          <div class="flex items-center gap-sm min-w-0">
+            <div class="avatar avatar-md" style="background:rgba(255,255,255,0.15);">
+              <span class="text-sm font-bold" style="color:white;"><%= qvInitials(c.appln_full_name) %></span>
             </div>
             <div class="min-w-0">
-              <h3 class="text-base font-semibold truncate"><%= c.appln_full_name || 'Unnamed' %></h3>
-              <p class="text-xs text-white/70 truncate"><%= c.appln_email || '' %></p>
+              <h3 class="font-semibold truncate" style="font-size:1rem;"><%= c.appln_full_name || 'Unnamed' %></h3>
+              <p class="text-xs truncate" style="color:rgba(255,255,255,0.7);"><%= c.appln_email || '' %></p>
             </div>
           </div>
-          <button @click="quickView = null" class="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/10 transition-colors">
-            <i data-lucide="x" class="w-5 h-5"></i>
+          <button @click="quickView = null" class="shrink-0" style="padding:6px;border-radius:var(--radius-md);background:none;border:none;color:white;cursor:pointer;">
+            <i data-lucide="x" style="width:20px;height:20px;"></i>
           </button>
         </div>
 
         <!-- Drawer Body -->
-        <div class="flex-1 p-5 space-y-5">
+        <div class="flex-1" style="padding:20px;">
 
           <!-- Status & Role -->
-          <div class="space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-muted-foreground uppercase tracking-wider">HR Status</span>
-              <span class="<%= qvBadgeClass(c.appln_status_new) %>"><%= qvLabel(c.appln_status_new) %></span>
+          <div class="mb-md">
+            <div class="flex items-center justify-between mb-sm">
+              <span class="text-xs text-muted uppercase tracking-wide">HR Status</span>
+              <span class="badge <%= qvBadgeClass(c.appln_status_new) %>"><%= qvLabel(c.appln_status_new) %></span>
+            </div>
+            <div class="flex items-center justify-between mb-sm">
+              <span class="text-xs text-muted uppercase tracking-wide">Applied Role</span>
+              <span class="text-sm font-medium"><%= c.applied_job_short_desc_new || '-' %></span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-muted-foreground uppercase tracking-wider">Applied Role</span>
-              <span class="text-sm font-medium text-foreground"><%= c.applied_job_short_desc_new || '-' %></span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-muted-foreground uppercase tracking-wider">Location</span>
-              <span class="text-sm text-foreground"><%= c.applied_location || '-' %></span>
+              <span class="text-xs text-muted uppercase tracking-wide">Location</span>
+              <span class="text-sm"><%= c.applied_location || '-' %></span>
             </div>
           </div>
 
-          <div class="border-t border-border"></div>
+          <div class="border-t mb-md"></div>
 
           <!-- Key Details -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid-2 mb-md">
             <div>
-              <p class="text-xs text-muted-foreground">Qualification</p>
-              <p class="text-sm font-medium text-foreground mt-0.5"><%= c.appln_high_qualification || '-' %></p>
+              <p class="text-xs text-muted">Qualification</p>
+              <p class="text-sm font-medium" style="margin-top:2px;"><%= c.appln_high_qualification || '-' %></p>
             </div>
             <div>
-              <p class="text-xs text-muted-foreground">Experience</p>
-              <p class="text-sm font-medium text-foreground mt-0.5"><%= c.appln_total_experience != null ? c.appln_total_experience + ' years' : '-' %></p>
+              <p class="text-xs text-muted">Experience</p>
+              <p class="text-sm font-medium" style="margin-top:2px;"><%= c.appln_total_experience != null ? c.appln_total_experience + ' years' : '-' %></p>
             </div>
             <div>
-              <p class="text-xs text-muted-foreground">Designation</p>
-              <p class="text-sm font-medium text-foreground mt-0.5"><%= c.appln_current_designation || '-' %></p>
+              <p class="text-xs text-muted">Designation</p>
+              <p class="text-sm font-medium" style="margin-top:2px;"><%= c.appln_current_designation || '-' %></p>
             </div>
             <div>
-              <p class="text-xs text-muted-foreground">Organisation</p>
-              <p class="text-sm font-medium text-foreground mt-0.5"><%= c.appln_current_organisation || '-' %></p>
+              <p class="text-xs text-muted">Organisation</p>
+              <p class="text-sm font-medium" style="margin-top:2px;"><%= c.appln_current_organisation || '-' %></p>
             </div>
           </div>
 
-          <div class="border-t border-border"></div>
+          <div class="border-t mb-md"></div>
 
           <!-- Scores -->
-          <div>
-            <h4 class="text-xs text-muted-foreground uppercase tracking-wider mb-3">AI Scores</h4>
-            <div class="flex items-center justify-center gap-8">
+          <div class="mb-md">
+            <h4 class="text-xs text-muted uppercase tracking-wide mb-sm">AI Scores</h4>
+            <div class="flex items-center justify-center gap-lg">
               <!-- Match Score Ring -->
               <div class="text-center">
-                <div class="score-ring w-16 h-16 mx-auto">
+                <div class="score-ring" style="width:64px;height:64px;margin:0 auto;">
                   <svg width="64" height="64" viewBox="0 0 64 64">
-                    <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" class="stroke-muted/30"></circle>
+                    <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" style="stroke:var(--border-color);"></circle>
                     <% if (c.match_score != null) { %>
                       <circle cx="32" cy="32" r="26" fill="none" stroke-width="4"
                               class="<%= qvScoreBg(c.match_score) %>"
@@ -139,18 +139,18 @@
                               stroke-linecap="round"></circle>
                     <% } %>
                   </svg>
-                  <span class="score-value text-sm font-bold <%= c.match_score != null ? qvScoreColor(c.match_score) : 'text-muted-foreground' %>">
+                  <span class="score-value text-sm font-bold <%= c.match_score != null ? qvScoreColor(c.match_score) : 'text-muted' %>">
                     <%= c.match_score != null ? Math.round(c.match_score) : '-' %>
                   </span>
                 </div>
-                <p class="text-xs text-muted-foreground mt-1">Match</p>
+                <p class="text-xs text-muted" style="margin-top:4px;">Match</p>
               </div>
 
               <!-- Interview Score Ring -->
               <div class="text-center">
-                <div class="score-ring w-16 h-16 mx-auto">
+                <div class="score-ring" style="width:64px;height:64px;margin:0 auto;">
                   <svg width="64" height="64" viewBox="0 0 64 64">
-                    <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" class="stroke-muted/30"></circle>
+                    <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" style="stroke:var(--border-color);"></circle>
                     <% if (c.overall_score != null) { %>
                       <circle cx="32" cy="32" r="26" fill="none" stroke-width="4"
                               class="<%= qvScoreBg(c.overall_score) %>"
@@ -159,31 +159,31 @@
                               stroke-linecap="round"></circle>
                     <% } %>
                   </svg>
-                  <span class="score-value text-sm font-bold <%= c.overall_score != null ? qvScoreColor(c.overall_score) : 'text-muted-foreground' %>">
+                  <span class="score-value text-sm font-bold <%= c.overall_score != null ? qvScoreColor(c.overall_score) : 'text-muted' %>">
                     <%= c.overall_score != null ? Math.round(c.overall_score) : '-' %>
                   </span>
                 </div>
-                <p class="text-xs text-muted-foreground mt-1">Interview</p>
+                <p class="text-xs text-muted" style="margin-top:4px;">Interview</p>
               </div>
             </div>
           </div>
 
-          <div class="border-t border-border"></div>
+          <div class="border-t mb-md"></div>
 
           <!-- Contact -->
           <div>
-            <h4 class="text-xs text-muted-foreground uppercase tracking-wider mb-3">Contact</h4>
-            <div class="space-y-2">
+            <h4 class="text-xs text-muted uppercase tracking-wide mb-sm">Contact</h4>
+            <div style="display:flex;flex-direction:column;gap:8px;">
               <% if (c.appln_email) { %>
-                <div class="flex items-center gap-2">
-                  <i data-lucide="mail" class="w-4 h-4 text-muted-foreground"></i>
-                  <a href="mailto:<%= c.appln_email %>" class="text-sm text-primary-800 dark:text-accent hover:underline truncate"><%= c.appln_email %></a>
+                <div class="flex items-center gap-sm">
+                  <i data-lucide="mail" style="width:16px;height:16px;color:var(--text-muted);"></i>
+                  <a href="mailto:<%= c.appln_email %>" class="text-sm truncate"><%= c.appln_email %></a>
                 </div>
               <% } %>
               <% if (c.appln_mobile_no) { %>
-                <div class="flex items-center gap-2">
-                  <i data-lucide="phone" class="w-4 h-4 text-muted-foreground"></i>
-                  <a href="tel:<%= c.appln_mobile_no %>" class="text-sm text-foreground"><%= c.appln_mobile_no %></a>
+                <div class="flex items-center gap-sm">
+                  <i data-lucide="phone" style="width:16px;height:16px;color:var(--text-muted);"></i>
+                  <a href="tel:<%= c.appln_mobile_no %>" class="text-sm"><%= c.appln_mobile_no %></a>
                 </div>
               <% } %>
             </div>
@@ -191,21 +191,21 @@
         </div>
 
         <!-- Drawer Footer – Quick Actions -->
-        <div class="border-t border-border p-4 space-y-2 bg-muted/30">
-          <div class="grid grid-cols-2 gap-2">
-            <a href="/candidates/<%= c.id %>" class="btn-primary btn-sm justify-center">
-              <i data-lucide="eye" class="w-4 h-4"></i> Full Profile
+        <div class="border-t" style="padding:16px;background:var(--bg-tertiary);">
+          <div class="grid-2" style="gap:8px;">
+            <a href="/candidates/<%= c.id %>" class="btn btn-primary btn-sm justify-center">
+              <i data-lucide="eye" style="width:16px;height:16px;"></i> Full Profile
             </a>
             <form method="POST" action="/candidates/<%= c.id %>/run-ai-match">
-              <button type="submit" class="btn-accent btn-sm w-full justify-center">
-                <i data-lucide="brain" class="w-4 h-4"></i> AI Match
+              <button type="submit" class="btn btn-primary btn-sm w-full justify-center">
+                <i data-lucide="brain" style="width:16px;height:16px;"></i> AI Match
               </button>
             </form>
-            <a href="/shortlist/add/<%= c.id %>" class="btn-success btn-sm justify-center">
-              <i data-lucide="check-circle" class="w-4 h-4"></i> Shortlist
+            <a href="/shortlist/add/<%= c.id %>" class="btn btn-primary btn-sm justify-center" style="background:var(--accent-primary);">
+              <i data-lucide="check-circle" style="width:16px;height:16px;"></i> Shortlist
             </a>
-            <a href="/ai-interviews/invite/<%= c.id %>" class="btn-outline btn-sm justify-center">
-              <i data-lucide="video" class="w-4 h-4"></i> Interview
+            <a href="/ai-interviews/invite/<%= c.id %>" class="btn btn-outline btn-sm justify-center">
+              <i data-lucide="video" style="width:16px;height:16px;"></i> Interview
             </a>
           </div>
         </div>
