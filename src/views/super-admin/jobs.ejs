@@ -82,10 +82,10 @@
 <% if (_jobs.length > 0) { %>
   <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));gap:12px;">
     <% _jobs.forEach(function(job) { %>
-      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:12px 14px;cursor:pointer;transition:all 0.15s ease;"
+      <a href="/admin/jobs/<%= job.id %>" style="display:block;text-decoration:none;color:inherit;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:12px 14px;cursor:pointer;transition:all 0.15s ease;"
            onmouseover="this.style.borderColor='var(--accent-primary)';this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-1px)';"
            onmouseout="this.style.borderColor='var(--border-color)';this.style.boxShadow='none';this.style.transform='none';"
-           onclick="window.location.href='/admin/jobs/<%= job.id %>'">
+           >
 
         <!-- Row 1: Count badge -->
         <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:6px;">
@@ -110,7 +110,7 @@
             <span style="color:var(--accent-primary);"><%= job.applicant_count %> Applicants</span>
           </div>
         </div>
-      </div>
+      </a>
     <% }); %>
   </div>
 <% } else { %>
