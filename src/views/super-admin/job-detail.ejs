@@ -5,6 +5,8 @@
   const _applied = typeof appliedCandidates !== 'undefined' ? appliedCandidates : [];
   const _funnel = typeof funnel !== 'undefined' ? funnel : {};
   const _applicantCount = typeof applicantCount !== 'undefined' ? applicantCount : 0;
+  const _view = typeof view !== 'undefined' ? view : 'applied';
+  const _candidates = _view === 'matches' ? _matches : _applied;
 
   const fmt = (n) => (n != null ? Number(n).toLocaleString() : '0');
   const qualMap = { '1': 'PhD', '2': 'Masters', '3': 'Bachelors', '4': 'Diploma', '5': 'Any others' };
@@ -56,9 +58,9 @@
 <!-- View Selector Dropdown (after header, before funnel) -->
 <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;">
   <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);white-space:nowrap;">Show Candidates:</label>
-  <select id="view-selector" onchange="switchTab(this.value)" style="padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:0.85rem;font-family:inherit;background:var(--bg-secondary);color:var(--text-primary);min-width:280px;cursor:pointer;">
-    <option value="applied">Applied for Position (<%= _applied.length %>)</option>
-    <option value="matches">AI Matches from Entire Database (<%= _matches.length %>)</option>
+  <select onchange="window.location.href='/admin/jobs/<%= _job.id %>?view='+this.value" style="padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:0.85rem;font-family:inherit;background:var(--bg-secondary);color:var(--text-primary);min-width:280px;cursor:pointer;">
+    <option value="applied" <%= _view === 'applied' ? 'selected' : '' %>>Applied for Position (<%= _applied.length %>)</option>
+    <option value="matches" <%= _view === 'matches' ? 'selected' : '' %>>AI Matches from Entire Database (<%= _matches.length %>)</option>
   </select>
 </div>
 
@@ -89,188 +91,110 @@
 <div id="selection-bar" style="display:none;position:sticky;top:60px;z-index:45;background:linear-gradient(135deg,#1e293b,#334155);border-radius:var(--radius-lg);padding:12px 20px;margin-bottom:16px;box-shadow:var(--shadow-lg);">
   <div style="display:flex;align-items:center;justify-content:space-between;">
     <div style="display:flex;align-items:center;gap:12px;">
-      <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
+      <input type="checkbox" id="select-all" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
       <span style="color:white;font-size:0.85rem;font-weight:500;"><span id="selected-count">0</span> selected</span>
     </div>
-    <button onclick="sendBulkInterview()" class="btn btn-primary btn-sm" style="display:flex;align-items:center;gap:6px;">
+    <button id="send-btn" class="btn btn-primary btn-sm" style="display:flex;align-items:center;gap:6px;">
       <i data-lucide="send" style="width:14px;height:14px;"></i> Send AI Interview to Selected
     </button>
   </div>
 </div>
 
-<!-- Tab: Applied for Position -->
-<div id="content-applied" style="display:block;">
-  <form id="bulk-invite-form-applied" method="POST" action="/admin/jobs/<%= _job.id %>/bulk-invite">
-  <% if (_applied.length > 0) { %>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
-      <% _applied.forEach(function(m) { %>
-        <%
-          const mScore = parseFloat(m.match_score) || parseFloat(m.screening_score) || 0;
-          const iScore = parseFloat(m.interview_score) || 0;
-          const aiStatus = m.match_status || m.screening_status || null;
-          const parts = (m.appln_full_name || '').trim().split(/\s+/);
-          const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
-          const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#64748b,#475569)';
-        %>
-        <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;position:relative;"
-             onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)';"
-             onmouseout="this.style.boxShadow='none';this.style.transform='none';">
-          <div style="position:absolute;top:12px;right:12px;">
-            <input type="checkbox" name="candidate_ids" value="<%= m.candidate_id %>" class="candidate-checkbox" onchange="updateSelectionBar()" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-right:30px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:<%= avatarBg %>;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;flex-shrink:0;"><%= initials %></div>
-            <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;font-size:0.8rem;color:var(--text-secondary);margin-bottom:14px;">
-            <% if (mScore > 0) { %>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="trophy" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span>AI Match: <strong style="<%= scoreColor(mScore) %>"><%= Number(mScore).toFixed(1) %>%</strong></span>
-            </div>
-            <% } %>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="graduation-cap" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span>Qualification: <strong><%= getQual(m.appln_high_qualification) %></strong></span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="mail" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= m.appln_email || '--' %></span>
-            </div>
-            <% if (iScore > 0) { %>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="message-square" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span>Interview: <strong style="<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</strong></span>
-            </div>
-            <% } %>
-          </div>
-          <% if (aiStatus) { %>
-            <div style="margin-bottom:14px;"><span class="badge <%= statusBadge(aiStatus) %>"><%= statusLabel(aiStatus) %></span></div>
-          <% } %>
-          <a href="/candidates/<%= m.candidate_id %>" class="btn btn-primary btn-sm" style="text-decoration:none;">
-            <i data-lucide="user" style="width:14px;height:14px;"></i> View Profile
-          </a>
+<!-- Candidates -->
+<form id="bulk-invite-form" method="POST" action="/admin/jobs/<%= _job.id %>/bulk-invite">
+<% if (_candidates.length > 0) { %>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
+    <% _candidates.forEach(function(m) { %>
+      <%
+        const mScore = parseFloat(m.match_score) || parseFloat(m.screening_score) || 0;
+        const iScore = parseFloat(m.interview_score) || 0;
+        const aiStatus = m.match_status || m.screening_status || null;
+        const parts = (m.appln_full_name || '').trim().split(/\s+/);
+        const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
+        const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#64748b,#475569)';
+      %>
+      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;position:relative;"
+           onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)';"
+           onmouseout="this.style.boxShadow='none';this.style.transform='none';">
+        <div style="position:absolute;top:12px;right:12px;">
+          <input type="checkbox" name="candidate_ids" value="<%= m.candidate_id %>" class="candidate-checkbox" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
         </div>
-      <% }); %>
-    </div>
-  <% } else { %>
-    <div class="empty-state">
-      <i data-lucide="users"></i>
-      <h3 style="font-size:1rem;font-weight:600;margin-bottom:4px;">No applicants for this position</h3>
-      <p class="text-sm text-muted">No candidates have applied specifically for this role yet.</p>
-    </div>
-  <% } %>
-  </form>
-</div>
-
-<!-- Tab: AI Matches from Entire Database -->
-<div id="content-matches" style="display:none;">
-  <form id="bulk-invite-form-matches" method="POST" action="/admin/jobs/<%= _job.id %>/bulk-invite">
-  <% if (_matches.length > 0) { %>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
-      <% _matches.forEach(function(m) { %>
-        <%
-          const mScore = parseFloat(m.match_score) || 0;
-          const iScore = parseFloat(m.interview_score) || 0;
-          const aiStatus = m.match_status || null;
-          const parts = (m.appln_full_name || '').trim().split(/\s+/);
-          const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
-          const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#ef4444,#dc2626)';
-        %>
-        <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;position:relative;"
-             onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)';"
-             onmouseout="this.style.boxShadow='none';this.style.transform='none';">
-          <div style="position:absolute;top:12px;right:12px;">
-            <input type="checkbox" name="candidate_ids" value="<%= m.candidate_id %>" class="candidate-checkbox" onchange="updateSelectionBar()" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-right:30px;">
-            <div style="width:36px;height:36px;border-radius:50%;background:<%= avatarBg %>;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;flex-shrink:0;"><%= initials %></div>
-            <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;font-size:0.8rem;color:var(--text-secondary);margin-bottom:14px;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="trophy" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span>AI Match: <strong style="<%= scoreColor(mScore) %>"><%= Number(mScore).toFixed(1) %>%</strong></span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="graduation-cap" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span>Qualification: <strong><%= getQual(m.appln_high_qualification) %></strong></span>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="mail" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= m.appln_email || '--' %></span>
-            </div>
-            <% if (iScore > 0) { %>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <i data-lucide="message-square" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
-              <span>Interview: <strong style="<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</strong></span>
-            </div>
-            <% } %>
-          </div>
-          <% if (aiStatus) { %>
-            <div style="margin-bottom:14px;"><span class="badge <%= statusBadge(aiStatus) %>"><%= statusLabel(aiStatus) %></span></div>
-          <% } %>
-          <a href="/candidates/<%= m.candidate_id %>" class="btn btn-primary btn-sm" style="text-decoration:none;">
-            <i data-lucide="user" style="width:14px;height:14px;"></i> View Profile
-          </a>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-right:30px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:<%= avatarBg %>;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;flex-shrink:0;"><%= initials %></div>
+          <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></span>
         </div>
-      <% }); %>
-    </div>
-  <% } else { %>
-    <div class="empty-state">
-      <i data-lucide="search"></i>
-      <h3 style="font-size:1rem;font-weight:600;margin-bottom:4px;">No matches found</h3>
-      <p class="text-sm text-muted">Click "Refresh Scan" to scan candidates against this job.</p>
-    </div>
-  <% } %>
-  </form>
-</div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:0.8rem;color:var(--text-secondary);margin-bottom:14px;">
+          <% if (mScore > 0) { %>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="trophy" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span>AI Match: <strong style="<%= scoreColor(mScore) %>"><%= Number(mScore).toFixed(1) %>%</strong></span>
+          </div>
+          <% } %>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="graduation-cap" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span>Qualification: <strong><%= getQual(m.appln_high_qualification) %></strong></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="mail" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= m.appln_email || '--' %></span>
+          </div>
+          <% if (iScore > 0) { %>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="message-square" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span>Interview: <strong style="<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</strong></span>
+          </div>
+          <% } %>
+        </div>
+        <% if (aiStatus) { %>
+          <div style="margin-bottom:14px;"><span class="badge <%= statusBadge(aiStatus) %>"><%= statusLabel(aiStatus) %></span></div>
+        <% } %>
+        <a href="/candidates/<%= m.candidate_id %>" class="btn btn-primary btn-sm" style="text-decoration:none;">
+          <i data-lucide="user" style="width:14px;height:14px;"></i> View Profile
+        </a>
+      </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <i data-lucide="users"></i>
+    <h3 style="font-size:1rem;font-weight:600;margin-bottom:4px;">No candidates found</h3>
+    <p class="text-sm text-muted"><%= _view === 'matches' ? 'Click "Refresh Scan" to scan candidates.' : 'No candidates have applied for this position.' %></p>
+  </div>
+<% } %>
+</form>
 
 <script>
-var currentTab = 'applied';
-
-function switchTab(tab) {
-  currentTab = tab;
-  var elApplied = document.getElementById('content-applied');
-  var elMatches = document.getElementById('content-matches');
-  if (tab === 'applied') {
-    elApplied.style.display = 'block';
-    elMatches.style.display = 'none';
-  } else {
-    elApplied.style.display = 'none';
-    elMatches.style.display = 'block';
-  }
-  if (typeof lucide !== 'undefined') lucide.createIcons();
-  document.querySelectorAll('.candidate-checkbox').forEach(function(cb) { cb.checked = false; });
-  updateSelectionBar();
-}
-
-function updateSelectionBar() {
-  var activeContent = document.getElementById('content-' + currentTab);
-  var checkboxes = activeContent.querySelectorAll('.candidate-checkbox:checked');
+document.addEventListener('DOMContentLoaded', function() {
   var bar = document.getElementById('selection-bar');
-  var count = document.getElementById('selected-count');
-  var selectAll = document.getElementById('select-all');
-  var total = activeContent.querySelectorAll('.candidate-checkbox').length;
+  var countEl = document.getElementById('selected-count');
+  var selectAllEl = document.getElementById('select-all');
+  var sendBtn = document.getElementById('send-btn');
+  var form = document.getElementById('bulk-invite-form');
+  var checkboxes = document.querySelectorAll('.candidate-checkbox');
 
-  count.textContent = checkboxes.length;
-  bar.style.display = checkboxes.length > 0 ? 'block' : 'none';
-  selectAll.checked = checkboxes.length === total && total > 0;
-  selectAll.indeterminate = checkboxes.length > 0 && checkboxes.length < total;
-}
+  function updateBar() {
+    var checked = document.querySelectorAll('.candidate-checkbox:checked');
+    countEl.textContent = checked.length;
+    bar.style.display = checked.length > 0 ? 'block' : 'none';
+    selectAllEl.checked = checked.length === checkboxes.length && checkboxes.length > 0;
+    selectAllEl.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
+  }
 
-function toggleSelectAll(el) {
-  var activeContent = document.getElementById('content-' + currentTab);
-  activeContent.querySelectorAll('.candidate-checkbox').forEach(function(cb) { cb.checked = el.checked; });
-  updateSelectionBar();
-}
+  checkboxes.forEach(function(cb) {
+    cb.addEventListener('change', updateBar);
+  });
 
-function sendBulkInterview() {
-  var activeContent = document.getElementById('content-' + currentTab);
-  var checked = activeContent.querySelectorAll('.candidate-checkbox:checked');
-  if (checked.length === 0) { alert('Please select at least one candidate.'); return; }
-  if (!confirm('Send AI Interview invitation to ' + checked.length + ' candidate(s)?')) return;
-  var form = activeContent.querySelector('form');
-  form.submit();
-}
+  selectAllEl.addEventListener('change', function() {
+    checkboxes.forEach(function(cb) { cb.checked = selectAllEl.checked; });
+    updateBar();
+  });
+
+  sendBtn.addEventListener('click', function() {
+    var checked = document.querySelectorAll('.candidate-checkbox:checked');
+    if (checked.length === 0) { alert('Please select at least one candidate.'); return; }
+    if (confirm('Send AI Interview invitation to ' + checked.length + ' candidate(s)?')) {
+      form.submit();
+    }
+  });
+});
 </script>
