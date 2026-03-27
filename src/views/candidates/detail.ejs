@@ -1,50 +1,50 @@
 <% locals.title = 'Candidate - ' + ((candidate && candidate.appln_full_name) || 'Detail') %>
 
 <!-- Header Card -->
-<div class="bg-gradient-brand rounded-2xl p-6 text-white mb-6 animate-fade-in">
-  <div class="flex items-center gap-2 mb-4">
-    <a href="/candidates" class="text-white/70 hover:text-white transition-colors">
-      <i data-lucide="arrow-left" class="w-5 h-5"></i>
+<div class="gradient-header">
+  <div class="flex items-center gap-sm mb-md">
+    <a href="/candidates">
+      <i data-lucide="arrow-left" style="width:20px;height:20px;"></i>
     </a>
-    <span class="text-white/50 text-sm">Back to Candidates</span>
+    <span class="text-sm" style="color:rgba(255,255,255,0.5);">Back to Candidates</span>
   </div>
 
-  <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+  <div class="flex items-start justify-between flex-wrap gap-lg">
     <!-- Left: Name & Info -->
     <div class="flex-1">
-      <div class="flex items-center gap-4 mb-3">
-        <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center text-2xl font-bold">
+      <div class="flex items-center gap-md mb-sm">
+        <div class="avatar avatar-lg" style="border-radius:var(--radius-lg);background:rgba(255,255,255,0.1);">
           <%= helpers.getInitials(candidate.appln_full_name || 'NA') %>
         </div>
         <div>
           <h1 class="text-2xl font-bold"><%= candidate.appln_full_name || 'N/A' %></h1>
-          <p class="text-white/70"><%= candidate.applied_job_short_desc_new || 'Position not specified' %></p>
+          <p style="color:rgba(255,255,255,0.7);"><%= candidate.applied_job_short_desc_new || 'Position not specified' %></p>
         </div>
       </div>
 
-      <div class="flex flex-wrap gap-3 mt-4">
+      <div class="flex flex-wrap gap-sm mt-md">
         <% if (candidate.applied_location) { %>
-          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
-            <i data-lucide="map-pin" class="w-3 h-3"></i> <%= candidate.applied_location %>
+          <span class="pill">
+            <i data-lucide="map-pin" style="width:12px;height:12px;"></i> <%= candidate.applied_location %>
           </span>
         <% } %>
         <% if (candidate.appln_total_experience) { %>
-          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
-            <i data-lucide="briefcase" class="w-3 h-3"></i> <%= candidate.appln_total_experience %> yrs exp
+          <span class="pill">
+            <i data-lucide="briefcase" style="width:12px;height:12px;"></i> <%= candidate.appln_total_experience %> yrs exp
           </span>
         <% } %>
         <% if (candidate.appln_high_qualification) { %>
-          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
-            <i data-lucide="graduation-cap" class="w-3 h-3"></i> <%= candidate.appln_high_qualification %>
+          <span class="pill">
+            <i data-lucide="graduation-cap" style="width:12px;height:12px;"></i> <%= candidate.appln_high_qualification %>
           </span>
         <% } %>
         <% if (candidate.appln_category) { %>
-          <span class="inline-flex items-center gap-1 text-sm bg-white/10 px-3 py-1 rounded-full">
+          <span class="pill">
             <%= candidate.appln_category %>
           </span>
         <% } %>
         <% if (candidate.appln_net_set) { %>
-          <span class="inline-flex items-center gap-1 text-sm bg-accent/30 px-3 py-1 rounded-full">
+          <span class="pill" style="background:rgba(16,185,129,0.3);">
             NET/SET: <%= candidate.appln_net_set %>
           </span>
         <% } %>
@@ -52,47 +52,47 @@
     </div>
 
     <!-- Right: Scores & Actions -->
-    <div class="flex flex-col items-end gap-4">
-      <div class="flex items-center gap-6">
+    <div class="flex flex-col items-start" style="align-items:flex-end;gap:16px;">
+      <div class="flex items-center gap-lg">
         <% if (candidate.ai_match_score != null) { %>
           <div class="text-center">
-            <div class="w-16 h-16" data-score="<%= candidate.ai_match_score %>" data-size="64" data-stroke="4"></div>
-            <p class="text-xs text-white/70 mt-1">AI Match</p>
+            <div style="width:64px;height:64px;" data-score="<%= candidate.ai_match_score %>" data-size="64" data-stroke="4"></div>
+            <p class="text-xs" style="color:rgba(255,255,255,0.7);margin-top:4px;">AI Match</p>
           </div>
         <% } %>
         <% if (candidate.total_score != null) { %>
           <div class="text-center">
-            <div class="w-16 h-16" data-score="<%= candidate.total_score %>" data-size="64" data-stroke="4"></div>
-            <p class="text-xs text-white/70 mt-1">Interview</p>
+            <div style="width:64px;height:64px;" data-score="<%= candidate.total_score %>" data-size="64" data-stroke="4"></div>
+            <p class="text-xs" style="color:rgba(255,255,255,0.7);margin-top:4px;">Interview</p>
           </div>
         <% } %>
         <% if (candidate.ai_recommendation_tag) { %>
-          <span class="badge-<%= candidate.ai_recommendation_tag %> text-sm px-4 py-1.5">
+          <span class="badge badge-<%= candidate.ai_recommendation_tag %>" style="padding:6px 16px;">
             <%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
           </span>
         <% } %>
       </div>
 
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap gap-sm">
         <form method="POST" action="/candidates/<%= candidate.id %>/run-ai-match" class="inline">
-          <button type="submit" class="btn btn-sm bg-accent text-white hover:bg-accent-600">
-            <i data-lucide="brain" class="w-3 h-3"></i> Run AI Match
+          <button type="submit" class="btn btn-sm" style="background:var(--accent-primary);color:white;">
+            <i data-lucide="brain" style="width:12px;height:12px;"></i> Run AI Match
           </button>
         </form>
         <form method="POST" action="/ai/interviews/<%= candidate.id %>/invite" class="inline">
           <input type="hidden" name="candidate_id" value="<%= candidate.id %>">
           <input type="hidden" name="interview_type" value="hr">
-          <button type="submit" class="btn btn-sm bg-white/20 text-white hover:bg-white/30">
-            <i data-lucide="message-square" class="w-3 h-3"></i> Invite Interview
+          <button type="submit" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;">
+            <i data-lucide="message-square" style="width:12px;height:12px;"></i> Invite Interview
           </button>
         </form>
         <form method="POST" action="/shortlist/<%= candidate.id %>/shortlist" class="inline">
-          <button type="submit" class="btn btn-sm bg-white/20 text-white hover:bg-white/30">
-            <i data-lucide="check-circle" class="w-3 h-3"></i> Shortlist
+          <button type="submit" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;">
+            <i data-lucide="check-circle" style="width:12px;height:12px;"></i> Shortlist
           </button>
         </form>
-        <a href="/schedules/create/<%= candidate.id %>" class="btn btn-sm bg-white/20 text-white hover:bg-white/30">
-          <i data-lucide="calendar" class="w-3 h-3"></i> Schedule
+        <a href="/schedules/create/<%= candidate.id %>" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;">
+          <i data-lucide="calendar" style="width:12px;height:12px;"></i> Schedule
         </a>
       </div>
     </div>
@@ -100,9 +100,9 @@
 </div>
 
 <!-- Tabs -->
-<div x-data="{ activeTab: 'overview' }" class="animate-slide-up">
+<div x-data="{ activeTab: 'overview' }">
   <!-- Tab Navigation -->
-  <div class="tabs mb-6 overflow-x-auto">
+  <div class="tabs mb-lg">
     <% const tabs = [
       { key: 'overview', label: 'Overview', icon: 'user' },
       { key: 'education', label: 'Education', icon: 'graduation-cap' },
@@ -118,60 +118,64 @@
     <% tabs.forEach(t => { %>
       <button class="tab" :class="{ 'active': activeTab === '<%= t.key %>' }"
               @click="activeTab = '<%= t.key %>'">
-        <i data-lucide="<%= t.icon %>" class="w-4 h-4 inline mr-1"></i> <%= t.label %>
+        <i data-lucide="<%= t.icon %>" style="width:16px;height:16px;display:inline;margin-right:4px;"></i> <%= t.label %>
       </button>
     <% }) %>
   </div>
 
   <!-- Tab: Overview -->
   <div x-show="activeTab === 'overview'" x-transition>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid-2 gap-lg">
       <!-- Personal Info -->
-      <div class="card p-5">
-        <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
-        <div class="space-y-3">
-          <div class="flex justify-between"><span class="text-muted-foreground">Full Name</span><span class="font-medium"><%= candidate.appln_full_name || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Email</span><span class="font-medium"><%= candidate.appln_email || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Mobile</span><span class="font-medium"><%= candidate.appln_mobile_no || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Date of Birth</span><span class="font-medium"><%= candidate.appln_dob ? dateUtils.formatDate(candidate.appln_dob) : '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Age</span><span class="font-medium"><%= candidate.appln_age || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Marital Status</span><span class="font-medium"><%= candidate.appln_marital_status || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Category</span><span class="font-medium"><%= candidate.appln_category || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Specialization</span><span class="font-medium"><%= candidate.appln_specialization || '-' %></span></div>
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold mb-md">Personal Information</h3>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="flex justify-between"><span class="text-secondary">Full Name</span><span class="font-medium"><%= candidate.appln_full_name || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Email</span><span class="font-medium"><%= candidate.appln_email || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Mobile</span><span class="font-medium"><%= candidate.appln_mobile_no || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Date of Birth</span><span class="font-medium"><%= candidate.appln_dob ? dateUtils.formatDate(candidate.appln_dob) : '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Age</span><span class="font-medium"><%= candidate.appln_age || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Marital Status</span><span class="font-medium"><%= candidate.appln_marital_status || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Category</span><span class="font-medium"><%= candidate.appln_category || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Specialization</span><span class="font-medium"><%= candidate.appln_specialization || '-' %></span></div>
+          </div>
         </div>
       </div>
 
       <!-- Current Employment -->
-      <div class="card p-5">
-        <h3 class="text-lg font-semibold mb-4">Current Employment</h3>
-        <div class="space-y-3">
-          <div class="flex justify-between"><span class="text-muted-foreground">Organization</span><span class="font-medium"><%= candidate.appln_current_organisation || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Designation</span><span class="font-medium"><%= candidate.appln_current_designation || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Current Salary</span><span class="font-medium"><%= candidate.appln_current_salary || '-' %></span></div>
-          <div class="flex justify-between"><span class="text-muted-foreground">Notice Period</span><span class="font-medium"><%= candidate.appln_current_notice_period || '-' %></span></div>
-        </div>
+      <div class="card">
+        <div class="card-body">
+          <h3 class="text-lg font-semibold mb-md">Current Employment</h3>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="flex justify-between"><span class="text-secondary">Organization</span><span class="font-medium"><%= candidate.appln_current_organisation || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Designation</span><span class="font-medium"><%= candidate.appln_current_designation || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Current Salary</span><span class="font-medium"><%= candidate.appln_current_salary || '-' %></span></div>
+            <div class="flex justify-between"><span class="text-secondary">Notice Period</span><span class="font-medium"><%= candidate.appln_current_notice_period || '-' %></span></div>
+          </div>
 
-        <h3 class="text-lg font-semibold mt-6 mb-4">Experience Summary</h3>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-muted/50 rounded-xl p-3 text-center">
-            <p class="text-2xl font-bold text-primary-800 dark:text-accent"><%= candidate.appln_total_experience || '0' %></p>
-            <p class="text-xs text-muted-foreground">Total Years</p>
-          </div>
-          <div class="bg-muted/50 rounded-xl p-3 text-center">
-            <p class="text-2xl font-bold"><%= candidate.appln_total_ug_experience || '0' %></p>
-            <p class="text-xs text-muted-foreground">UG Teaching</p>
-          </div>
-          <div class="bg-muted/50 rounded-xl p-3 text-center">
-            <p class="text-2xl font-bold"><%= candidate.appln_total_pg_experience || '0' %></p>
-            <p class="text-xs text-muted-foreground">PG Teaching</p>
-          </div>
-          <div class="bg-muted/50 rounded-xl p-3 text-center">
-            <p class="text-2xl font-bold"><%= candidate.appln_total_research_experience || '0' %></p>
-            <p class="text-xs text-muted-foreground">Research</p>
-          </div>
-          <div class="bg-muted/50 rounded-xl p-3 text-center">
-            <p class="text-2xl font-bold"><%= candidate.appln_total_industry_experience || '0' %></p>
-            <p class="text-xs text-muted-foreground">Industry</p>
+          <h3 class="text-lg font-semibold mt-lg mb-md">Experience Summary</h3>
+          <div class="grid-2" style="gap:12px;">
+            <div class="card text-center" style="padding:12px;background:var(--bg-tertiary);border:none;">
+              <p class="text-2xl font-bold text-accent"><%= candidate.appln_total_experience || '0' %></p>
+              <p class="text-xs text-muted">Total Years</p>
+            </div>
+            <div class="card text-center" style="padding:12px;background:var(--bg-tertiary);border:none;">
+              <p class="text-2xl font-bold"><%= candidate.appln_total_ug_experience || '0' %></p>
+              <p class="text-xs text-muted">UG Teaching</p>
+            </div>
+            <div class="card text-center" style="padding:12px;background:var(--bg-tertiary);border:none;">
+              <p class="text-2xl font-bold"><%= candidate.appln_total_pg_experience || '0' %></p>
+              <p class="text-xs text-muted">PG Teaching</p>
+            </div>
+            <div class="card text-center" style="padding:12px;background:var(--bg-tertiary);border:none;">
+              <p class="text-2xl font-bold"><%= candidate.appln_total_research_experience || '0' %></p>
+              <p class="text-xs text-muted">Research</p>
+            </div>
+            <div class="card text-center" style="padding:12px;background:var(--bg-tertiary);border:none;">
+              <p class="text-2xl font-bold"><%= candidate.appln_total_industry_experience || '0' %></p>
+              <p class="text-xs text-muted">Industry</p>
+            </div>
           </div>
         </div>
       </div>
@@ -180,56 +184,56 @@
 
   <!-- Tab: Education -->
   <div x-show="activeTab === 'education'" x-transition>
-    <div class="space-y-4">
+    <div style="display:flex;flex-direction:column;gap:16px;">
       <% const eduLevels = [
-        { title: 'PhD / Doctorate', degree: candidate.appln_phd, college: candidate.appln_phd_collage, grade: candidate.appln_phd_grade, spec: candidate.appln_phd_specilzation, year: candidate.appln_phd_passing_year, extra: candidate.appln_phd_title, color: 'border-purple-500' },
-        { title: 'Post Graduate (PG)', degree: candidate.appln_pg, college: candidate.appln_pg_collage, grade: candidate.appln_pg_grade, spec: candidate.appln_pg_specilzation, year: candidate.appln_pg_passing_year, color: 'border-blue-500' },
-        { title: 'Under Graduate (UG)', degree: candidate.appln_ug, college: candidate.appln_ug_collage, grade: candidate.appln_ug_grade, spec: candidate.appln_ug_specilzation, year: candidate.appln_ug_passing_year, color: 'border-green-500' },
-        { title: 'HSC / 12th', degree: candidate.appln_hsc, college: candidate.appln_hsc_collage, grade: candidate.appln_hsc_grade, spec: candidate.appln_hsc_specilzation, year: candidate.appln_hsc_passing_year, color: 'border-amber-500' },
-        { title: 'SSC / 10th', degree: candidate.appln_ssc, college: candidate.appln_ssc_collage, grade: candidate.appln_ssc_grade, spec: candidate.appln_ssc_specilzation, year: candidate.appln_ssc_passing_year, color: 'border-orange-500' },
+        { title: 'PhD / Doctorate', degree: candidate.appln_phd, college: candidate.appln_phd_collage, grade: candidate.appln_phd_grade, spec: candidate.appln_phd_specilzation, year: candidate.appln_phd_passing_year, extra: candidate.appln_phd_title, color: 'var(--accent-purple)' },
+        { title: 'Post Graduate (PG)', degree: candidate.appln_pg, college: candidate.appln_pg_collage, grade: candidate.appln_pg_grade, spec: candidate.appln_pg_specilzation, year: candidate.appln_pg_passing_year, color: 'var(--accent-secondary)' },
+        { title: 'Under Graduate (UG)', degree: candidate.appln_ug, college: candidate.appln_ug_collage, grade: candidate.appln_ug_grade, spec: candidate.appln_ug_specilzation, year: candidate.appln_ug_passing_year, color: 'var(--accent-primary)' },
+        { title: 'HSC / 12th', degree: candidate.appln_hsc, college: candidate.appln_hsc_collage, grade: candidate.appln_hsc_grade, spec: candidate.appln_hsc_specilzation, year: candidate.appln_hsc_passing_year, color: 'var(--accent-warning)' },
+        { title: 'SSC / 10th', degree: candidate.appln_ssc, college: candidate.appln_ssc_collage, grade: candidate.appln_ssc_grade, spec: candidate.appln_ssc_specilzation, year: candidate.appln_ssc_passing_year, color: 'var(--accent-warning)' },
       ]; %>
 
       <% eduLevels.forEach(edu => { if (edu.degree) { %>
-        <div class="card p-5 border-l-4 <%= edu.color %>">
+        <div class="card" style="padding:20px;border-left:4px solid <%= edu.color %>;">
           <div class="flex items-start justify-between">
             <div>
               <h4 class="font-semibold text-lg"><%= edu.title %></h4>
-              <p class="text-muted-foreground"><%= edu.degree %></p>
+              <p class="text-secondary"><%= edu.degree %></p>
             </div>
             <% if (edu.year) { %>
-              <span class="badge-primary"><%= edu.year %></span>
+              <span class="badge badge-info"><%= edu.year %></span>
             <% } %>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-            <div><span class="text-xs text-muted-foreground">College/University</span><p class="text-sm font-medium"><%= edu.college || '-' %></p></div>
-            <div><span class="text-xs text-muted-foreground">Grade/Percentage</span><p class="text-sm font-medium"><%= edu.grade || '-' %></p></div>
-            <div><span class="text-xs text-muted-foreground">Specialization</span><p class="text-sm font-medium"><%= edu.spec || '-' %></p></div>
+          <div class="grid-3 mt-sm">
+            <div><span class="text-xs text-muted">College/University</span><p class="text-sm font-medium"><%= edu.college || '-' %></p></div>
+            <div><span class="text-xs text-muted">Grade/Percentage</span><p class="text-sm font-medium"><%= edu.grade || '-' %></p></div>
+            <div><span class="text-xs text-muted">Specialization</span><p class="text-sm font-medium"><%= edu.spec || '-' %></p></div>
           </div>
           <% if (edu.extra) { %>
-            <div class="mt-3"><span class="text-xs text-muted-foreground">PhD Title</span><p class="text-sm font-medium"><%= edu.extra %></p></div>
+            <div class="mt-sm"><span class="text-xs text-muted">PhD Title</span><p class="text-sm font-medium"><%= edu.extra %></p></div>
           <% } %>
         </div>
       <% }}) %>
 
       <% if (candidate.appln_qualified || candidate.appln_net_set) { %>
-        <div class="card p-5 border-l-4 border-accent">
+        <div class="card" style="padding:20px;border-left:4px solid var(--accent-primary);">
           <h4 class="font-semibold">Qualifying Exams</h4>
-          <div class="flex gap-4 mt-2">
-            <% if (candidate.appln_net_set) { %><span class="badge-accent">NET/SET: <%= candidate.appln_net_set %></span><% } %>
-            <% if (candidate.appln_qualified) { %><span class="badge-success">Qualified: <%= candidate.appln_qualified %></span><% } %>
+          <div class="flex gap-md mt-sm">
+            <% if (candidate.appln_net_set) { %><span class="badge badge-success">NET/SET: <%= candidate.appln_net_set %></span><% } %>
+            <% if (candidate.appln_qualified) { %><span class="badge badge-success">Qualified: <%= candidate.appln_qualified %></span><% } %>
           </div>
         </div>
       <% } %>
 
       <% if (!eduLevels.some(e => e.degree)) { %>
-        <div class="empty-state"><i data-lucide="graduation-cap" class="empty-state-icon"></i><p class="text-muted-foreground">No education data available</p></div>
+        <div class="empty-state"><i data-lucide="graduation-cap"></i><p class="text-muted">No education data available</p></div>
       <% } %>
     </div>
   </div>
 
   <!-- Tab: Experience -->
   <div x-show="activeTab === 'experience'" x-transition>
-    <div class="space-y-4">
+    <div style="display:flex;flex-direction:column;gap:16px;">
       <% const exps = [
         { designation: candidate.appln_prev_designation, company: candidate.appln_prev_company, experience: candidate.appln_prev_experience, from: candidate.appln_prev_from_date, to: candidate.appln_prev_to_date },
         { designation: candidate.appln_prev_designation_second, company: candidate.appln_prev_company_second, experience: candidate.appln_prev_experience_second, from: candidate.appln_prev_from_date_second, to: candidate.appln_prev_to_date_second },
@@ -237,16 +241,16 @@
       ]; %>
 
       <% let hasExp = false; exps.forEach((exp, idx) => { if (exp.company) { hasExp = true; %>
-        <div class="card p-5 border-l-4 border-primary-500">
+        <div class="card" style="padding:20px;border-left:4px solid var(--accent-secondary);">
           <div class="flex items-start justify-between">
             <div>
               <h4 class="font-semibold"><%= exp.designation || 'Position' %></h4>
-              <p class="text-muted-foreground"><%= exp.company %></p>
+              <p class="text-secondary"><%= exp.company %></p>
             </div>
-            <% if (exp.experience) { %><span class="badge-primary"><%= exp.experience %> yrs</span><% } %>
+            <% if (exp.experience) { %><span class="badge badge-info"><%= exp.experience %> yrs</span><% } %>
           </div>
           <% if (exp.from || exp.to) { %>
-            <p class="text-sm text-muted-foreground mt-2">
+            <p class="text-sm text-muted mt-sm">
               <%= exp.from ? dateUtils.formatDate(exp.from) : 'N/A' %> - <%= exp.to ? dateUtils.formatDate(exp.to) : 'Present' %>
             </p>
           <% } %>
@@ -254,66 +258,72 @@
       <% }}) %>
 
       <% if (!hasExp) { %>
-        <div class="empty-state"><i data-lucide="briefcase" class="empty-state-icon"></i><p class="text-muted-foreground">No previous experience data available</p></div>
+        <div class="empty-state"><i data-lucide="briefcase"></i><p class="text-muted">No previous experience data available</p></div>
       <% } %>
     </div>
   </div>
 
   <!-- Tab: Research -->
   <div x-show="activeTab === 'research'" x-transition>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="card p-4 text-center">
-        <p class="text-3xl font-bold text-primary-800 dark:text-accent"><%= candidate.appln_total_journal || '0' %></p>
-        <p class="text-sm text-muted-foreground">Journal Papers</p>
+    <div class="stats-row mb-lg">
+      <div class="stat-card" style="flex-direction:column;align-items:center;text-align:center;">
+        <div class="stat-value text-accent"><%= candidate.appln_total_journal || '0' %></div>
+        <div class="stat-label">Journal Papers</div>
       </div>
-      <div class="card p-4 text-center">
-        <p class="text-3xl font-bold"><%= candidate.appln_total_book || '0' %></p>
-        <p class="text-sm text-muted-foreground">Books</p>
+      <div class="stat-card" style="flex-direction:column;align-items:center;text-align:center;">
+        <div class="stat-value"><%= candidate.appln_total_book || '0' %></div>
+        <div class="stat-label">Books</div>
       </div>
-      <div class="card p-4 text-center">
-        <p class="text-3xl font-bold"><%= candidate.appln_impact || '0' %></p>
-        <p class="text-sm text-muted-foreground">Impact Factor</p>
+      <div class="stat-card" style="flex-direction:column;align-items:center;text-align:center;">
+        <div class="stat-value"><%= candidate.appln_impact || '0' %></div>
+        <div class="stat-label">Impact Factor</div>
       </div>
-      <div class="card p-4 text-center">
-        <p class="text-3xl font-bold"><%= candidate.appln_patents || '0' %></p>
-        <p class="text-sm text-muted-foreground">Patents</p>
+      <div class="stat-card" style="flex-direction:column;align-items:center;text-align:center;">
+        <div class="stat-value"><%= candidate.appln_patents || '0' %></div>
+        <div class="stat-label">Patents</div>
       </div>
     </div>
     <% if (candidate.appln_guide_phd_students) { %>
-      <div class="card p-5 mb-4">
-        <h4 class="font-semibold">PhD Students Guided</h4>
-        <p class="mt-1"><%= candidate.appln_guide_phd_students %></p>
+      <div class="card mb-md">
+        <div class="card-body">
+          <h4 class="font-semibold">PhD Students Guided</h4>
+          <p style="margin-top:4px;"><%= candidate.appln_guide_phd_students %></p>
+        </div>
       </div>
     <% } %>
     <% if (candidate.appln_phd_title) { %>
-      <div class="card p-5">
-        <h4 class="font-semibold">PhD Thesis Title</h4>
-        <p class="mt-1 text-muted-foreground"><%= candidate.appln_phd_title %></p>
+      <div class="card">
+        <div class="card-body">
+          <h4 class="font-semibold">PhD Thesis Title</h4>
+          <p class="text-muted" style="margin-top:4px;"><%= candidate.appln_phd_title %></p>
+        </div>
       </div>
     <% } %>
   </div>
 
   <!-- Tab: References -->
   <div x-show="activeTab === 'references'" x-transition>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid-2 gap-lg">
       <% const refs = [
         { name: candidate.appln_ref_name, org: candidate.appln_ref_org, designation: candidate.appln_ref_designation, phone: candidate.appln_ref_phone, email: candidate.appln_ref_email },
         { name: candidate.appln_ref_name1, org: candidate.appln_ref_org1, designation: candidate.appln_ref_designation1, phone: candidate.appln_ref_phone1, email: candidate.appln_ref_email1 },
       ]; %>
       <% refs.forEach((ref, idx) => { if (ref.name) { %>
-        <div class="card p-5">
-          <h4 class="font-semibold mb-3">Reference <%= idx + 1 %></h4>
-          <div class="space-y-2">
-            <div><span class="text-xs text-muted-foreground">Name</span><p class="font-medium"><%= ref.name %></p></div>
-            <div><span class="text-xs text-muted-foreground">Organization</span><p><%= ref.org || '-' %></p></div>
-            <div><span class="text-xs text-muted-foreground">Designation</span><p><%= ref.designation || '-' %></p></div>
-            <div><span class="text-xs text-muted-foreground">Phone</span><p><%= ref.phone || '-' %></p></div>
-            <div><span class="text-xs text-muted-foreground">Email</span><p><%= ref.email || '-' %></p></div>
+        <div class="card">
+          <div class="card-body">
+            <h4 class="font-semibold mb-sm">Reference <%= idx + 1 %></h4>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div><span class="text-xs text-muted">Name</span><p class="font-medium"><%= ref.name %></p></div>
+              <div><span class="text-xs text-muted">Organization</span><p><%= ref.org || '-' %></p></div>
+              <div><span class="text-xs text-muted">Designation</span><p><%= ref.designation || '-' %></p></div>
+              <div><span class="text-xs text-muted">Phone</span><p><%= ref.phone || '-' %></p></div>
+              <div><span class="text-xs text-muted">Email</span><p><%= ref.email || '-' %></p></div>
+            </div>
           </div>
         </div>
       <% }}) %>
       <% if (!refs.some(r => r.name)) { %>
-        <div class="col-span-2 empty-state"><i data-lucide="users" class="empty-state-icon"></i><p class="text-muted-foreground">No references provided</p></div>
+        <div style="grid-column:1/-1;" class="empty-state"><i data-lucide="users"></i><p class="text-muted">No references provided</p></div>
       <% } %>
     </div>
   </div>
@@ -322,103 +332,115 @@
   <div x-show="activeTab === 'documents'" x-transition>
     <% const docs = fileUrlService.getCandidateFiles(candidate); %>
     <% if (docs.length > 0) { %>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid-3">
         <% docs.forEach(doc => { %>
-          <div class="file-card">
-            <div class="file-icon">
-              <i data-lucide="file-text" class="w-6 h-6"></i>
+          <div class="card flex items-center gap-sm" style="padding:16px;">
+            <div class="stat-icon blue shrink-0">
+              <i data-lucide="file-text"></i>
             </div>
             <div class="flex-1 min-w-0">
               <p class="font-medium text-sm truncate"><%= doc.label %></p>
-              <p class="text-xs text-muted-foreground truncate"><%= doc.fileName %></p>
+              <p class="text-xs text-muted truncate"><%= doc.fileName %></p>
             </div>
-            <div class="flex items-center gap-1">
-              <a href="<%= doc.url %>" target="_blank" class="btn-ghost btn-sm p-1" title="View">
-                <i data-lucide="external-link" class="w-4 h-4"></i>
+            <div class="flex items-center gap-sm">
+              <a href="<%= doc.url %>" target="_blank" class="btn btn-ghost btn-sm" style="padding:4px;" title="View">
+                <i data-lucide="external-link" style="width:16px;height:16px;"></i>
               </a>
-              <a href="<%= doc.url %>" download class="btn-ghost btn-sm p-1" title="Download">
-                <i data-lucide="download" class="w-4 h-4"></i>
+              <a href="<%= doc.url %>" download class="btn btn-ghost btn-sm" style="padding:4px;" title="Download">
+                <i data-lucide="download" style="width:16px;height:16px;"></i>
               </a>
-              <button onclick="copyToClipboard('<%= doc.url %>')" class="btn-ghost btn-sm p-1" title="Copy URL">
-                <i data-lucide="copy" class="w-4 h-4"></i>
+              <button onclick="copyToClipboard('<%= doc.url %>')" class="btn btn-ghost btn-sm" style="padding:4px;" title="Copy URL">
+                <i data-lucide="copy" style="width:16px;height:16px;"></i>
               </button>
             </div>
           </div>
         <% }) %>
       </div>
     <% } else { %>
-      <div class="empty-state"><i data-lucide="file-x" class="empty-state-icon"></i><h3 class="text-lg font-medium text-muted-foreground">No documents uploaded</h3></div>
+      <div class="empty-state"><i data-lucide="file-x"></i><h3 class="text-lg font-medium text-muted">No documents uploaded</h3></div>
     <% } %>
   </div>
 
   <!-- Tab: AI Screening -->
   <div x-show="activeTab === 'screening'" x-transition>
     <% if (candidate.screening_id) { %>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="card p-6 text-center">
-          <div class="w-24 h-24 mx-auto" data-score="<%= candidate.ai_match_score || 0 %>" data-size="96" data-stroke="6"></div>
-          <p class="text-sm text-muted-foreground mt-2">AI Match Score</p>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;">
+        <div class="card text-center" style="padding:24px;">
+          <div style="width:96px;height:96px;margin:0 auto;" data-score="<%= candidate.ai_match_score || 0 %>" data-size="96" data-stroke="6"></div>
+          <p class="text-sm text-muted mt-sm">AI Match Score</p>
           <% if (candidate.ai_recommendation_tag) { %>
-            <span class="badge-<%= candidate.ai_recommendation_tag %> mt-2"><%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+            <span class="badge badge-<%= candidate.ai_recommendation_tag %> mt-sm"><%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
           <% } %>
           <% if (candidate.ai_status) { %>
-            <span class="badge-<%= candidate.ai_status %> mt-1"><%= candidate.ai_status.replace(/\b\w/g, l => l.toUpperCase()) %></span>
+            <span class="badge badge-<%= candidate.ai_status %>" style="margin-top:4px;"><%= candidate.ai_status.replace(/\b\w/g, l => l.toUpperCase()) %></span>
           <% } %>
         </div>
-        <div class="lg:col-span-2 space-y-4">
+        <div style="display:flex;flex-direction:column;gap:16px;">
           <% if (candidate.extracted_skills) { %>
-            <div class="card p-5">
-              <h4 class="font-semibold mb-2">Extracted Skills</h4>
-              <div class="flex flex-wrap gap-2">
-                <% const skills = typeof candidate.extracted_skills === 'string' ? JSON.parse(candidate.extracted_skills || '[]') : (candidate.extracted_skills || []); %>
-                <% skills.forEach(s => { %><span class="badge-primary"><%= s %></span><% }) %>
-                <% if (skills.length === 0) { %><span class="text-muted-foreground text-sm">None extracted</span><% } %>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="font-semibold mb-sm">Extracted Skills</h4>
+                <div class="flex flex-wrap gap-sm">
+                  <% const skills = typeof candidate.extracted_skills === 'string' ? JSON.parse(candidate.extracted_skills || '[]') : (candidate.extracted_skills || []); %>
+                  <% skills.forEach(s => { %><span class="badge badge-info"><%= s %></span><% }) %>
+                  <% if (skills.length === 0) { %><span class="text-muted text-sm">None extracted</span><% } %>
+                </div>
               </div>
             </div>
           <% } %>
           <% if (candidate.extracted_keywords) { %>
-            <div class="card p-5">
-              <h4 class="font-semibold mb-2">Keywords</h4>
-              <div class="flex flex-wrap gap-2">
-                <% const keywords = typeof candidate.extracted_keywords === 'string' ? JSON.parse(candidate.extracted_keywords || '[]') : (candidate.extracted_keywords || []); %>
-                <% keywords.forEach(k => { %><span class="badge-muted"><%= k %></span><% }) %>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="font-semibold mb-sm">Keywords</h4>
+                <div class="flex flex-wrap gap-sm">
+                  <% const keywords = typeof candidate.extracted_keywords === 'string' ? JSON.parse(candidate.extracted_keywords || '[]') : (candidate.extracted_keywords || []); %>
+                  <% keywords.forEach(k => { %><span class="badge badge-muted"><%= k %></span><% }) %>
+                </div>
               </div>
             </div>
           <% } %>
           <% if (candidate.extracted_education_summary) { %>
-            <div class="card p-5">
-              <h4 class="font-semibold mb-2">Education Summary</h4>
-              <p class="text-sm text-muted-foreground"><%= candidate.extracted_education_summary %></p>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="font-semibold mb-sm">Education Summary</h4>
+                <p class="text-sm text-muted"><%= candidate.extracted_education_summary %></p>
+              </div>
             </div>
           <% } %>
           <% if (candidate.extracted_experience_summary) { %>
-            <div class="card p-5">
-              <h4 class="font-semibold mb-2">Experience Summary</h4>
-              <p class="text-sm text-muted-foreground"><%= candidate.extracted_experience_summary %></p>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="font-semibold mb-sm">Experience Summary</h4>
+                <p class="text-sm text-muted"><%= candidate.extracted_experience_summary %></p>
+              </div>
             </div>
           <% } %>
           <% if (candidate.skill_gap_analysis) { %>
-            <div class="card p-5">
-              <h4 class="font-semibold mb-2">Skill Gap Analysis</h4>
-              <p class="text-sm text-muted-foreground"><%= candidate.skill_gap_analysis %></p>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="font-semibold mb-sm">Skill Gap Analysis</h4>
+                <p class="text-sm text-muted"><%= candidate.skill_gap_analysis %></p>
+              </div>
             </div>
           <% } %>
           <% if (candidate.role_fit_summary) { %>
-            <div class="card p-5">
-              <h4 class="font-semibold mb-2">Role Fit Summary</h4>
-              <p class="text-sm text-muted-foreground"><%= candidate.role_fit_summary %></p>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="font-semibold mb-sm">Role Fit Summary</h4>
+                <p class="text-sm text-muted"><%= candidate.role_fit_summary %></p>
+              </div>
             </div>
           <% } %>
         </div>
       </div>
     <% } else { %>
       <div class="empty-state">
-        <i data-lucide="brain" class="empty-state-icon"></i>
-        <h3 class="text-lg font-medium text-muted-foreground">No AI screening results yet</h3>
-        <p class="text-sm text-muted-foreground mt-1">Run AI Match to analyze this candidate against the job description.</p>
-        <form method="POST" action="/candidates/<%= candidate.id %>/run-ai-match" class="mt-4">
-          <button type="submit" class="btn-accent">
-            <i data-lucide="brain" class="w-4 h-4"></i> Run AI Match
+        <i data-lucide="brain"></i>
+        <h3 class="text-lg font-medium text-muted">No AI screening results yet</h3>
+        <p class="text-sm text-muted" style="margin-top:4px;">Run AI Match to analyze this candidate against the job description.</p>
+        <form method="POST" action="/candidates/<%= candidate.id %>/run-ai-match" class="mt-md">
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="brain" style="width:16px;height:16px;"></i> Run AI Match
           </button>
         </form>
       </div>
@@ -429,36 +451,36 @@
   <div x-show="activeTab === 'interview'" x-transition>
     <% if (candidate.interviews && candidate.interviews.length > 0) { %>
       <% candidate.interviews.forEach(interview => { %>
-        <div class="card p-6 mb-4">
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <span class="badge-primary"><%= (interview.interview_type || 'HR').toUpperCase() %></span>
-              <span class="badge-<%= interview.status || 'pending' %>"><%= (interview.status || 'pending').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+        <div class="card mb-md" style="padding:24px;">
+          <div class="flex items-center justify-between mb-md">
+            <div class="flex items-center gap-sm">
+              <span class="badge badge-info"><%= (interview.interview_type || 'HR').toUpperCase() %></span>
+              <span class="badge badge-<%= interview.status || 'pending' %>"><%= (interview.status || 'pending').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
             </div>
-            <span class="text-sm text-muted-foreground"><%= interview.started_at ? dateUtils.formatDateTime(interview.started_at) : '-' %></span>
+            <span class="text-sm text-muted"><%= interview.started_at ? dateUtils.formatDateTime(interview.started_at) : '-' %></span>
           </div>
 
           <% if (interview.total_score != null) { %>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+            <div class="stats-row mb-md" style="grid-template-columns:repeat(5,1fr);">
               <div class="text-center">
-                <div class="w-14 h-14 mx-auto" data-score="<%= interview.total_score %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted-foreground mt-1">Total</p>
+                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.total_score %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted" style="margin-top:4px;">Total</p>
               </div>
               <div class="text-center">
-                <div class="w-14 h-14 mx-auto" data-score="<%= interview.communication_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted-foreground mt-1">Communication</p>
+                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.communication_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted" style="margin-top:4px;">Communication</p>
               </div>
               <div class="text-center">
-                <div class="w-14 h-14 mx-auto" data-score="<%= interview.domain_knowledge_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted-foreground mt-1">Domain</p>
+                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.domain_knowledge_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted" style="margin-top:4px;">Domain</p>
               </div>
               <div class="text-center">
-                <div class="w-14 h-14 mx-auto" data-score="<%= interview.problem_solving_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted-foreground mt-1">Problem Solving</p>
+                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.problem_solving_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted" style="margin-top:4px;">Problem Solving</p>
               </div>
               <div class="text-center">
-                <div class="w-14 h-14 mx-auto" data-score="<%= interview.confidence_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted-foreground mt-1">Confidence</p>
+                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.confidence_score || 0 %>" data-size="56" data-stroke="4"></div>
+                <p class="text-xs text-muted" style="margin-top:4px;">Confidence</p>
               </div>
             </div>
           <% } %>
@@ -487,36 +509,35 @@
             }
           %>
           <% if (feedbackDisplay || recDisplay) { %>
-            <div class="bg-muted/50 rounded-xl p-4 space-y-3">
+            <div class="card" style="padding:16px;background:var(--bg-tertiary);border:none;display:flex;flex-direction:column;gap:12px;">
               <% if (recDisplay) { %>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-sm">
                   <h5 class="font-semibold text-sm">AI Recommendation:</h5>
-                  <span class="px-2.5 py-0.5 rounded-full text-xs font-bold
-                    <%= recDisplay === 'Hire' || recDisplay === 'Strong Hire' ? 'bg-green-100 text-green-700' :
-                       recDisplay === 'No Hire' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700' %>">
+                  <span class="badge <%= recDisplay === 'Hire' || recDisplay === 'Strong Hire' ? 'badge-success' :
+                     recDisplay === 'No Hire' ? 'badge-danger' : 'badge-warning' %>">
                     <%= recDisplay %>
                   </span>
                 </div>
               <% } %>
               <% if (feedbackDisplay) { %>
-                <p class="text-sm text-muted-foreground leading-relaxed"><%= feedbackDisplay %></p>
+                <p class="text-sm text-muted" style="line-height:1.7;"><%= feedbackDisplay %></p>
               <% } %>
               <% if (strengthsDisplay.length > 0) { %>
                 <div>
-                  <p class="text-xs font-semibold text-foreground mb-1">Strengths:</p>
-                  <div class="flex flex-wrap gap-1.5">
+                  <p class="text-xs font-semibold mb-sm">Strengths:</p>
+                  <div class="flex flex-wrap gap-sm">
                     <% strengthsDisplay.forEach(function(s) { %>
-                      <span class="px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-200"><%= typeof s === 'string' ? s : s.area || '' %></span>
+                      <span class="badge badge-success"><%= typeof s === 'string' ? s : s.area || '' %></span>
                     <% }); %>
                   </div>
                 </div>
               <% } %>
               <% if (improvementsDisplay.length > 0) { %>
                 <div>
-                  <p class="text-xs font-semibold text-foreground mb-1">Areas for Improvement:</p>
-                  <div class="flex flex-wrap gap-1.5">
+                  <p class="text-xs font-semibold mb-sm">Areas for Improvement:</p>
+                  <div class="flex flex-wrap gap-sm">
                     <% improvementsDisplay.forEach(function(a) { %>
-                      <span class="px-2 py-0.5 rounded-full text-xs bg-amber-50 text-amber-700 border border-amber-200"><%= typeof a === 'string' ? a : a.area || '' %></span>
+                      <span class="badge badge-warning"><%= typeof a === 'string' ? a : a.area || '' %></span>
                     <% }); %>
                   </div>
                 </div>
@@ -524,17 +545,17 @@
             </div>
           <% } %>
 
-          <a href="/ai/interviews/<%= interview.id %>" class="btn-outline btn-sm mt-3">View Full Details</a>
+          <a href="/ai/interviews/<%= interview.id %>" class="btn btn-outline btn-sm mt-sm">View Full Details</a>
         </div>
       <% }) %>
     <% } else { %>
       <div class="empty-state">
-        <i data-lucide="message-square" class="empty-state-icon"></i>
-        <h3 class="text-lg font-medium text-muted-foreground">No AI interviews yet</h3>
-        <form method="POST" action="/ai/interviews/<%= candidate.id %>/invite" class="mt-4">
+        <i data-lucide="message-square"></i>
+        <h3 class="text-lg font-medium text-muted">No AI interviews yet</h3>
+        <form method="POST" action="/ai/interviews/<%= candidate.id %>/invite" class="mt-md">
           <input type="hidden" name="candidate_id" value="<%= candidate.id %>">
           <input type="hidden" name="interview_type" value="hr">
-          <button type="submit" class="btn-primary"><i data-lucide="message-square" class="w-4 h-4"></i> Invite to AI Interview</button>
+          <button type="submit" class="btn btn-primary"><i data-lucide="message-square" style="width:16px;height:16px;"></i> Invite to AI Interview</button>
         </form>
       </div>
     <% } %>
@@ -542,67 +563,69 @@
 
   <!-- Tab: HR Notes -->
   <div x-show="activeTab === 'notes'" x-transition>
-    <div class="space-y-4 mb-6">
+    <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:24px;">
       <% if (locals.notes && notes.length > 0) { %>
         <% notes.forEach(note => { %>
-          <div class="card p-4">
-            <div class="flex items-center justify-between mb-2">
-              <span class="badge-<%= note.note_type || 'general' %>"><%= (note.note_type || 'general').replace(/\b\w/g, l => l.toUpperCase()) %></span>
-              <span class="text-xs text-muted-foreground"><%= note.created_at ? dateUtils.formatDateTime(note.created_at) : '' %></span>
+          <div class="card" style="padding:16px;">
+            <div class="flex items-center justify-between mb-sm">
+              <span class="badge badge-<%= note.note_type || 'general' %>"><%= (note.note_type || 'general').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+              <span class="text-xs text-muted"><%= note.created_at ? dateUtils.formatDateTime(note.created_at) : '' %></span>
             </div>
             <p class="text-sm"><%= note.note_text %></p>
           </div>
         <% }) %>
       <% } else { %>
-        <p class="text-muted-foreground text-sm">No notes yet.</p>
+        <p class="text-muted text-sm">No notes yet.</p>
       <% } %>
     </div>
 
     <!-- Add Note Form -->
-    <div class="card p-5">
-      <h4 class="font-semibold mb-3">Add Note</h4>
-      <form method="POST" action="/candidates/<%= candidate.id %>/add-note">
-        <div class="form-group mb-3">
-          <select name="note_type" class="form-select">
-            <option value="general">General</option>
-            <option value="screening">Screening</option>
-            <option value="interview">Interview</option>
-            <option value="decision">Decision</option>
-          </select>
-        </div>
-        <div class="form-group mb-3">
-          <textarea name="note_text" class="form-input" rows="3" placeholder="Write your note..." required data-max-chars="2000"></textarea>
-        </div>
-        <button type="submit" class="btn-primary btn-sm">
-          <i data-lucide="plus" class="w-4 h-4"></i> Add Note
-        </button>
-      </form>
+    <div class="card">
+      <div class="card-body">
+        <h4 class="font-semibold mb-sm">Add Note</h4>
+        <form method="POST" action="/candidates/<%= candidate.id %>/add-note">
+          <div class="form-group mb-sm">
+            <select name="note_type" class="form-select">
+              <option value="general">General</option>
+              <option value="screening">Screening</option>
+              <option value="interview">Interview</option>
+              <option value="decision">Decision</option>
+            </select>
+          </div>
+          <div class="form-group mb-sm">
+            <textarea name="note_text" class="form-textarea" rows="3" placeholder="Write your note..." required data-max-chars="2000"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> Add Note
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 
   <!-- Tab: Timeline -->
   <div x-show="activeTab === 'timeline'" x-transition>
     <% if ((locals.activityLogs && activityLogs.length > 0) || (locals.statusHistory && statusHistory.length > 0)) { %>
-      <div class="timeline">
+      <div style="display:flex;flex-direction:column;gap:12px;">
         <% const allEvents = [
           ...(activityLogs || []).map(l => ({ type: 'activity', date: l.created_at, label: l.action_label || l.action_key, meta: l.metadata })),
           ...(statusHistory || []).map(s => ({ type: 'status', date: s.created_at, label: `Status changed: ${s.old_status || 'none'} → ${s.new_status}`, meta: s.remarks })),
         ].sort((a, b) => new Date(b.date) - new Date(a.date)); %>
 
         <% allEvents.forEach(event => { %>
-          <div class="timeline-item">
+          <div class="card" style="padding:12px 16px;">
             <div class="flex items-start justify-between">
               <div>
                 <p class="font-medium text-sm"><%= event.label %></p>
-                <% if (event.meta) { %><p class="text-xs text-muted-foreground mt-0.5"><%= typeof event.meta === 'string' ? event.meta : '' %></p><% } %>
+                <% if (event.meta) { %><p class="text-xs text-muted" style="margin-top:2px;"><%= typeof event.meta === 'string' ? event.meta : '' %></p><% } %>
               </div>
-              <span class="text-xs text-muted-foreground whitespace-nowrap ml-4"><%= event.date ? dateUtils.formatDateTime(event.date) : '' %></span>
+              <span class="text-xs text-muted shrink-0" style="margin-left:16px;white-space:nowrap;"><%= event.date ? dateUtils.formatDateTime(event.date) : '' %></span>
             </div>
           </div>
         <% }) %>
       </div>
     <% } else { %>
-      <div class="empty-state"><i data-lucide="clock" class="empty-state-icon"></i><p class="text-muted-foreground">No activity recorded yet</p></div>
+      <div class="empty-state"><i data-lucide="clock"></i><p class="text-muted">No activity recorded yet</p></div>
     <% } %>
   </div>
 </div>
