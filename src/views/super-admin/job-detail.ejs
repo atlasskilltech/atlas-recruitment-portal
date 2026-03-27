@@ -38,7 +38,7 @@
     </a>
     <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin:0;"><%= _job.post_name %></h1>
     <div style="display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap;">
-      <span style="font-size:0.85rem;color:var(--text-secondary);"><%= _job.scope %> &mdash; <%= _job.applied_location || 'Location N/A' %></span>
+      <span style="font-size:0.85rem;color:var(--text-secondary);"><%= _job.scope %></span>
       <% if (_job.jd_file_path || _job.jd_file) { %>
         <a href="<%= _job.jd_file_path || _job.jd_file %>" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;font-weight:500;color:var(--accent-primary);background:rgba(16,185,129,0.1);padding:3px 10px;border-radius:var(--radius-sm);text-decoration:none;">
           <i data-lucide="file-text" style="width:13px;height:13px;"></i> JD Attached
