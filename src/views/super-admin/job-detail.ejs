@@ -95,9 +95,9 @@
   </div>
 </div>
 
-<!-- Candidate Cards (like Faculty Schedule entries) -->
+<!-- Candidate Cards Grid -->
 <% if (_matches.length > 0) { %>
-  <div style="display:flex;flex-direction:column;gap:12px;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
     <% _matches.forEach(function(m, idx) { %>
       <%
         const mScore = parseFloat(m.match_score) || 0;
@@ -105,43 +105,58 @@
         const aiStatus = m.match_status || null;
         const parts = (m.appln_full_name || '').trim().split(/\s+/);
         const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
-        const isTop3 = idx < 3;
         const borderColor = mScore >= 75 ? 'var(--accent-primary)' : mScore >= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)';
+        const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#ef4444,#dc2626)';
       %>
-      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);border-left:4px solid <%= borderColor %>;padding:14px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.15s ease;"
-           onclick="window.location.href='/candidates/<%= m.candidate_id %>'"
-           onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-1px)';"
+      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);border-top:3px solid <%= borderColor %>;padding:20px;transition:all 0.15s ease;"
+           onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)';"
            onmouseout="this.style.boxShadow='none';this.style.transform='none';">
 
-        <!-- Rank + Score pill (like "#1  27 Mar 2026 · 07:30 - 10:00") -->
-        <div style="display:inline-flex;align-items:center;gap:0;background:linear-gradient(135deg,#1e293b,#334155);border-radius:20px;padding:6px 16px 6px 6px;flex-shrink:0;">
-          <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent-primary);color:white;font-size:0.7rem;font-weight:700;margin-right:10px;">#<%= idx + 1 %></span>
-          <span style="font-size:0.8rem;font-weight:600;color:white;<%= scoreColor(mScore).replace('color:','color:') %>"><%= Number(mScore).toFixed(1) %>%</span>
-          <span style="color:rgba(255,255,255,0.4);margin:0 6px;">·</span>
-          <span style="font-size:0.75rem;color:rgba(255,255,255,0.7);"><%= getQual(m.appln_high_qualification) %></span>
+        <!-- Name Row: Avatar + Name -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <div style="width:36px;height:36px;border-radius:50%;background:<%= avatarBg %>;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;flex-shrink:0;"><%= initials %></div>
+          <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></span>
         </div>
 
-        <!-- Name + Details (like "Sartorial Mastery  TAKEN") -->
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></span>
-            <% if (aiStatus) { %>
-              <span class="badge <%= statusBadge(aiStatus) %>" style="font-size:0.65rem;"><%= statusLabel(aiStatus) %></span>
-            <% } %>
+        <!-- Details Rows -->
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:0.8rem;color:var(--text-secondary);margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="trophy" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span>AI Match: <strong style="<%= scoreColor(mScore) %>"><%= Number(mScore).toFixed(1) %>%</strong></span>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:3px;font-size:0.75rem;color:var(--text-muted);flex-wrap:wrap;">
-            <span style="display:inline-flex;align-items:center;gap:3px;">
-              <i data-lucide="mail" style="width:11px;height:11px;"></i>
-              <%= m.appln_email || '--' %>
-            </span>
-            <% if (iScore > 0) { %>
-              <span style="display:inline-flex;align-items:center;gap:3px;">
-                <i data-lucide="message-square" style="width:11px;height:11px;"></i>
-                Interview: <strong style="<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</strong>
-              </span>
-            <% } %>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="graduation-cap" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span>Qualification: <strong><%= getQual(m.appln_high_qualification) %></strong></span>
           </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="mail" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= m.appln_email || '--' %></span>
+          </div>
+          <% if (m.appln_mobile_no) { %>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="phone" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span><%= m.appln_mobile_no %></span>
+          </div>
+          <% } %>
+          <% if (iScore > 0) { %>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <i data-lucide="message-square" style="width:14px;height:14px;color:var(--text-muted);flex-shrink:0;"></i>
+            <span>Interview: <strong style="<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</strong></span>
+          </div>
+          <% } %>
         </div>
+
+        <!-- Status Badge -->
+        <% if (aiStatus) { %>
+          <div style="margin-bottom:14px;">
+            <span class="badge <%= statusBadge(aiStatus) %>"><%= statusLabel(aiStatus) %></span>
+          </div>
+        <% } %>
+
+        <!-- View Profile Button -->
+        <a href="/candidates/<%= m.candidate_id %>" class="btn btn-primary btn-sm" style="text-decoration:none;">
+          <i data-lucide="user" style="width:14px;height:14px;"></i> View Profile
+        </a>
       </div>
     <% }); %>
   </div>
