@@ -6,7 +6,6 @@
 
   const fmt = (n) => (n != null ? Number(n).toLocaleString() : '0');
 
-  // Qualification mapping
   const qualMap = { '1': 'PhD', '2': 'Masters', '3': 'Bachelors', '4': 'Diploma', '5': 'Any others' };
   function getQual(val) {
     if (!val) return '--';
@@ -30,10 +29,10 @@
   }
 %>
 
-<!-- Back + Title -->
-<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+<!-- Header Row -->
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
   <div>
-    <a href="/admin/jobs" style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
+    <a href="/admin/jobs" style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;text-decoration:none;">
       <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back
     </a>
     <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin:0;"><%= _job.post_name %></h1>
@@ -60,146 +59,110 @@
   </div>
 </div>
 
+<!-- Summary Card (like "2 Lectures by Class & Subject") -->
+<div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);border-left:4px solid var(--accent-primary);padding:20px 24px;margin-bottom:24px;">
+  <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:16px;">
+    <span style="font-size:1.75rem;font-weight:700;color:var(--text-primary);"><%= _matches.length %> Candidates</span>
+    <span style="font-size:0.9rem;color:var(--accent-primary);font-weight:500;">by AI Match Score</span>
+  </div>
 
-<!-- Stats Row -->
-<div class="stats-row" style="margin-bottom:20px;">
-  <div class="stat-card">
-    <div class="stat-info" style="text-align:center;width:100%;">
-      <div class="stat-value"><%= fmt(_applicantCount) %></div>
-      <div class="stat-label">Applied for this Job</div>
+  <!-- Summary stats inside the card -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));gap:12px;">
+    <div>
+      <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Applied</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);"><%= fmt(_applicantCount) %></div>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-info" style="text-align:center;width:100%;">
-      <div class="stat-value"><%= fmt(_stats.total_scanned) %></div>
-      <div class="stat-label">Candidates Scanned</div>
+    <div>
+      <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Scanned</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);"><%= fmt(_stats.total_scanned) %></div>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-info" style="text-align:center;width:100%;">
-      <div class="stat-value" style="color:var(--accent-primary);"><%= fmt(_stats.strong_fit) %></div>
-      <div class="stat-label">Strong Fit (&ge;75)</div>
+    <div>
+      <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Strong Fit (&ge;75)</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--accent-primary);"><%= fmt(_stats.strong_fit) %></div>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-info" style="text-align:center;width:100%;">
-      <div class="stat-value" style="color:var(--accent-warning);"><%= fmt(_stats.moderate_fit) %></div>
-      <div class="stat-label">Moderate (50-74)</div>
+    <div>
+      <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Moderate (50-74)</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--accent-warning);"><%= fmt(_stats.moderate_fit) %></div>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-info" style="text-align:center;width:100%;">
-      <div class="stat-value" style="color:var(--accent-danger);"><%= fmt(_stats.weak_fit) %></div>
-      <div class="stat-label">Weak (&lt;50)</div>
+    <div>
+      <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Weak (&lt;50)</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--accent-danger);"><%= fmt(_stats.weak_fit) %></div>
     </div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-info" style="text-align:center;width:100%;">
-      <div class="stat-value"><%= _stats.avg_score || 0 %>%</div>
-      <div class="stat-label">Avg Match Score</div>
+    <div>
+      <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Avg Score</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);"><%= _stats.avg_score || 0 %>%</div>
     </div>
   </div>
 </div>
 
-<!-- Top Matches Table -->
-<div class="card" style="overflow:hidden;">
-  <div style="padding:16px 20px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <i data-lucide="trophy" style="width:18px;height:18px;color:var(--accent-primary);"></i>
-      <h2 style="font-size:1rem;font-weight:600;">Top <%= _matches.length %> Matching Candidates</h2>
-    </div>
-    <span style="font-size:0.75rem;color:var(--text-muted);">Ranked by AI Match Score</span>
-  </div>
+<!-- Candidate Cards (like Faculty Schedule entries) -->
+<% if (_matches.length > 0) { %>
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <% _matches.forEach(function(m, idx) { %>
+      <%
+        const mScore = parseFloat(m.match_score) || 0;
+        const iScore = parseFloat(m.interview_score) || 0;
+        const aiStatus = m.match_status || null;
+        const parts = (m.appln_full_name || '').trim().split(/\s+/);
+        const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
+        const isTop3 = idx < 3;
+        const borderColor = mScore >= 75 ? 'var(--accent-primary)' : mScore >= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)';
+      %>
+      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);border-left:4px solid <%= borderColor %>;padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:all 0.15s ease;flex-wrap:wrap;"
+           onclick="window.location.href='/candidates/<%= m.candidate_id %>'"
+           onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-1px)';"
+           onmouseout="this.style.boxShadow='none';this.style.transform='none';">
 
-  <% if (_matches.length > 0) { %>
-    <div class="table-responsive">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:40px;">#</th>
-            <th>Candidate Name</th>
-            <th>Qualification</th>
-            <th>AI Match Score</th>
-            <th>AI Status</th>
-            <th>AI Interview Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% _matches.forEach(function(m, idx) { %>
-            <%
-              // Show match score and status from job-candidate matching (for THIS job)
-              const mScore = parseFloat(m.match_score) || 0;
-              const iScore = parseFloat(m.interview_score) || 0;
-              const aiStatus = m.match_status || null;
-            %>
-            <tr style="cursor:pointer;" onclick="window.location.href='/candidates/<%= m.candidate_id %>'">
-              <td>
-                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:0.75rem;font-weight:700;
-                  <%= idx < 3 ? 'background:var(--accent-primary);color:white;' : 'background:var(--bg-tertiary);color:var(--text-secondary);' %>">
-                  <%= idx + 1 %>
-                </span>
-              </td>
-              <td>
-                <div style="display:flex;align-items:center;gap:10px;">
-                  <div class="avatar avatar-sm avatar-gradient">
-                    <%
-                      const parts = (m.appln_full_name || '').trim().split(/\s+/);
-                      const initials = parts[0] ? parts[0].charAt(0).toUpperCase() : '?';
-                      const lastInit = parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '';
-                    %><%= initials %><%= lastInit %>
-                  </div>
-                  <div style="min-width:0;">
-                    <div class="font-medium truncate" style="max-width:200px;"><%= m.appln_full_name || 'N/A' %></div>
-                    <div class="text-xs text-muted truncate" style="max-width:200px;"><%= m.appln_email || '' %></div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <% if (m.appln_high_qualification) { %>
-                  <span class="badge badge-muted"><%= getQual(m.appln_high_qualification) %></span>
-                <% } else { %>
-                  <span class="text-xs text-muted">--</span>
-                <% } %>
-              </td>
-              <td>
-                <div style="display:flex;align-items:center;gap:8px;">
-                  <span style="font-size:0.95rem;font-weight:700;<%= scoreColor(mScore) %>"><%= Number(mScore).toFixed(1) %>%</span>
-                  <div style="flex:1;max-width:80px;">
-                    <div class="progress-bar" style="height:5px;">
-                      <div class="progress-fill <%= mScore >= 75 ? 'green' : mScore >= 50 ? 'yellow' : 'red' %>" style="width:<%= mScore %>%;"></div>
-                    </div>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <% if (aiStatus) { %>
-                  <span class="badge <%= statusBadge(aiStatus) %>">
-                    <%= statusLabel(aiStatus) %>
-                  </span>
-                <% } else { %>
-                  <span class="text-xs text-muted">--</span>
-                <% } %>
-              </td>
-              <td>
-                <% if (iScore > 0) { %>
-                  <span style="font-weight:600;<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</span>
-                  <% if (m.interview_status) { %>
-                    <span class="badge badge-muted" style="margin-left:4px;font-size:0.65rem;"><%= m.interview_status %></span>
-                  <% } %>
-                <% } else { %>
-                  <span class="text-xs text-muted">&mdash;</span>
-                <% } %>
-              </td>
-            </tr>
-          <% }); %>
-        </tbody>
-      </table>
-    </div>
-  <% } else { %>
-    <div class="empty-state">
-      <i data-lucide="search"></i>
-      <h3 style="font-size:1rem;font-weight:600;margin-bottom:4px;">No matches found</h3>
-      <p class="text-sm text-muted">Click "Refresh Scan" to scan candidates against this job.</p>
-    </div>
-  <% } %>
-</div>
+        <!-- Rank Badge -->
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+          <span style="display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:28px;border-radius:var(--radius-sm);font-size:0.75rem;font-weight:700;padding:0 8px;
+            <%= isTop3 ? 'background:var(--accent-primary);color:white;' : 'background:var(--bg-tertiary);color:var(--text-secondary);' %>">
+            #<%= idx + 1 %>
+          </span>
+
+          <!-- Score pill (like time in faculty schedule) -->
+          <span style="display:inline-flex;align-items:center;gap:4px;font-size:0.85rem;font-weight:700;<%= scoreColor(mScore) %>">
+            <%= Number(mScore).toFixed(1) %>%
+          </span>
+        </div>
+
+        <!-- Candidate Name (like subject name in faculty schedule) -->
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></div>
+          <div style="display:flex;align-items:center;gap:12px;margin-top:4px;flex-wrap:wrap;font-size:0.8rem;color:var(--text-secondary);">
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <i data-lucide="mail" style="width:12px;height:12px;color:var(--text-muted);"></i>
+              <%= m.appln_email || '--' %>
+            </span>
+            <span style="display:inline-flex;align-items:center;gap:4px;">
+              <i data-lucide="graduation-cap" style="width:12px;height:12px;color:var(--text-muted);"></i>
+              <%= getQual(m.appln_high_qualification) %>
+            </span>
+            <% if (aiStatus) { %>
+              <span class="badge <%= statusBadge(aiStatus) %>"><%= statusLabel(aiStatus) %></span>
+            <% } %>
+            <% if (iScore > 0) { %>
+              <span style="display:inline-flex;align-items:center;gap:4px;">
+                <i data-lucide="message-square" style="width:12px;height:12px;color:var(--text-muted);"></i>
+                Interview: <strong style="<%= scoreColor(iScore) %>"><%= Number(iScore).toFixed(1) %>%</strong>
+              </span>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Score Bar (right side) -->
+        <div style="width:100px;flex-shrink:0;">
+          <div class="progress-bar" style="height:6px;">
+            <div class="progress-fill <%= mScore >= 75 ? 'green' : mScore >= 50 ? 'yellow' : 'red' %>" style="width:<%= mScore %>%;"></div>
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+<% } else { %>
+  <div class="empty-state">
+    <i data-lucide="search"></i>
+    <h3 style="font-size:1rem;font-weight:600;margin-bottom:4px;">No matches found</h3>
+    <p class="text-sm text-muted">Click "Refresh Scan" to scan candidates against this job.</p>
+  </div>
+<% } %>
