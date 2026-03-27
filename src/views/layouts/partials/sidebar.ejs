@@ -1,18 +1,11 @@
 <%
+  /* Super Admin menu - only these items shown */
   const navItems = [
-    { path: '/dashboard', icon: 'layout-dashboard', label: 'Dashboard' },
-    { path: '/candidates', icon: 'users', label: 'Candidates' },
-    { path: '/jobs', icon: 'briefcase', label: 'Job Openings' },
-    { path: '/ai-screening', icon: 'brain', label: 'AI Screening' },
-    { path: '/ai-interviews', icon: 'message-square', label: 'AI Interviews' },
-    { path: '/shortlist', icon: 'check-circle', label: 'Shortlist' },
-    { path: '/schedules', icon: 'calendar', label: 'Schedules' },
-    { path: '/reports', icon: 'bar-chart-3', label: 'Reports' },
-    { path: '/notifications', icon: 'bell', label: 'Notifications' },
+    { path: '/admin/jobs', icon: 'briefcase', label: 'Job Openings' },
   ];
+
   const isActive = (itemPath) => {
     if (!currentPath) return false;
-    if (itemPath === '/dashboard') return currentPath === '/' || currentPath === '/dashboard';
     return currentPath.startsWith(itemPath);
   };
 %>
@@ -33,7 +26,7 @@
 
   <nav class="sidebar-nav">
     <div class="nav-section">
-      <div class="nav-section-title">Main Menu</div>
+      <div class="nav-section-title">Super Admin</div>
       <% navItems.forEach(function(item) { %>
         <a href="<%= item.path %>" class="nav-tab<%= isActive(item.path) ? ' active' : '' %>">
           <i data-lucide="<%= item.icon %>"></i>
