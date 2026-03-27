@@ -2,13 +2,13 @@
   const candidate = locals.candidate || {};
   const job = locals.job || {};
 
-  const candidateName = candidate.first_name
-    ? candidate.first_name + ' ' + (candidate.last_name || '')
-    : (candidate.name || 'Unknown Candidate');
-  const candidateEmail = candidate.email || candidate.appln_email || '';
-  const jobTitle = job.title || job.job_title || 'N/A';
-  const aiScore = candidate.ai_score || candidate.match_score || 0;
-  const interviewScore = candidate.interview_score || 0;
+  const candidateName = candidate.appln_full_name
+    || (candidate.first_name ? candidate.first_name + ' ' + (candidate.last_name || '') : '')
+    || candidate.name || 'Unknown Candidate';
+  const candidateEmail = candidate.appln_email || candidate.email || '';
+  const jobTitle = candidate.job_title || job.title || job.job_title || 'N/A';
+  const aiScore = candidate.match_score || candidate.ai_score || 0;
+  const interviewScore = candidate.interview_score || candidate.overall_score || 0;
   const aiScoreColor = aiScore >= 75 ? 'text-success' : aiScore >= 50 ? 'text-warning' : 'text-destructive';
   const intScoreColor = interviewScore >= 75 ? 'text-success' : interviewScore >= 50 ? 'text-warning' : 'text-destructive';
 %>
@@ -33,9 +33,10 @@
 <div class="card p-6 mb-6">
   <div class="flex flex-col sm:flex-row sm:items-center gap-4">
     <!-- Avatar -->
-    <div class="w-14 h-14 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center flex-shrink-0">
-      <span class="text-xl font-bold text-primary-800 dark:text-primary-200">
-        <%= candidateName.charAt(0).toUpperCase() %>
+    <% const nameParts = candidateName.trim().split(/\s+/); %>
+    <div class="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0">
+      <span class="text-lg font-bold text-white">
+        <%= nameParts[0].charAt(0).toUpperCase() %><%= nameParts.length > 1 ? nameParts[nameParts.length - 1].charAt(0).toUpperCase() : '' %>
       </span>
     </div>
 
@@ -76,8 +77,8 @@
 
   <form action="/schedules" method="POST">
     <!-- Hidden fields -->
-    <input type="hidden" name="candidateId" value="<%= candidate.id || '' %>">
-    <input type="hidden" name="jobId" value="<%= job.id || '' %>">
+    <input type="hidden" name="candidate_id" value="<%= candidate.id || '' %>">
+    <input type="hidden" name="job_id" value="<%= candidate.appln_applied_for_sub || job.id || '' %>">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Date -->

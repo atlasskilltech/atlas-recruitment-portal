@@ -67,11 +67,12 @@ const index = asyncHandler(async (req, res) => {
  * Show the schedule creation form.
  */
 const create = asyncHandler(async (req, res) => {
-  // Pre-fill candidate if provided in query
+  // Pre-fill candidate if provided in query or route param
   let candidate = null;
-  if (req.query.candidate_id) {
+  const candidateId = parseInt(req.params.candidateId, 10) || parseInt(req.query.candidate_id, 10);
+  if (candidateId) {
     const candidateService = require('../services/candidate.service');
-    candidate = await candidateService.getCandidateById(parseInt(req.query.candidate_id, 10));
+    candidate = await candidateService.getCandidateById(candidateId);
   }
 
   // Fetch job list
