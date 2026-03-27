@@ -284,6 +284,9 @@ function videoInterview() {
     liveCaption: '',
     saving: false,
 
+    _candidateName: '<%= candidateName.replace(/'/g, "\\'") %>',
+    _jobTitle: '<%= jobTitle.replace(/'/g, "\\'") %>',
+    _greetingDone: false,
     questions: questionsData,
     currentIndex: 0,
     answers: {},
@@ -369,8 +372,24 @@ function videoInterview() {
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = setInterval(function() { self.timerSeconds++; }, 1000);
 
-      // AI reads the question aloud
-      this.speakQuestion();
+      // AI reads the question aloud (with greeting for first question)
+      if (this.currentIndex === 0 && !this._greetingDone) {
+        this._greetingDone = true;
+        this.aiSpeaking = true;
+        var greeting = 'Hello ' + this._candidateName + ', welcome to this AI interview for the position of ' + this._jobTitle + ' at ATLAS SkillTech University. I will ask you a series of questions. Please take your time and answer clearly. Let us begin with the first question.';
+        var greetUtterance = new SpeechSynthesisUtterance(greeting);
+        greetUtterance.rate = 0.95;
+        greetUtterance.pitch = 1;
+        greetUtterance.lang = 'en-US';
+        var self2 = this;
+        greetUtterance.onend = function() {
+          self2.speakQuestion();
+        };
+        speechSynthesis.cancel();
+        speechSynthesis.speak(greetUtterance);
+      } else {
+        this.speakQuestion();
+      }
     },
 
     speakQuestion() {
