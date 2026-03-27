@@ -130,9 +130,9 @@ app.listen(PORT, () => {
   ╚═══════════════════════════════════════════════════╝
   `);
 
-  // Start background cron jobs
-  const { startAIScreeningCron } = require('./jobs/aiScreeningCron');
-  startAIScreeningCron();
+  // Background cron jobs DISABLED
+  // const { startAIScreeningCron } = require('./jobs/aiScreeningCron');
+  // startAIScreeningCron();
 
   // Interview auto-invite cron DISABLED — use "Invite Interview" button from candidates page
   // const { startAIInterviewCron } = require('./jobs/aiInterviewCron');
