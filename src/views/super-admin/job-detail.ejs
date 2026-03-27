@@ -96,14 +96,16 @@
 </div>
 
 <!-- Selection Action Bar (sticky, hidden until selection) -->
-<div id="selection-bar" style="display:none;position:sticky;top:56px;z-index:40;background:linear-gradient(135deg,#1e293b,#334155);border-radius:var(--radius-lg);padding:12px 20px;margin-bottom:16px;align-items:center;justify-content:space-between;box-shadow:var(--shadow-lg);">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
-    <span style="color:white;font-size:0.85rem;font-weight:500;"><span id="selected-count">0</span> selected</span>
+<div id="selection-bar" style="display:none;position:sticky;top:60px;z-index:45;background:linear-gradient(135deg,#1e293b,#334155);border-radius:var(--radius-lg);padding:12px 20px;margin-bottom:16px;box-shadow:var(--shadow-lg);">
+  <div style="display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
+      <span style="color:white;font-size:0.85rem;font-weight:500;"><span id="selected-count">0</span> selected</span>
+    </div>
+    <button onclick="sendBulkInterview()" class="btn btn-primary btn-sm" style="display:flex;align-items:center;gap:6px;">
+      <i data-lucide="send" style="width:14px;height:14px;"></i> Send AI Interview to Selected
+    </button>
   </div>
-  <button onclick="sendBulkInterview()" class="btn btn-primary btn-sm" style="display:flex;align-items:center;gap:6px;">
-    <i data-lucide="send" style="width:14px;height:14px;"></i> Send AI Interview to Selected
-  </button>
 </div>
 
 <!-- Candidate Cards Grid -->
@@ -196,7 +198,7 @@ function updateSelectionBar() {
   var total = document.querySelectorAll('.candidate-checkbox').length;
 
   count.textContent = checkboxes.length;
-  bar.style.display = checkboxes.length > 0 ? 'flex' : 'none';
+  bar.style.display = checkboxes.length > 0 ? 'block' : 'none';
   selectAll.checked = checkboxes.length === total;
   selectAll.indeterminate = checkboxes.length > 0 && checkboxes.length < total;
 }
