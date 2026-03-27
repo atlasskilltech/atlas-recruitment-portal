@@ -632,3 +632,281 @@ aside a[class*="bg-primary"], nav a[class*="bg-primary"] {
   background: rgba(6, 182, 212, 0.1) !important;
   color: #06b6d4 !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN — All screens, all devices
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Global overflow safety ── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+main {
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* ── Tables: horizontal scroll on small screens ── */
+.data-table {
+  display: table;
+  min-width: 600px;
+}
+
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Tabs: scrollable on mobile ── */
+.tabs, [role="tablist"],
+div[x-data*="activeTab"] > .flex.border-b {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  flex-wrap: nowrap !important;
+}
+
+div[x-data*="activeTab"] > .flex.border-b::-webkit-scrollbar {
+  display: none;
+}
+
+div[x-data*="activeTab"] > .flex.border-b > a,
+div[x-data*="activeTab"] > .flex.border-b > button {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Mobile: < 640px ── */
+@media (max-width: 639px) {
+  /* Reduce main padding */
+  main.flex-1 {
+    padding: 12px !important;
+  }
+
+  /* Page titles */
+  h1.text-2xl {
+    font-size: 1.25rem !important;
+  }
+
+  /* Stat cards: full width stacking */
+  .stat-card {
+    padding: 14px !important;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.5rem !important;
+  }
+
+  /* Cards: tighter padding on mobile */
+  .card > .p-6, .card > .p-5 {
+    padding: 16px !important;
+  }
+
+  /* Score rings grid: 2 cols minimum */
+  .grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-5 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-5 .card {
+    padding: 10px !important;
+  }
+
+  .grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-5 .w-24 {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-5 .w-24 svg {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .grid.grid-cols-2.sm\\:grid-cols-3.lg\\:grid-cols-5 .text-xl {
+    font-size: 14px !important;
+  }
+
+  /* Candidate header: stack vertically */
+  .bg-gradient-brand .flex.flex-col.lg\\:flex-row {
+    flex-direction: column !important;
+  }
+
+  .bg-gradient-brand h1.text-2xl {
+    font-size: 1.125rem !important;
+  }
+
+  .bg-gradient-brand .w-16.h-16 {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1rem !important;
+  }
+
+  /* Action buttons: wrap nicely */
+  .flex.flex-wrap.items-center.gap-3 {
+    gap: 8px !important;
+  }
+
+  .flex.flex-wrap.items-center.gap-3 .btn-primary,
+  .flex.flex-wrap.items-center.gap-3 .btn-outline,
+  .flex.flex-wrap.items-center.gap-3 a.btn-outline {
+    font-size: 12px !important;
+    padding: 6px 12px !important;
+  }
+
+  /* Search in topbar: hide on very small screens */
+  .hidden.md\\:block.relative {
+    display: none !important;
+  }
+
+  /* Topbar user name: hide on mobile */
+  .hidden.sm\\:block.text-right {
+    display: none !important;
+  }
+
+  /* Form grid: single column */
+  .grid.grid-cols-1.md\\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Interview tabs */
+  .flex.border-b.border-border.overflow-x-auto {
+    gap: 0 !important;
+  }
+
+  .flex.border-b.border-border.overflow-x-auto a,
+  .flex.border-b.border-border.overflow-x-auto button {
+    font-size: 12px !important;
+    padding: 8px 10px !important;
+  }
+
+  /* Charts: reduce min-height */
+  [class*="min-h-\\[3"] {
+    min-height: 220px !important;
+  }
+
+  /* Dashboard recent applicants + top candidates: stack */
+  .grid.grid-cols-1.xl\\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Badges: smaller on mobile */
+  .badge, [class*="badge-"] {
+    font-size: 10px !important;
+    padding: 2px 6px !important;
+  }
+
+  /* Score ring in dashboard top candidates */
+  .flex-shrink-0.relative.inline-flex svg {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  /* Filter panel grid */
+  .filter-panel .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Interview list table: key columns only */
+  .data-table {
+    min-width: 500px;
+  }
+}
+
+/* ── Small tablets: 640px - 768px ── */
+@media (min-width: 640px) and (max-width: 767px) {
+  main.flex-1 {
+    padding: 16px !important;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* ── Tablets: 768px - 1024px ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Dashboard charts: single column */
+  .grid.grid-cols-1.lg\\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Stat cards: 3 per row */
+  .grid.grid-cols-2.sm\\:grid-cols-2.md\\:grid-cols-3.xl\\:grid-cols-5 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* ── Large screens: ensure content doesn't stretch too wide ── */
+@media (min-width: 1536px) {
+  main.flex-1 {
+    max-width: 1480px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* ── Candidate detail page: responsive score rings row ── */
+@media (max-width: 479px) {
+  .grid.grid-cols-2.md\\:grid-cols-5 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .grid.grid-cols-2.md\\:grid-cols-5 .w-14 {
+    width: 48px !important;
+    height: 48px !important;
+  }
+}
+
+/* ── Topbar responsive fixes ── */
+@media (max-width: 767px) {
+  header.sticky .flex.items-center.justify-between {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Reduce search width */
+  .form-input.pl-10 {
+    width: 180px !important;
+  }
+}
+
+/* ── Card padding responsive ── */
+@media (max-width: 639px) {
+  .px-5.py-4, .p-5, .p-6 {
+    padding: 14px !important;
+  }
+
+  .px-5 {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+/* ── Print styles ── */
+@media print {
+  .sidebar, header.sticky, .btn, .btn-primary, .btn-outline,
+  form[action*="shortlist"], form[action*="reject"],
+  form[action*="pool"], form[action*="schedule"],
+  .no-print {
+    display: none !important;
+  }
+
+  main.flex-1 {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e2e8f0 !important;
+    break-inside: avoid;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}
