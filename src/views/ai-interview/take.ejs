@@ -89,20 +89,36 @@
           </div>
         </div>
 
-        <!-- Permission Status -->
-        <div x-show="!cameraReady" style="margin-bottom:20px;">
-          <button @click="checkCamera()" style="padding:10px 24px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;background:#334155;color:#e2e8f0;display:inline-flex;align-items:center;gap:8px;">
-            <svg style="width:18px;height:18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
-            Allow Camera &amp; Microphone
-          </button>
-          <p style="font-size:0.75rem;color:#64748b;margin-top:8px;">Please allow access to start</p>
-        </div>
-
-        <!-- Start Button (only visible when camera ready) -->
-        <div x-show="cameraReady" style="margin-bottom:12px;">
+        <div style="margin-bottom:12px;">
           <p style="font-size:0.75rem;color:#64748b;margin-bottom:12px;"><%= _questions.length %> questions</p>
-          <button @click="startVideoInterview()" style="width:100%;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;border:none;background:#2563eb;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+
+          <!-- Permission denied message -->
+          <div x-show="permissionError === 'blocked'" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:16px;margin-bottom:16px;text-align:left;">
+            <p style="color:#fca5a5;font-weight:600;font-size:0.9rem;margin-bottom:8px;">Camera & Microphone Blocked</p>
+            <p style="color:#94a3b8;font-size:0.8rem;line-height:1.5;margin-bottom:8px;">Your browser has blocked camera access. To enable:</p>
+            <ol style="color:#94a3b8;font-size:0.8rem;line-height:1.8;padding-left:16px;margin:0;">
+              <li>Tap the <strong style="color:#e2e8f0;">lock icon</strong> (or <strong style="color:#e2e8f0;">ⓘ</strong>) in the address bar</li>
+              <li>Find <strong style="color:#e2e8f0;">Camera</strong> and <strong style="color:#e2e8f0;">Microphone</strong></li>
+              <li>Change both to <strong style="color:#22c55e;">Allow</strong></li>
+              <li>Reload this page</li>
+            </ol>
+          </div>
+
+          <div x-show="permissionError === 'error'" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:12px;margin-bottom:16px;">
+            <p style="color:#fbbf24;font-size:0.8rem;">Camera not available on this device. Please try from a device with a camera.</p>
+          </div>
+
+          <!-- Allow button (before permission granted) -->
+          <button x-show="!cameraReady" @click="checkCamera()"
+                  style="width:100%;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;border:none;background:#10b981;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
             <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+            <span x-text="permissionError ? 'Try Again' : 'Allow Camera & Microphone'"></span>
+          </button>
+
+          <!-- Start button (after permission granted) -->
+          <button x-show="cameraReady" @click="startVideoInterview()"
+                  style="width:100%;padding:14px 24px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;border:none;background:#2563eb;color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:8px;">
+            <svg style="width:20px;height:20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>
             Start Interview
           </button>
         </div>
@@ -260,6 +276,7 @@ function videoInterview() {
   return {
     phase: 'setup',
     cameraReady: false,
+    permissionError: '',
     stream: null,
     recognition: null,
     isRecording: false,
@@ -287,18 +304,17 @@ function videoInterview() {
     },
 
     async checkCamera() {
+      this.permissionError = '';
       try {
-        // Try video+audio first
         this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
-        this.$refs.setupVideo.srcObject = this.stream;
+        if (this.$refs.setupVideo) this.$refs.setupVideo.srcObject = this.stream;
         this.cameraReady = true;
-      } catch (e1) {
-        // If video fails, try audio only (some mobile browsers block video)
-        try {
-          this.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-          this.cameraReady = true;
-        } catch (e2) {
-          alert('Camera/microphone access denied. Please allow access and try again.');
+      } catch (e) {
+        this.cameraReady = false;
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+          this.permissionError = 'blocked';
+        } else {
+          this.permissionError = 'error';
         }
       }
     },
