@@ -1,0 +1,190 @@
+<%
+  const _job = typeof job !== 'undefined' ? job : {};
+  const _stats = typeof stats !== 'undefined' ? stats : {};
+  const _matches = typeof topMatches !== 'undefined' ? topMatches : [];
+  const _applicantCount = typeof applicantCount !== 'undefined' ? applicantCount : 0;
+
+  const fmt = (n) => (n != null ? Number(n).toLocaleString() : '0');
+  const lastScanned = _stats.last_scanned
+    ? new Date(_stats.last_scanned).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true })
+    : null;
+
+  function scoreColor(s) {
+    return s >= 75 ? 'color:var(--accent-primary)' : s >= 50 ? 'color:var(--accent-warning)' : 'color:var(--accent-danger)';
+  }
+  function statusBadge(s) {
+    if (!s) return '';
+    const map = { 'eligible': 'badge-success', 'strong_fit': 'badge-success', 'moderate_fit': 'badge-warning', 'weak_fit': 'badge-danger', 'rejected': 'badge-danger', 'hold': 'badge-warning' };
+    return map[s] || 'badge-muted';
+  }
+  function statusLabel(s) {
+    if (!s) return '--';
+    return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  }
+%>
+
+<!-- Back + Title -->
+<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <a href="/admin/jobs" style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
+      <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back
+    </a>
+    <h1 style="font-size:1.5rem;font-weight:700;color:var(--text-primary);margin:0;"><%= _job.post_name %></h1>
+    <p style="font-size:0.85rem;color:var(--text-secondary);margin-top:4px;">
+      <%= _job.scope %> &mdash; <%= _job.applied_location || 'Location N/A' %>
+    </p>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <% if (lastScanned) { %>
+      <span style="font-size:0.75rem;color:var(--text-muted);">Last scanned: <%= lastScanned %></span>
+    <% } %>
+    <a href="/admin/jobs/<%= _job.id %>?refresh=1" class="btn btn-primary btn-sm">
+      <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Refresh Scan
+    </a>
+  </div>
+</div>
+
+<!-- Short JD -->
+<% if (_job.applied_job_short_desc_new || _job.applied_job_desc) { %>
+  <div class="card" style="padding:16px;margin-bottom:16px;border-left:3px solid var(--accent-primary);">
+    <div style="font-size:0.7rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Job Description</div>
+    <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;"><%= _job.applied_job_short_desc_new || _job.applied_job_desc %></p>
+  </div>
+<% } %>
+
+<!-- Stats Row -->
+<div class="stats-row" style="margin-bottom:20px;">
+  <div class="stat-card">
+    <div class="stat-info" style="text-align:center;width:100%;">
+      <div class="stat-value"><%= fmt(_applicantCount) %></div>
+      <div class="stat-label">Applied for this Job</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info" style="text-align:center;width:100%;">
+      <div class="stat-value"><%= fmt(_stats.total_scanned) %></div>
+      <div class="stat-label">Candidates Scanned</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info" style="text-align:center;width:100%;">
+      <div class="stat-value" style="color:var(--accent-primary);"><%= fmt(_stats.strong_fit) %></div>
+      <div class="stat-label">Strong Fit (&ge;75)</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info" style="text-align:center;width:100%;">
+      <div class="stat-value" style="color:var(--accent-warning);"><%= fmt(_stats.moderate_fit) %></div>
+      <div class="stat-label">Moderate (50-74)</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info" style="text-align:center;width:100%;">
+      <div class="stat-value" style="color:var(--accent-danger);"><%= fmt(_stats.weak_fit) %></div>
+      <div class="stat-label">Weak (&lt;50)</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-info" style="text-align:center;width:100%;">
+      <div class="stat-value"><%= _stats.avg_score || 0 %>%</div>
+      <div class="stat-label">Avg Match Score</div>
+    </div>
+  </div>
+</div>
+
+<!-- Top Matches Table -->
+<div class="card" style="overflow:hidden;">
+  <div style="padding:16px 20px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i data-lucide="trophy" style="width:18px;height:18px;color:var(--accent-primary);"></i>
+      <h2 style="font-size:1rem;font-weight:600;">Top <%= _matches.length %> Matching Candidates</h2>
+    </div>
+    <span style="font-size:0.75rem;color:var(--text-muted);">Ranked by AI Match Score</span>
+  </div>
+
+  <% if (_matches.length > 0) { %>
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th style="width:40px;">#</th>
+            <th>Candidate Name</th>
+            <th>Qualification</th>
+            <th>AI Match Score</th>
+            <th>AI Status</th>
+            <th>AI Interview Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% _matches.forEach(function(m, idx) { %>
+            <tr style="cursor:pointer;" onclick="window.location.href='/candidates/<%= m.candidate_id %>'">
+              <td>
+                <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:0.75rem;font-weight:700;
+                  <%= idx < 3 ? 'background:var(--accent-primary);color:white;' : 'background:var(--bg-tertiary);color:var(--text-secondary);' %>">
+                  <%= idx + 1 %>
+                </span>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div class="avatar avatar-sm avatar-gradient">
+                    <%
+                      const parts = (m.appln_full_name || '').trim().split(/\s+/);
+                      const initials = parts[0] ? parts[0].charAt(0).toUpperCase() : '?';
+                      const lastInit = parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '';
+                    %><%= initials %><%= lastInit %>
+                  </div>
+                  <div style="min-width:0;">
+                    <div class="font-medium truncate" style="max-width:200px;"><%= m.appln_full_name || 'N/A' %></div>
+                    <div class="text-xs text-muted truncate" style="max-width:200px;"><%= m.appln_email || '' %></div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <% if (m.appln_high_qualification) { %>
+                  <span class="badge badge-muted"><%= m.appln_high_qualification %></span>
+                <% } else { %>
+                  <span class="text-xs text-muted">--</span>
+                <% } %>
+              </td>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="font-size:0.95rem;font-weight:700;<%= scoreColor(m.match_score) %>"><%= m.match_score ? m.match_score.toFixed(1) : 0 %>%</span>
+                  <div style="flex:1;max-width:80px;">
+                    <div class="progress-bar" style="height:5px;">
+                      <div class="progress-fill <%= m.match_score >= 75 ? 'green' : m.match_score >= 50 ? 'yellow' : 'red' %>" style="width:<%= m.match_score || 0 %>%;"></div>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <% if (m.screening_status || m.match_status) { %>
+                  <span class="badge <%= statusBadge(m.screening_status || m.match_status) %>">
+                    <%= statusLabel(m.screening_status || m.match_status) %>
+                  </span>
+                <% } else { %>
+                  <span class="text-xs text-muted">--</span>
+                <% } %>
+              </td>
+              <td>
+                <% if (m.interview_score != null && m.interview_score > 0) { %>
+                  <span style="font-weight:600;<%= scoreColor(m.interview_score) %>"><%= m.interview_score.toFixed(1) %>%</span>
+                  <% if (m.interview_status) { %>
+                    <span class="badge badge-muted" style="margin-left:4px;font-size:0.65rem;"><%= m.interview_status %></span>
+                  <% } %>
+                <% } else { %>
+                  <span class="text-xs text-muted">&mdash;</span>
+                <% } %>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state">
+      <i data-lucide="search"></i>
+      <h3 style="font-size:1rem;font-weight:600;margin-bottom:4px;">No matches found</h3>
+      <p class="text-sm text-muted">Click "Refresh Scan" to scan candidates against this job.</p>
+    </div>
+  <% } %>
+</div>
