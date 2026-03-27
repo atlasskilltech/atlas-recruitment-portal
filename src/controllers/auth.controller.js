@@ -83,7 +83,7 @@ const login = asyncHandler(async (req, res) => {
   logger.info(`User logged in: ${user.email} (ID: ${user.id})`);
 
   // Redirect to the originally requested URL or dashboard
-  const returnTo = req.session.returnTo || '/dashboard';
+  const returnTo = req.session.returnTo || '/admin/jobs';
   delete req.session.returnTo;
 
   req.flash('success', `Welcome back, ${user.full_name}!`);
