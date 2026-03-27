@@ -95,8 +95,20 @@
   </div>
 </div>
 
+<!-- Selection Action Bar (sticky, hidden until selection) -->
+<div id="selection-bar" style="display:none;position:sticky;top:56px;z-index:40;background:linear-gradient(135deg,#1e293b,#334155);border-radius:var(--radius-lg);padding:12px 20px;margin-bottom:16px;align-items:center;justify-content:space-between;box-shadow:var(--shadow-lg);">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
+    <span style="color:white;font-size:0.85rem;font-weight:500;"><span id="selected-count">0</span> selected</span>
+  </div>
+  <button onclick="sendBulkInterview()" class="btn btn-primary btn-sm" style="display:flex;align-items:center;gap:6px;">
+    <i data-lucide="send" style="width:14px;height:14px;"></i> Send AI Interview to Selected
+  </button>
+</div>
+
 <!-- Candidate Cards Grid -->
 <% if (_matches.length > 0) { %>
+  <form id="bulk-invite-form" method="POST" action="/admin/jobs/<%= _job.id %>/bulk-invite">
   <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
     <% _matches.forEach(function(m, idx) { %>
       <%
@@ -105,15 +117,21 @@
         const aiStatus = m.match_status || null;
         const parts = (m.appln_full_name || '').trim().split(/\s+/);
         const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
-        const borderColor = mScore >= 75 ? 'var(--accent-primary)' : mScore >= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)';
         const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#ef4444,#dc2626)';
       %>
-      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;"
+      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;position:relative;"
            onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)';"
            onmouseout="this.style.boxShadow='none';this.style.transform='none';">
 
+        <!-- Checkbox (top-right) -->
+        <div style="position:absolute;top:12px;right:12px;">
+          <input type="checkbox" name="candidate_ids" value="<%= m.candidate_id %>" class="candidate-checkbox"
+                 onchange="updateSelectionBar()"
+                 style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
+        </div>
+
         <!-- Name Row: Avatar + Name -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-right:30px;">
           <div style="width:36px;height:36px;border-radius:50%;background:<%= avatarBg %>;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:white;flex-shrink:0;"><%= initials %></div>
           <span style="font-size:0.95rem;font-weight:600;color:var(--text-primary);"><%= m.appln_full_name || 'N/A' %></span>
         </div>
@@ -160,6 +178,7 @@
       </div>
     <% }); %>
   </div>
+  </form>
 <% } else { %>
   <div class="empty-state">
     <i data-lucide="search"></i>
@@ -167,3 +186,31 @@
     <p class="text-sm text-muted">Click "Refresh Scan" to scan candidates against this job.</p>
   </div>
 <% } %>
+
+<script>
+function updateSelectionBar() {
+  var checkboxes = document.querySelectorAll('.candidate-checkbox:checked');
+  var bar = document.getElementById('selection-bar');
+  var count = document.getElementById('selected-count');
+  var selectAll = document.getElementById('select-all');
+  var total = document.querySelectorAll('.candidate-checkbox').length;
+
+  count.textContent = checkboxes.length;
+  bar.style.display = checkboxes.length > 0 ? 'flex' : 'none';
+  selectAll.checked = checkboxes.length === total;
+  selectAll.indeterminate = checkboxes.length > 0 && checkboxes.length < total;
+}
+
+function toggleSelectAll(el) {
+  var checkboxes = document.querySelectorAll('.candidate-checkbox');
+  checkboxes.forEach(function(cb) { cb.checked = el.checked; });
+  updateSelectionBar();
+}
+
+function sendBulkInterview() {
+  var checked = document.querySelectorAll('.candidate-checkbox:checked');
+  if (checked.length === 0) { alert('Please select at least one candidate.'); return; }
+  if (!confirm('Send AI Interview invitation to ' + checked.length + ' candidate(s)?')) return;
+  document.getElementById('bulk-invite-form').submit();
+}
+</script>

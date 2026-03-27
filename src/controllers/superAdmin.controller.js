@@ -148,7 +148,100 @@ const jobDetail = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * POST /admin/jobs/:id/bulk-invite
+ * Send AI interview invitations to selected candidates.
+ */
+const bulkInvite = asyncHandler(async (req, res) => {
+  const jobId = parseInt(req.params.id, 10);
+  let candidateIds = req.body.candidate_ids || [];
+
+  // Normalize to array
+  if (!Array.isArray(candidateIds)) candidateIds = [candidateIds];
+  candidateIds = candidateIds.map(id => parseInt(id, 10)).filter(id => id > 0);
+
+  if (candidateIds.length === 0) {
+    req.flash('error', 'No candidates selected.');
+    return res.redirect(`/admin/jobs/${jobId}`);
+  }
+
+  const interviewService = require('../services/interview.service');
+  const notificationService = require('../services/notification.service');
+  const candidateRepo = require('../repositories/candidate.repository');
+  const logger = require('../utils/logger');
+
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const candidateId of candidateIds) {
+    try {
+      // Check for existing active interview
+      const interviewRepository = require('../repositories/interview.repository');
+      const existing = await interviewRepository.findByCandidateId(candidateId);
+      const active = existing.find(iv => {
+        const s = iv.interview_status || iv.status;
+        return ['in_progress', 'evaluated', 'passed', 'submitted'].includes(s);
+      });
+
+      let interviewLink;
+      if (active) {
+        interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${active.invitation_token}`;
+      } else {
+        // Delete old pending/invited interviews
+        for (const old of existing) {
+          const s = old.interview_status || old.status;
+          if (['invited', 'expired', 'pending', 'failed'].includes(s)) {
+            await pool.query('DELETE FROM atlas_rec_ai_interview_answers WHERE interview_id = ?', [old.id]);
+            await pool.query('DELETE FROM atlas_rec_ai_interview_questions WHERE interview_id = ?', [old.id]);
+            await pool.query('DELETE FROM atlas_rec_ai_interviews WHERE id = ?', [old.id]);
+          }
+        }
+        // Create new interview
+        const result = await interviewService.createInterview(candidateId, null, 'hr');
+        interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${result.token}`;
+      }
+
+      // Send email notification
+      const candidate = await candidateRepo.findById(candidateId);
+      const candidateName = candidate?.appln_full_name || 'Candidate';
+      const jobTitle = candidate?.applied_for_post || candidate?.applied_job_short_desc_new || 'the applied position';
+
+      const templateData = notificationService.getTemplateMessage('ai_interview_invite', {
+        candidateName,
+        jobTitle,
+        interviewLink,
+        expiresIn: '10 days',
+      });
+
+      if (templateData) {
+        await notificationService.sendNotification({
+          candidate_id: candidateId,
+          type: 'interview_invite',
+          title: templateData.subject,
+          message: templateData.message,
+          channel: 'email',
+        });
+      }
+
+      successCount++;
+      logger.info(`[BULK_INVITE] Interview sent to candidate ${candidateId} for job ${jobId}`);
+    } catch (err) {
+      failCount++;
+      logger.error(`[BULK_INVITE] Failed for candidate ${candidateId}: ${err.message}`);
+    }
+  }
+
+  if (successCount > 0) {
+    req.flash('success', `AI Interview invitation sent to ${successCount} candidate(s).${failCount > 0 ? ` ${failCount} failed.` : ''}`);
+  } else {
+    req.flash('error', `Failed to send invitations. ${failCount} error(s).`);
+  }
+
+  return res.redirect(`/admin/jobs/${jobId}`);
+});
+
 module.exports = {
   jobOpenings,
   jobDetail,
+  bulkInvite,
 };
