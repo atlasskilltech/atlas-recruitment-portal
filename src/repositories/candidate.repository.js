@@ -257,7 +257,7 @@ class CandidateRepository {
       const sql = `
         SELECT
           dsr.*,
-          job.id AS job_id, job.applied_for_post_id,
+          job.id AS job_id, job.applied_for_post_id, job.applied_for_post,
           job.applied_job_short_desc_new, job.applied_job_desc,
           job.applied_location,
           ais.id AS screening_id, ais.ai_match_score, ais.ai_status,
