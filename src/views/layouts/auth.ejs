@@ -1,96 +1,48 @@
 <!DOCTYPE html>
-<html lang="en" class="">
+<html lang="en">
 <head>
   <%- include('./partials/header') %>
-
-  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-  <!-- Tailwind CSS -->
-  <link rel="stylesheet" href="/css/output.css">
-  <link rel="stylesheet" href="/css/theme-override.css">
-
-  <!-- Page-specific styles -->
+  <link rel="stylesheet" href="/css/atlas-theme.css">
   <%- style %>
 </head>
-<body x-data="{ darkMode: localStorage.getItem('darkMode') === 'true' }"
-      x-init="if (darkMode) document.documentElement.classList.add('dark')"
-      class="min-h-screen">
+<body>
+  <div class="login-page">
+    <div style="width:100%;max-width:420px;">
+      <%
+        const authAlertTypes = [
+          { key: 'success', cls: 'alert-success', icon: 'check-circle' },
+          { key: 'error',   cls: 'alert-error',   icon: 'x-circle' },
+          { key: 'warning', cls: 'alert-warning', icon: 'alert-triangle' },
+          { key: 'info',    cls: 'alert-info',    icon: 'info' },
+        ];
+      %>
+      <% authAlertTypes.forEach(function(alert) { %>
+        <% const msgs = typeof locals[alert.key] !== 'undefined' ? (Array.isArray(locals[alert.key]) ? locals[alert.key] : [locals[alert.key]]) : []; %>
+        <% msgs.forEach(function(msg) { %>
+          <% if (msg && msg.length > 0) { %>
+            <div class="alert <%= alert.cls %>" style="margin-bottom:8px;">
+              <i data-lucide="<%= alert.icon %>"></i>
+              <span style="flex:1;"><%= msg %></span>
+            </div>
+          <% } %>
+        <% }); %>
+      <% }); %>
 
-  <!-- Full-screen gradient background -->
-  <div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style="background: #0f172a;">
-
-    <!-- Auth card container -->
-    <div class="relative z-10 w-full max-w-md">
-
-      <!-- Flash messages -->
-      <% if (typeof success !== 'undefined' || typeof error !== 'undefined' || typeof warning !== 'undefined' || typeof info !== 'undefined') { %>
-        <div class="mb-4">
-          <%
-            const authAlertTypes = [
-              { key: 'success', icon: 'check-circle', cls: 'bg-green-500/20 border-green-500/30 text-green-200' },
-              { key: 'error',   icon: 'x-circle',     cls: 'bg-red-500/20 border-red-500/30 text-red-200' },
-              { key: 'warning', icon: 'alert-triangle', cls: 'bg-amber-500/20 border-amber-500/30 text-amber-200' },
-              { key: 'info',    icon: 'info',          cls: 'bg-blue-500/20 border-blue-500/30 text-blue-200' },
-            ];
-          %>
-          <% authAlertTypes.forEach(function(alert) { %>
-            <% const msgs = typeof locals[alert.key] !== 'undefined' ? (Array.isArray(locals[alert.key]) ? locals[alert.key] : [locals[alert.key]]) : []; %>
-            <% msgs.forEach(function(msg) { %>
-              <% if (msg && msg.length > 0) { %>
-                <div class="flex items-center gap-2 p-3 rounded-xl border text-sm mb-2 <%= alert.cls %>"
-                     x-data="{ show: true }" x-show="show"
-                     x-init="setTimeout(() => show = false, 5000)">
-                  <i data-lucide="<%= alert.icon %>" class="w-4 h-4 flex-shrink-0"></i>
-                  <span class="flex-1"><%= msg %></span>
-                  <button @click="show = false" class="hover:opacity-70"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
-                </div>
-              <% } %>
-            <% }); %>
-          <% }); %>
-        </div>
-      <% } %>
-
-      <!-- Page content (login / register / forgot password form) -->
-      <div class="card shadow-brand-lg p-8">
+      <div class="login-card">
         <%- body %>
       </div>
 
-      <!-- Footer -->
-      <p class="text-center text-xs text-white/40 mt-6">
+      <p style="text-align:center;font-size:0.75rem;color:rgba(255,255,255,0.4);margin-top:24px;">
         &copy; <%= new Date().getFullYear() %> ATLAS SkillTech University. All rights reserved.
       </p>
     </div>
   </div>
 
-  <!-- Lucide Icons -->
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
-
-  <!-- Alpine.js -->
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-  <!-- Initialize Lucide icons -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      lucide.createIcons();
-    });
-  </script>
-
-  <!-- Dark mode initialization -->
-  <script>
-    (function () {
-      var darkMode = localStorage.getItem('darkMode') === 'true';
-      if (darkMode) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    })();
-  </script>
-
-  <!-- Page-specific scripts -->
+  <script>document.addEventListener('DOMContentLoaded', function() { lucide.createIcons(); });</script>
   <%- script %>
 </body>
 </html>

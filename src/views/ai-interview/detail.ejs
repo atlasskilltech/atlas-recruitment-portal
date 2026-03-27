@@ -10,16 +10,16 @@
   const jobTitle = interview.job_title || job.title || 'N/A';
 
   const ivStatus = interview.interview_status || interview.status || 'invited';
-  const ivStatusBadge = ivStatus === 'evaluated' ? 'badge-success'
-    : ivStatus === 'submitted' ? 'badge-info'
-    : ivStatus === 'passed' ? 'badge-success'
-    : ivStatus === 'failed' ? 'badge-danger'
-    : ivStatus === 'in_progress' ? 'badge-info'
-    : ivStatus === 'invited' ? 'badge-warning'
-    : 'badge-muted';
+  const ivStatusBadge = ivStatus === 'evaluated' ? 'badge badge-success'
+    : ivStatus === 'submitted' ? 'badge badge-info'
+    : ivStatus === 'passed' ? 'badge badge-success'
+    : ivStatus === 'failed' ? 'badge badge-danger'
+    : ivStatus === 'in_progress' ? 'badge badge-info'
+    : ivStatus === 'invited' ? 'badge badge-warning'
+    : 'badge badge-muted';
 
   const ivType = interview.interview_type || interview.type || 'hr';
-  const typeBadgeClass = 'badge-muted';
+  const typeBadgeClass = 'badge badge-muted';
 
   // Parse JSON feedback safely, handling nested { raw: "..." } structures
   function safeParse(val) {
@@ -67,13 +67,13 @@
   const plainSummary = typeof summaryRaw === 'string' && !summaryObj ? summaryRaw : '';
 
   function scoreColor(s) {
-    return s >= 75 ? 'text-success' : s >= 50 ? 'text-warning' : 'text-destructive';
+    return s >= 75 ? 'text-success' : s >= 50 ? 'text-warning' : 'text-danger';
   }
-  function strokeColor(s) {
-    return s >= 75 ? 'stroke-success' : s >= 50 ? 'stroke-warning' : 'stroke-destructive';
+  function strokeColorHex(s) {
+    return s >= 75 ? 'var(--accent-primary)' : s >= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)';
   }
-  function bgColor(s) {
-    return s >= 75 ? 'bg-success' : s >= 50 ? 'bg-warning' : 'bg-destructive';
+  function barColorClass(s) {
+    return s >= 75 ? 'green' : s >= 50 ? 'yellow' : 'red';
   }
 
   const circumference = 2 * Math.PI * 40;
@@ -83,29 +83,27 @@
 %>
 
 <!-- Back Button -->
-<div class="mb-6">
-  <a href="/ai-interview" class="btn-outline btn-sm inline-flex items-center gap-2">
-    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+<div class="mb-lg">
+  <a href="/ai-interview" class="btn btn-outline btn-sm">
+    <i data-lucide="arrow-left"></i>
     Back to Interviews
   </a>
 </div>
 
 <!-- Candidate Info Header -->
-<div class="card p-6 mb-6">
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-    <div class="flex items-center gap-4">
-      <div class="w-14 h-14 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center flex-shrink-0">
-        <span class="text-xl font-bold text-primary-800 dark:text-primary-200">
-          <%= candidateName.charAt(0).toUpperCase() %>
-        </span>
+<div class="card p-lg mb-lg">
+  <div class="flex items-center justify-between gap-md" style="flex-wrap: wrap;">
+    <div class="flex items-center gap-md">
+      <div class="avatar avatar-lg avatar-gradient">
+        <%= candidateName.charAt(0).toUpperCase() %>
       </div>
       <div>
-        <h1 class="text-2xl font-bold text-foreground tracking-tight"><%= candidateName %></h1>
-        <p class="text-sm text-muted-foreground mt-0.5">
-          <i data-lucide="briefcase" class="w-3.5 h-3.5 inline-block mr-1"></i>
+        <h1 class="text-2xl font-bold"><%= candidateName %></h1>
+        <p class="text-sm text-secondary mt-sm">
+          <i data-lucide="briefcase" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
           <%= jobTitle %>
         </p>
-        <div class="flex items-center gap-2 mt-2">
+        <div class="flex items-center gap-sm mt-sm">
           <span class="<%= ivStatusBadge %>">
             <%= ivStatus.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) %>
           </span>
@@ -119,7 +117,7 @@
 </div>
 
 <!-- Score Rings Row -->
-<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+<div class="stats-row mb-lg">
   <%
     const scoreRings = [
       { label: 'Total Score', value: totalScore },
@@ -130,31 +128,31 @@
     ];
   %>
   <% scoreRings.forEach(function(ring) { %>
-    <div class="card p-4 flex flex-col items-center">
-      <div class="relative w-24 h-24 mb-2">
-        <svg class="w-24 h-24 -rotate-90" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" class="stroke-muted" opacity="0.2"></circle>
-          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" class="<%= strokeColor(ring.value) %>"
+    <div class="card p-md flex flex-col items-center" style="justify-content: center;">
+      <div class="score-ring" style="width:96px;height:96px;margin-bottom:8px;">
+        <svg width="96" height="96" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="var(--border-color)" opacity="0.2"></circle>
+          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="<%= strokeColorHex(ring.value) %>"
                   stroke-linecap="round"
                   stroke-dasharray="<%= circumference %>"
                   stroke-dashoffset="<%= ringOffset(ring.value) %>"></circle>
         </svg>
-        <div class="absolute inset-0 flex items-center justify-center">
+        <div class="score-value">
           <span class="text-xl font-bold <%= scoreColor(ring.value) %>"><%= ring.value %>%</span>
         </div>
       </div>
-      <p class="text-xs text-muted-foreground text-center font-medium"><%= ring.label %></p>
+      <p class="text-xs text-secondary text-center font-medium"><%= ring.label %></p>
     </div>
   <% }); %>
 </div>
 
 <!-- Score Breakdown Progress Bars -->
-<div class="card p-6 mb-6">
-  <h2 class="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-    <i data-lucide="bar-chart-3" class="w-5 h-5 text-primary-800 dark:text-primary-200"></i>
+<div class="card p-lg mb-lg">
+  <h2 class="text-lg font-semibold mb-md flex items-center gap-sm">
+    <i data-lucide="bar-chart-3" style="width:20px;height:20px;color:var(--accent-secondary);"></i>
     Score Breakdown
   </h2>
-  <div class="space-y-4">
+  <div style="display:flex;flex-direction:column;gap:16px;">
     <%
       const breakdowns = [
         { label: 'Communication', value: commScore },
@@ -165,12 +163,12 @@
     %>
     <% breakdowns.forEach(function(b) { %>
       <div>
-        <div class="flex items-center justify-between mb-1">
-          <span class="text-sm font-medium text-foreground"><%= b.label %></span>
+        <div class="flex items-center justify-between mb-sm">
+          <span class="text-sm font-medium"><%= b.label %></span>
           <span class="text-sm font-semibold <%= scoreColor(b.value) %>"><%= b.value %>%</span>
         </div>
-        <div class="w-full h-2.5 bg-muted rounded-full overflow-hidden">
-          <div class="h-full rounded-full <%= bgColor(b.value) %> transition-all duration-500" style="width: <%= b.value %>%"></div>
+        <div class="progress-bar">
+          <div class="progress-fill <%= barColorClass(b.value) %>" style="width: <%= b.value %>%"></div>
         </div>
       </div>
     <% }); %>
@@ -181,39 +179,38 @@
 <% if (recommendation || performanceSummary || plainFeedback) { %>
 
 <!-- Recommendation Banner -->
-<div class="card p-5 mb-6 flex items-center justify-between" style="border-left: 4px solid <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? '#10b981' : recommendation === 'No Hire' ? '#ef4444' : '#f59e0b' %>;">
+<div class="card p-lg mb-lg flex items-center justify-between" style="border-left: 4px solid <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? 'var(--accent-primary)' : recommendation === 'No Hire' ? 'var(--accent-danger)' : 'var(--accent-warning)' %>;">
   <div>
-    <h3 class="text-lg font-bold text-foreground">AI Recommendation</h3>
-    <p class="text-sm text-muted-foreground mt-1"><%= recommendationJustification || performanceSummary || plainFeedback %></p>
+    <h3 class="text-lg font-bold">AI Recommendation</h3>
+    <p class="text-sm text-secondary mt-sm"><%= recommendationJustification || performanceSummary || plainFeedback %></p>
   </div>
-  <span class="px-4 py-2 rounded-lg text-sm font-bold
-    <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? 'bg-green-100 text-green-700' :
-       recommendation === 'No Hire' ? 'bg-red-100 text-red-700' :
-       'bg-yellow-100 text-yellow-700' %>">
+  <span class="badge <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? 'badge-success' :
+     recommendation === 'No Hire' ? 'badge-danger' :
+     'badge-warning' %>" style="padding: 8px 16px; font-size: 0.85rem;">
     <%= recommendation || 'Pending' %>
   </span>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+<div class="grid-2 mb-lg" style="gap:24px;">
 
   <!-- Competency Ratings -->
   <% if (Object.keys(competencyRatings).length > 0) { %>
-  <div class="card p-6">
-    <h2 class="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-      <i data-lucide="bar-chart-3" class="w-5 h-5 text-info"></i>
+  <div class="card p-lg">
+    <h2 class="text-sm font-semibold mb-md flex items-center gap-sm">
+      <i data-lucide="bar-chart-3" style="width:20px;height:20px;color:var(--accent-secondary);"></i>
       Competency Ratings
     </h2>
-    <div class="space-y-3">
+    <div style="display:flex;flex-direction:column;gap:12px;">
       <% const compLabels = { technicalKnowledge: 'Technical Knowledge', problemSolving: 'Problem Solving', communication: 'Communication', teamwork: 'Teamwork', leadership: 'Leadership', adaptability: 'Adaptability', domainExpertise: 'Domain Expertise' }; %>
       <% Object.entries(competencyRatings).forEach(function([key, val]) { %>
         <% const pct = Math.round((parseFloat(val) / 5) * 100); %>
         <div>
-          <div class="flex justify-between text-sm mb-1">
-            <span class="text-foreground font-medium"><%= compLabels[key] || key %></span>
-            <span class="font-bold <%= pct >= 60 ? 'text-green-600' : pct >= 40 ? 'text-yellow-600' : 'text-red-600' %>"><%= val %>/5</span>
+          <div class="flex justify-between text-sm mb-sm">
+            <span class="font-medium"><%= compLabels[key] || key %></span>
+            <span class="font-bold <%= scoreColor(pct) %>"><%= val %>/5</span>
           </div>
-          <div class="w-full h-2 bg-muted rounded-full overflow-hidden">
-            <div class="h-full rounded-full <%= pct >= 60 ? 'bg-green-500' : pct >= 40 ? 'bg-yellow-500' : 'bg-red-500' %>" style="width: <%= pct %>%"></div>
+          <div class="progress-bar">
+            <div class="progress-fill <%= barColorClass(pct) %>" style="width: <%= pct %>%"></div>
           </div>
         </div>
       <% }); %>
@@ -222,20 +219,22 @@
   <% } %>
 
   <!-- Strengths & Improvements -->
-  <div class="card p-6">
+  <div class="card p-lg">
     <% if (strengthAreas.length > 0) { %>
-    <div class="mb-5">
-      <h3 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center"><i data-lucide="trending-up" class="w-3 h-3 text-green-600"></i></span>
+    <div class="mb-md">
+      <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
+        <span style="width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,0.1);display:inline-flex;align-items:center;justify-content:center;">
+          <i data-lucide="trending-up" style="width:12px;height:12px;color:var(--accent-primary);"></i>
+        </span>
         Strengths
       </h3>
-      <div class="space-y-2">
+      <div style="display:flex;flex-direction:column;gap:8px;">
         <% strengthAreas.forEach(function(s) { %>
-          <div class="flex items-start gap-2 text-sm p-2 rounded-lg bg-green-50 dark:bg-green-900/10">
-            <span class="text-green-500 mt-0.5">✓</span>
+          <div class="flex items-start gap-sm text-sm" style="padding:8px;border-radius:var(--radius-md);background:rgba(16,185,129,0.05);">
+            <span style="color:var(--accent-primary);margin-top:2px;">&#10003;</span>
             <div>
-              <span class="font-medium text-foreground"><%= typeof s === 'string' ? s : s.area || '' %></span>
-              <% if (s.evidence) { %><p class="text-xs text-muted-foreground mt-0.5"><%= s.evidence %></p><% } %>
+              <span class="font-medium"><%= typeof s === 'string' ? s : s.area || '' %></span>
+              <% if (s.evidence) { %><p class="text-xs text-muted mt-sm"><%= s.evidence %></p><% } %>
             </div>
           </div>
         <% }); %>
@@ -245,18 +244,20 @@
 
     <% if (improvementAreas.length > 0) { %>
     <div>
-      <h3 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-        <span class="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center"><i data-lucide="alert-triangle" class="w-3 h-3 text-amber-600"></i></span>
+      <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
+        <span style="width:20px;height:20px;border-radius:50%;background:rgba(245,158,11,0.1);display:inline-flex;align-items:center;justify-content:center;">
+          <i data-lucide="alert-triangle" style="width:12px;height:12px;color:var(--accent-warning);"></i>
+        </span>
         Areas for Improvement
       </h3>
-      <div class="space-y-2">
+      <div style="display:flex;flex-direction:column;gap:8px;">
         <% improvementAreas.forEach(function(a) { %>
-          <div class="flex items-start gap-2 text-sm p-2 rounded-lg bg-amber-50 dark:bg-amber-900/10">
-            <span class="text-amber-500 mt-0.5">!</span>
+          <div class="flex items-start gap-sm text-sm" style="padding:8px;border-radius:var(--radius-md);background:rgba(245,158,11,0.05);">
+            <span style="color:var(--accent-warning);margin-top:2px;">!</span>
             <div>
-              <span class="font-medium text-foreground"><%= typeof a === 'string' ? a : a.area || '' %></span>
-              <% if (a.severity) { %><span class="ml-2 text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700"><%= a.severity %></span><% } %>
-              <% if (a.evidence) { %><p class="text-xs text-muted-foreground mt-0.5"><%= a.evidence %></p><% } %>
+              <span class="font-medium"><%= typeof a === 'string' ? a : a.area || '' %></span>
+              <% if (a.severity) { %><span class="badge badge-warning" style="margin-left:8px;"><%= a.severity %></span><% } %>
+              <% if (a.evidence) { %><p class="text-xs text-muted mt-sm"><%= a.evidence %></p><% } %>
             </div>
           </div>
         <% }); %>
@@ -265,50 +266,52 @@
     <% } %>
 
     <% if (strengthAreas.length === 0 && improvementAreas.length === 0 && plainFeedback) { %>
-      <h3 class="text-sm font-semibold text-foreground mb-3">AI Analysis</h3>
-      <p class="text-sm text-muted-foreground leading-relaxed"><%= plainFeedback.substring(0, 500) %></p>
+      <h3 class="text-sm font-semibold mb-sm">AI Analysis</h3>
+      <p class="text-sm text-secondary" style="line-height:1.6;"><%= plainFeedback.substring(0, 500) %></p>
     <% } %>
   </div>
 
   <% if (redFlags.length > 0) { %>
-  <div class="card p-6 lg:col-span-2">
-    <h3 class="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-      <span class="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center"><i data-lucide="flag" class="w-3 h-3 text-red-600"></i></span>
+  <div class="card p-lg" style="grid-column: 1 / -1;">
+    <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
+      <span style="width:20px;height:20px;border-radius:50%;background:rgba(239,68,68,0.1);display:inline-flex;align-items:center;justify-content:center;">
+        <i data-lucide="flag" style="width:12px;height:12px;color:var(--accent-danger);"></i>
+      </span>
       Red Flags
     </h3>
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap gap-sm">
       <% redFlags.forEach(function(f) { %>
-        <span class="px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200"><%= f %></span>
+        <span class="badge badge-danger"><%= f %></span>
       <% }); %>
     </div>
   </div>
   <% } %>
 
   <% if (culturalFit) { %>
-  <div class="card p-6 lg:col-span-2">
-    <h3 class="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-      <i data-lucide="users" class="w-4 h-4 text-muted-foreground"></i> Cultural Fit Assessment
+  <div class="card p-lg" style="grid-column: 1 / -1;">
+    <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
+      <i data-lucide="users" style="width:16px;height:16px;color:var(--text-muted);"></i> Cultural Fit Assessment
     </h3>
-    <p class="text-sm text-muted-foreground"><%= culturalFit %></p>
+    <p class="text-sm text-secondary"><%= culturalFit %></p>
   </div>
   <% } %>
 
 </div>
 <% } else { %>
-<div class="card p-6 mb-6 text-center text-sm text-muted-foreground">
+<div class="card p-lg mb-lg text-center text-sm text-secondary">
   <p>AI evaluation is in progress or not yet available.</p>
 </div>
 <% } %>
 
 <!-- Questions & Answers -->
-<div class="card p-6 mb-6">
-  <h2 class="text-lg font-semibold text-foreground mb-6 flex items-center gap-2">
-    <i data-lucide="help-circle" class="w-5 h-5 text-primary-800 dark:text-primary-200"></i>
+<div class="card p-lg mb-lg">
+  <h2 class="text-lg font-semibold mb-lg flex items-center gap-sm">
+    <i data-lucide="help-circle" style="width:20px;height:20px;color:var(--accent-secondary);"></i>
     Questions & Answers
   </h2>
 
   <% if (questions.length > 0) { %>
-    <div class="space-y-6">
+    <div style="display:flex;flex-direction:column;gap:24px;">
       <% questions.forEach(function(q, idx) { %>
         <%
           const answer = q.answer || answers.find(function(a) {
@@ -319,15 +322,15 @@
           const answerFeedback = answer.ai_feedback || answer.feedback || '';
           const keywordRelevance = parseFloat(answer.keyword_relevance) || parseFloat(answer.keyword_relevance_score) || 0;
         %>
-        <div class="border border-border rounded-xl overflow-hidden">
+        <div style="border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden;">
           <!-- Question Header -->
-          <div class="bg-muted/30 px-5 py-4 border-b border-border">
+          <div style="background:var(--bg-tertiary);padding:16px 20px;border-bottom:1px solid var(--border-color);">
             <div class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary-100 dark:bg-primary-900 text-xs font-bold text-primary-800 dark:text-primary-200">
+              <div class="flex items-center gap-sm">
+                <span class="avatar avatar-sm avatar-gradient" style="width:28px;height:28px;font-size:0.7rem;">
                   <%= idx + 1 %>
                 </span>
-                <h3 class="text-sm font-semibold text-foreground"><%= q.question_text || q.question || q.text || '' %></h3>
+                <h3 class="text-sm font-semibold"><%= q.question_text || q.question || q.text || '' %></h3>
               </div>
               <% if (answerScore > 0) { %>
                 <span class="text-sm font-bold <%= scoreColor(answerScore) %>"><%= answerScore %>%</span>
@@ -336,32 +339,32 @@
           </div>
 
           <!-- Answer -->
-          <div class="px-5 py-4">
+          <div style="padding:16px 20px;">
             <% if (answerText) { %>
-              <div class="mb-4">
-                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">Candidate's Answer</p>
-                <div class="text-sm text-foreground leading-relaxed bg-muted/20 rounded-lg p-4 whitespace-pre-line"><%= answerText %></div>
+              <div class="mb-md">
+                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">Candidate's Answer</p>
+                <div class="text-sm" style="line-height:1.6;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:16px;white-space:pre-line;"><%= answerText %></div>
               </div>
             <% } else { %>
-              <p class="text-sm text-muted-foreground italic mb-4">No answer provided.</p>
+              <p class="text-sm text-secondary mb-md" style="font-style:italic;">No answer provided.</p>
             <% } %>
 
             <!-- Score & Keyword Relevance -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+            <div class="grid-2 mb-md" style="gap:16px;">
               <div>
-                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-medium">Answer Score</p>
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                    <div class="h-full rounded-full <%= bgColor(answerScore) %>" style="width: <%= answerScore %>%"></div>
+                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">Answer Score</p>
+                <div class="flex items-center gap-sm">
+                  <div class="progress-bar flex-1">
+                    <div class="progress-fill <%= barColorClass(answerScore) %>" style="width: <%= answerScore %>%"></div>
                   </div>
                   <span class="text-sm font-semibold <%= scoreColor(answerScore) %>"><%= answerScore %>%</span>
                 </div>
               </div>
               <div>
-                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-medium">Keyword Relevance</p>
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                    <div class="h-full rounded-full <%= bgColor(keywordRelevance) %>" style="width: <%= keywordRelevance %>%"></div>
+                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">Keyword Relevance</p>
+                <div class="flex items-center gap-sm">
+                  <div class="progress-bar flex-1">
+                    <div class="progress-fill <%= barColorClass(keywordRelevance) %>" style="width: <%= keywordRelevance %>%"></div>
                   </div>
                   <span class="text-sm font-semibold <%= scoreColor(keywordRelevance) %>"><%= keywordRelevance %>%</span>
                 </div>
@@ -371,8 +374,8 @@
             <!-- AI Feedback for Answer -->
             <% if (answerFeedback) { %>
               <div>
-                <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1.5 font-medium">AI Feedback</p>
-                <div class="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"><%= answerFeedback %></div>
+                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">AI Feedback</p>
+                <div class="text-sm text-secondary" style="white-space:pre-line;line-height:1.6;"><%= answerFeedback %></div>
               </div>
             <% } %>
           </div>
@@ -380,32 +383,32 @@
       <% }); %>
     </div>
   <% } else { %>
-    <p class="text-sm text-muted-foreground text-center py-8">No questions available for this interview.</p>
+    <p class="text-sm text-secondary text-center" style="padding:32px 0;">No questions available for this interview.</p>
   <% } %>
 </div>
 
 <!-- Action Buttons -->
-<div class="flex flex-wrap items-center gap-3">
+<div class="flex flex-wrap items-center gap-sm">
   <form action="/ai-interview/<%= interview.id %>/shortlist" method="POST" class="inline">
-    <button type="submit" class="btn-primary">
-      <i data-lucide="star" class="w-4 h-4"></i>
+    <button type="submit" class="btn btn-primary">
+      <i data-lucide="star"></i>
       Shortlist
     </button>
   </form>
-  <a href="/schedules/create/<%= interview.candidate_id %>" class="btn-outline inline-flex items-center gap-2">
-    <i data-lucide="calendar" class="w-4 h-4"></i>
+  <a href="/schedules/create/<%= interview.candidate_id %>" class="btn btn-outline">
+    <i data-lucide="calendar"></i>
     Schedule Interview
   </a>
   <form action="/ai-interview/<%= interview.id %>/reject" method="POST" class="inline"
         onsubmit="return confirm('Are you sure you want to reject this candidate?')">
-    <button type="submit" class="btn-outline text-destructive border-destructive hover:bg-destructive hover:text-white">
-      <i data-lucide="x-circle" class="w-4 h-4"></i>
+    <button type="submit" class="btn btn-danger">
+      <i data-lucide="x-circle"></i>
       Reject
     </button>
   </form>
   <form action="/ai-interview/<%= interview.id %>/pool" method="POST" class="inline">
-    <button type="submit" class="btn-outline">
-      <i data-lucide="archive" class="w-4 h-4"></i>
+    <button type="submit" class="btn btn-outline">
+      <i data-lucide="archive"></i>
       Keep in Pool
     </button>
   </form>
