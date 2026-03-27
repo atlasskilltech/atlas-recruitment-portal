@@ -4,7 +4,7 @@
   const _academicJobs = typeof academicJobs !== 'undefined' ? academicJobs : 0;
   const _adminJobs = typeof adminJobs !== 'undefined' ? adminJobs : 0;
   const _totalApplicants = typeof totalApplicants !== 'undefined' ? totalApplicants : 0;
-  const _locations = typeof locations !== 'undefined' ? locations : [];
+  const _jobRoles = typeof jobRoles !== 'undefined' ? jobRoles : [];
   const _filters = typeof filters !== 'undefined' ? filters : {};
 %>
 
@@ -45,11 +45,11 @@
     </select>
   </div>
   <div class="filter-item">
-    <label><i data-lucide="map-pin" style="width:12px;height:12px;"></i> Location</label>
-    <select id="filter-location" onchange="applyFilters()">
-      <option value="">All Locations</option>
-      <% _locations.forEach(function(loc) { %>
-        <option value="<%= loc %>" <%= _filters.location === loc ? 'selected' : '' %>><%= loc %></option>
+    <label><i data-lucide="user-check" style="width:12px;height:12px;"></i> Job Role</label>
+    <select id="filter-role" onchange="applyFilters()">
+      <option value="">All Roles</option>
+      <% _jobRoles.forEach(function(role) { %>
+        <option value="<%= role %>" <%= _filters.role === role ? 'selected' : '' %>><%= role %></option>
       <% }); %>
     </select>
   </div>
@@ -156,11 +156,11 @@
 function applyFilters() {
   var search = document.getElementById('filter-search').value;
   var scope = document.getElementById('filter-scope').value;
-  var location = document.getElementById('filter-location').value;
+  var role = document.getElementById('filter-role').value;
   var params = [];
   if (search) params.push('search=' + encodeURIComponent(search));
   if (scope) params.push('scope=' + scope);
-  if (location) params.push('location=' + encodeURIComponent(location));
+  if (role) params.push('role=' + encodeURIComponent(role));
   window.location.href = '/admin/jobs' + (params.length ? '?' + params.join('&') : '');
 }
 
