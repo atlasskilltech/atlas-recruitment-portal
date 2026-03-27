@@ -117,7 +117,15 @@
         </thead>
         <tbody>
           <% _matches.forEach(function(m, idx) { %>
-            <% const mScore = parseFloat(m.match_score) || 0; const iScore = parseFloat(m.interview_score) || 0; %>
+            <%
+              // Use AI screening score if available, otherwise fall back to heuristic match score
+              const aiScore = parseFloat(m.screening_score) || 0;
+              const heuristicScore = parseFloat(m.match_score) || 0;
+              const mScore = aiScore > 0 ? aiScore : heuristicScore;
+              const iScore = parseFloat(m.interview_score) || 0;
+              // AI status: use screening_status (actual AI result) if available
+              const aiStatus = m.screening_status || (aiScore === 0 ? m.match_status : null);
+            %>
             <tr style="cursor:pointer;" onclick="window.location.href='/candidates/<%= m.candidate_id %>'">
               <td>
                 <span style="display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:0.75rem;font-weight:700;
@@ -158,9 +166,9 @@
                 </div>
               </td>
               <td>
-                <% if (m.screening_status || m.match_status) { %>
-                  <span class="badge <%= statusBadge(m.screening_status || m.match_status) %>">
-                    <%= statusLabel(m.screening_status || m.match_status) %>
+                <% if (aiStatus) { %>
+                  <span class="badge <%= statusBadge(aiStatus) %>">
+                    <%= statusLabel(aiStatus) %>
                   </span>
                 <% } else { %>
                   <span class="text-xs text-muted">--</span>
