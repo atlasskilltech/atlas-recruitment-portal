@@ -724,16 +724,31 @@ function videoInterview() {
       document.addEventListener('paste', function(e) { if (self.phase === 'session') e.preventDefault(); });
       document.addEventListener('contextmenu', function(e) { if (self.phase === 'session') e.preventDefault(); });
 
-      // Prevent keyboard shortcuts (Ctrl+C, Ctrl+V, Ctrl+A, PrintScreen)
+      // Prevent keyboard shortcuts and problematic keys
       document.addEventListener('keydown', function(e) {
         if (self.phase !== 'session') return;
+
+        // Block Escape (exits fullscreen)
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+
+        // Block Backspace when not in an input (triggers browser back)
+        if (e.key === 'Backspace') {
+          e.preventDefault();
+          return false;
+        }
+
+        // Block Ctrl/Cmd shortcuts
         if ((e.ctrlKey || e.metaKey) && ['c','v','a','x','p','s','u'].includes(e.key.toLowerCase())) {
           e.preventDefault();
         }
         if (e.key === 'PrintScreen' || e.key === 'F12') {
           e.preventDefault();
         }
-      });
+      }, true); // Use capture phase to intercept before browser handles it
     }
   };
 }
