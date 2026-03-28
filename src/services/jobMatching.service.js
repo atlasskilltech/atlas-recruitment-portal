@@ -138,6 +138,9 @@ class JobMatchingService {
 
   /**
    * Get top N candidates for a job from the matches table.
+   * NOTE: Threshold logic for AI Resume Matched:
+   *   - Applied candidates (appln_applied_for_sub = jobId): match_score >= 50%
+   *   - Non-applied candidates: match_score >= 90%
    */
   async getTopMatches(jobId, limit = 20) {
     const [rows] = await pool.query(`
@@ -156,8 +159,9 @@ class JobMatchingService {
         AND ais.id = (SELECT MAX(s.id) FROM atlas_rec_candidate_ai_screening s WHERE s.candidate_id = dsr.id)
       LEFT JOIN atlas_rec_ai_interviews aint ON aint.candidate_id = dsr.id
         AND aint.id = (SELECT MAX(i.id) FROM atlas_rec_ai_interviews i WHERE i.candidate_id = dsr.id)
-      WHERE m.job_id = ? AND m.match_score >= 50
+      WHERE m.job_id = ?
         AND (dsr.appln_applied_for_sub IS NULL OR dsr.appln_applied_for_sub != ?)
+        AND m.match_score >= 90
       ORDER BY m.match_score DESC
       LIMIT ?
     `, [jobId, jobId, jobId, limit]);
