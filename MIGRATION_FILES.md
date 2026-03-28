@@ -60,17 +60,21 @@ This document lists all files modified during this session for migration to anot
 
 ### `src/views/super-admin/jobs.ejs`
 - Job listings card grid
-- AI Resume Matched info note (50%/90% thresholds)
+- CV Match criteria info note (50%/90% thresholds from entire database)
 - Filter bar (search, scope, job role with searchable dropdown)
 - Stats bar (total positions, academics, admin, applicants)
 
 ### `src/views/super-admin/job-detail.ejs`
 - Funnel stats (Applied → CV Match → AI Interview Taken → Result 75%+)
-- View selector (Applied vs AI Matches from Database)
+- View selector dropdown (Applied for Position / AI Matches from Entire Database) — no counts in labels
+- CV Match criteria info note (same text as jobs page)
 - Stage filtering with threshold-aware logic (50% applied, 90% non-applied)
 - Candidate cards with Job Match score, qualification, email, interview score
 - Bulk invite selection bar
+- JD file link using `applied_job_desc_file` column with ERP URL prefix
+- Shows ALL applicants (sorted by match score DESC), funnel stages handle filtering
 - Links use `/admin/candidates/:id`
+- End Interview button on interview session
 
 ### `src/views/super-admin/interviews.ejs` *(NEW FILE)*
 - **Page**: All AI interviews taken at `/admin/interviews`
@@ -102,7 +106,7 @@ This document lists all files modified during this session for migration to anot
 - **Session screen**: Full inline styles (no Tailwind dependency)
   - Left: Video with Rec badge, Mic status, live captions
   - Right: AI Interviewer, Question (no-select), Transcript, Answer (read-only)
-  - Bottom: "Save & Next" / "Submit & Finish" (disabled until answered)
+  - Bottom: "Save & Next" / "Submit & Finish" (disabled until answered) + "End Interview" button (red, with confirmation)
   - Top: "HR Interview" title, timer, Live indicator
 - **Completion screen**: "Interview Completed Successfully!" with HR follow-up message
 - **Already Completed screen**: Same message for revisits, no score shown
@@ -111,10 +115,10 @@ This document lists all files modified during this session for migration to anot
   - Fullscreen on start, auto-re-request on exit
   - Tab switch detection with warning overlay + violation count
   - Copy/cut/paste/right-click blocked
-  - Escape, Backspace, Ctrl+C/V/A/X, F12, PrintScreen blocked
+  - Escape, Backspace, Ctrl+C/V/A/X, F12, PrintScreen blocked (capture phase)
   - Text selection disabled on questions
-- **Mic**: Keepalive timer (5s), fresh SpeechRecognition on restart, retry limits
-- **Layout**: `html,body` height:100%, session div height:100vh, overflow:hidden
+- **Mic**: Keepalive timer (5s), fresh SpeechRecognition on restart, onaudiostart reset, retry limits (20 error / 50 restart)
+- **Layout**: `position:fixed;inset:0` for guaranteed full viewport on all screens (fullscreen + non-fullscreen), compact transcript/answer boxes with flex-shrink
 
 ---
 
