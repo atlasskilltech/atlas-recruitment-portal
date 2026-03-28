@@ -225,19 +225,46 @@ class InterviewQuestionGeneratorService {
 
   /**
    * Select questions from the built-in question bank.
+   * Mixes questions from the job-relevant bank + other banks for variety.
    */
   _generateFromBank(job, candidate, interviewType, count) {
     const bankKey = this._resolveBankKey(job, interviewType);
-    const bank = QUESTION_BANKS[bankKey] || QUESTION_BANKS.academic;
+    const primaryBank = QUESTION_BANKS[bankKey] || QUESTION_BANKS.academic;
 
-    // Shuffle and pick
-    const shuffled = [...bank].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+    // Combine all banks for more variety, prioritize primary bank
+    var allQuestions = [...primaryBank];
+    Object.keys(QUESTION_BANKS).forEach(function(key) {
+      if (key !== bankKey) {
+        QUESTION_BANKS[key].forEach(function(q) { allQuestions.push(q); });
+      }
+    });
 
-    // If we need more questions than the bank has, pad with generic ones
+    // Use candidate-specific seed for deterministic but unique shuffle per candidate
+    var seed = (candidate?.id || candidate?.appln_full_name || '') + '_' + Date.now();
+    var seededRandom = function() {
+      var x = 0;
+      for (var i = 0; i < seed.length; i++) x += seed.charCodeAt(i);
+      x = ((x * 9301 + 49297) % 233280);
+      return x / 233280;
+    };
+
+    // Shuffle: pick primarily from primary bank, fill rest from others
+    var shuffledPrimary = [...primaryBank].sort(() => Math.random() - 0.5);
+    var shuffledOthers = allQuestions.filter(function(q) { return !primaryBank.includes(q); }).sort(() => Math.random() - 0.5);
+
+    // Take up to (count-1) from primary, at least 1 from others for variety
+    var primaryCount = Math.min(count - 1, shuffledPrimary.length);
+    var selected = shuffledPrimary.slice(0, primaryCount);
+    var remaining = count - selected.length;
+    selected = selected.concat(shuffledOthers.slice(0, remaining));
+
+    // Final shuffle so order is random
+    selected = selected.sort(() => Math.random() - 0.5);
+
+    // If still not enough, pad with generic
     while (selected.length < count) {
       selected.push({
-        question_text: `Tell us about a relevant experience that demonstrates your suitability for this role. (Question ${selected.length + 1})`,
+        question_text: 'Tell us about a relevant experience that demonstrates your suitability for this role.',
         question_type: 'behavioral',
         difficulty_level: 'medium',
         expected_keywords: ['experience', 'skills', 'achievement', 'impact'],
@@ -245,7 +272,7 @@ class InterviewQuestionGeneratorService {
       });
     }
 
-    logger.info(`Generated ${selected.length} questions from built-in bank (${bankKey})`);
+    logger.info(`Generated ${selected.length} questions from built-in bank (primary: ${bankKey})`);
     return selected;
   }
 
@@ -253,21 +280,23 @@ class InterviewQuestionGeneratorService {
    * Resolve which question bank to use based on job and interview type.
    */
   _resolveBankKey(job, interviewType) {
-    const type = (interviewType || '').toLowerCase();
-    // For university recruitment: 'technical' interview type = academic questions
-    if (type === 'hr' || type === 'managerial' || type === 'panel') return 'admin';
-
-    // Infer from job title
-    const jobTitle = (job?.applied_job_short_desc_new || '').toLowerCase();
+    // Check job title first — more specific than interview type
+    const jobTitle = (job?.applied_job_short_desc_new || job?.applied_for_post || '').toLowerCase();
     if (jobTitle.includes('professor') || jobTitle.includes('lecturer') || jobTitle.includes('faculty') || jobTitle.includes('academic')) {
       return 'academic';
-    }
-    if (jobTitle.includes('admin') || jobTitle.includes('manager') || jobTitle.includes('coordinator') || jobTitle.includes('officer')) {
-      return 'admin';
     }
     if (jobTitle.includes('engineer') || jobTitle.includes('developer') || jobTitle.includes('architect') || jobTitle.includes('analyst')) {
       return 'technical';
     }
+    if (jobTitle.includes('admin') || jobTitle.includes('manager') || jobTitle.includes('coordinator') || jobTitle.includes('officer') ||
+        jobTitle.includes('registrar') || jobTitle.includes('counsellor') || jobTitle.includes('counselor') || jobTitle.includes('librarian')) {
+      return 'admin';
+    }
+
+    // Fallback to interview type
+    const type = (interviewType || '').toLowerCase();
+    if (type === 'technical') return 'technical';
+    if (type === 'hr' || type === 'managerial' || type === 'panel') return 'admin';
 
     return 'academic'; // default for university recruitment
   }
