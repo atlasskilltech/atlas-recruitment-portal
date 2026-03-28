@@ -66,13 +66,40 @@
       <div class="flex items-center gap-lg">
         <% if (candidate.ai_match_score != null) { %>
           <div class="text-center">
-            <div style="width:64px;height:64px;" data-score="<%= candidate.ai_match_score %>" data-size="64" data-stroke="4"></div>
-            <p class="text-xs" style="color:rgba(255,255,255,0.7);margin-top:4px;">AI Match</p>
+            <% const hdrAiScore = parseFloat(candidate.ai_match_score) || 0;
+               const hdrCirc = 2 * Math.PI * 26;
+               const hdrOff = hdrCirc - (hdrAiScore / 100) * hdrCirc;
+               const hdrCol = hdrAiScore >= 75 ? '#10b981' : hdrAiScore >= 50 ? '#f59e0b' : '#ef4444';
+            %>
+            <div style="position:relative;width:64px;height:64px;">
+              <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
+                <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke="rgba(255,255,255,0.15)"></circle>
+                <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke="<%= hdrCol %>"
+                        stroke-linecap="round" stroke-dasharray="<%= hdrCirc %>" stroke-dashoffset="<%= hdrOff %>"></circle>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:0.8rem;font-weight:700;color:<%= hdrCol %>;"><%= hdrAiScore %>%</span>
+              </div>
+            </div>
+            <p class="text-xs" style="color:rgba(255,255,255,0.7);margin-top:4px;">AI Screening</p>
           </div>
         <% } %>
         <% if (candidate.total_score != null) { %>
           <div class="text-center">
-            <div style="width:64px;height:64px;" data-score="<%= candidate.total_score %>" data-size="64" data-stroke="4"></div>
+            <% const hdrIvScore = parseFloat(candidate.total_score) || 0;
+               const hdrIvOff = hdrCirc - (hdrIvScore / 100) * hdrCirc;
+               const hdrIvCol = hdrIvScore >= 75 ? '#10b981' : hdrIvScore >= 50 ? '#f59e0b' : '#ef4444';
+            %>
+            <div style="position:relative;width:64px;height:64px;">
+              <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
+                <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke="rgba(255,255,255,0.15)"></circle>
+                <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke="<%= hdrIvCol %>"
+                        stroke-linecap="round" stroke-dasharray="<%= hdrCirc %>" stroke-dashoffset="<%= hdrIvOff %>"></circle>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:0.8rem;font-weight:700;color:<%= hdrIvCol %>;"><%= hdrIvScore %>%</span>
+              </div>
+            </div>
             <p class="text-xs" style="color:rgba(255,255,255,0.7);margin-top:4px;">Interview</p>
           </div>
         <% } %>
@@ -397,7 +424,7 @@
               <span style="font-size:1.3rem;font-weight:800;color:<%= ringColor %>;"><%= aiScore %>%</span>
             </div>
           </div>
-          <p class="text-sm text-muted mt-sm">AI Match Score</p>
+          <p class="text-sm text-muted mt-sm">AI Screening Score</p>
           <% if (candidate.ai_recommendation_tag) { %>
             <span class="badge badge-<%= candidate.ai_recommendation_tag %> mt-sm"><%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
           <% } %>
