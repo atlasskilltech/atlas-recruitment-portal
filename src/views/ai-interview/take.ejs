@@ -36,6 +36,7 @@
     .answer-box { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px; min-height: 80px; font-size: 14px; color: #cbd5e1; }
     .setup-card { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 32px; max-width: 700px; margin: 0 auto; }
     .pulse-speaking { animation: pulse-speak 1.5s infinite; }
+    .no-select { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
     @keyframes pulse-speak { 0%,100% { box-shadow: 0 0 0 0 rgba(99,102,241,0.4); } 50% { box-shadow: 0 0 0 8px rgba(99,102,241,0); } }
   </style>
 </head>
@@ -178,7 +179,7 @@
               <span style="width:24px;height:24px;border-radius:50%;background:#2563eb;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;" x-text="currentIndex + 1"></span>
               <span style="font-size:11px;color:#94a3b8;text-transform:uppercase;font-weight:600;letter-spacing:0.05em;">Question</span>
             </div>
-            <p style="font-size:15px;color:#fff;line-height:1.6;margin:0;" x-text="questions[currentIndex]?.text"></p>
+            <p class="no-select" style="font-size:15px;color:#fff;line-height:1.6;margin:0;" x-text="questions[currentIndex]?.text"></p>
           </div>
 
           <!-- Transcript -->
@@ -232,6 +233,19 @@
         </div>
       </div>
     </div>
+
+  <!-- Tab Switch Warning Overlay -->
+  <div x-show="showTabWarning" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;" x-cloak>
+    <div style="background:#1e293b;border:2px solid #ef4444;border-radius:16px;padding:32px;max-width:500px;text-align:center;">
+      <div style="width:60px;height:60px;border-radius:50%;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg style="width:30px;height:30px;color:#ef4444;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" /></svg>
+      </div>
+      <h2 style="font-size:1.2rem;font-weight:700;color:#ef4444;margin-bottom:8px;">Tab Switch Detected!</h2>
+      <p style="color:#94a3b8;font-size:0.9rem;margin-bottom:8px;">Switching tabs during the interview is not allowed. This activity is being recorded.</p>
+      <p style="color:#64748b;font-size:0.8rem;margin-bottom:20px;">Violations: <strong style="color:#ef4444;" x-text="tabSwitchCount"></strong></p>
+      <button @click="showTabWarning = false" style="padding:10px 32px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;border:none;background:#2563eb;color:#fff;">Return to Interview</button>
+    </div>
+  </div>
 
   <!-- ═══ COMPLETED ═══ -->
   <template x-if="phase === 'completed'">
@@ -309,6 +323,14 @@ function videoInterview() {
     },
 
     async startVideoInterview() {
+      // Request fullscreen
+      try {
+        var el = document.documentElement;
+        if (el.requestFullscreen) await el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen();
+        else if (el.msRequestFullscreen) await el.msRequestFullscreen();
+      } catch(e) { console.warn('Fullscreen not available:', e); }
+
       // Call API to start
       try {
         var res = await fetch('/ai/interview/' + interviewToken + '/start', {
@@ -326,6 +348,7 @@ function videoInterview() {
       } catch (e) { console.error('Start failed:', e); }
 
       this.phase = 'session';
+      this._startProctoring();
       var self = this;
       // Attach stream to session video — use short delay for DOM to update with x-show
       setTimeout(function() {
@@ -581,7 +604,60 @@ function videoInterview() {
       this.saving = false;
 
       this.phase = 'completed';
-      // No redirect — stay on thank you screen
+      // Exit fullscreen on completion
+      try { if (document.exitFullscreen) document.exitFullscreen(); } catch(e) {}
+    },
+
+    // --- Proctoring: tab switch detection ---
+    tabSwitchCount: 0,
+    showTabWarning: false,
+
+    _startProctoring() {
+      var self = this;
+
+      // Detect tab switch / window blur
+      document.addEventListener('visibilitychange', function() {
+        if (self.phase !== 'session') return;
+        if (document.hidden) {
+          self.tabSwitchCount++;
+          self.showTabWarning = true;
+        }
+      });
+
+      // Also detect window blur (alt-tab etc)
+      window.addEventListener('blur', function() {
+        if (self.phase !== 'session') return;
+        self.tabSwitchCount++;
+        self.showTabWarning = true;
+      });
+
+      // Re-request fullscreen if exited
+      document.addEventListener('fullscreenchange', function() {
+        if (self.phase === 'session' && !document.fullscreenElement) {
+          setTimeout(function() {
+            if (self.phase === 'session') {
+              try { document.documentElement.requestFullscreen(); } catch(e) {}
+            }
+          }, 500);
+        }
+      });
+
+      // Prevent copy/paste/cut and right-click
+      document.addEventListener('copy', function(e) { if (self.phase === 'session') e.preventDefault(); });
+      document.addEventListener('cut', function(e) { if (self.phase === 'session') e.preventDefault(); });
+      document.addEventListener('paste', function(e) { if (self.phase === 'session') e.preventDefault(); });
+      document.addEventListener('contextmenu', function(e) { if (self.phase === 'session') e.preventDefault(); });
+
+      // Prevent keyboard shortcuts (Ctrl+C, Ctrl+V, Ctrl+A, PrintScreen)
+      document.addEventListener('keydown', function(e) {
+        if (self.phase !== 'session') return;
+        if ((e.ctrlKey || e.metaKey) && ['c','v','a','x','p','s','u'].includes(e.key.toLowerCase())) {
+          e.preventDefault();
+        }
+        if (e.key === 'PrintScreen' || e.key === 'F12') {
+          e.preventDefault();
+        }
+      });
     }
   };
 }
