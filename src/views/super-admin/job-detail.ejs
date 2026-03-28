@@ -6,7 +6,26 @@
   const _funnel = typeof funnel !== 'undefined' ? funnel : {};
   const _applicantCount = typeof applicantCount !== 'undefined' ? applicantCount : 0;
   const _view = typeof view !== 'undefined' ? view : 'applied';
-  const _candidates = _view === 'matches' ? _matches : _applied;
+  const _stage = typeof stage !== 'undefined' && stage ? stage : null;
+
+  // Filter candidates based on selected funnel stage
+  function filterByStage(candidates, stg) {
+    if (!stg) return candidates;
+    switch (stg) {
+      case 'applied':
+        return candidates; // All applied candidates
+      case 'cvMatch':
+        return candidates.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50);
+      case 'interviewTaken':
+        return candidates.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status));
+      case 'interviewPass':
+        return candidates.filter(c => (parseFloat(c.interview_score) || 0) >= 75);
+      default:
+        return candidates;
+    }
+  }
+
+  const _candidates = filterByStage(_view === 'matches' ? _matches : _applied, _stage);
 
   const fmt = (n) => (n != null ? Number(n).toLocaleString() : '0');
   const qualMap = { '1': 'PhD', '2': 'Masters', '3': 'Bachelors', '4': 'Diploma', '5': 'Any others' };
@@ -65,27 +84,41 @@
 </div>
 
 <!-- Funnel Stats -->
+<% const stageUrl = (s) => `/admin/jobs/${_job.id}?view=${_view}&stage=${s}`; %>
 <div style="display:flex;align-items:stretch;gap:0;margin-bottom:24px;">
-  <div style="flex:1;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;">
+  <a href="<%= stageUrl('applied') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'applied' ? '#3b82f6' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'applied' ? 'box-shadow:0 0 0 3px rgba(59,130,246,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'applied' ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none' %>';">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Applied</div>
     <div style="font-size:1.6rem;font-weight:700;color:#3b82f6;"><%= fmt(_funnel.applied) %></div>
-  </div>
+  </a>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
-  <div style="flex:1;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;">
+  <a href="<%= stageUrl('cvMatch') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'cvMatch' ? '#10b981' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'cvMatch' ? 'box-shadow:0 0 0 3px rgba(16,185,129,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'cvMatch' ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none' %>';">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">CV Match</div>
     <div style="font-size:1.6rem;font-weight:700;color:#10b981;"><%= fmt(_funnel.cvMatch) %></div>
-  </div>
+  </a>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
-  <div style="flex:1;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;">
+  <a href="<%= stageUrl('interviewTaken') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'interviewTaken' ? '#f59e0b' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'interviewTaken' ? 'box-shadow:0 0 0 3px rgba(245,158,11,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'interviewTaken' ? '0 0 0 3px rgba(245,158,11,0.15)' : 'none' %>';">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">AI Interview Taken</div>
     <div style="font-size:1.6rem;font-weight:700;color:#f59e0b;"><%= fmt(_funnel.interviewTaken) %></div>
-  </div>
+  </a>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
-  <div style="flex:1;background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:16px 12px;text-align:center;">
+  <a href="<%= stageUrl('interviewPass') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'interviewPass' ? '#ef4444' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'interviewPass' ? 'box-shadow:0 0 0 3px rgba(239,68,68,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'interviewPass' ? '0 0 0 3px rgba(239,68,68,0.15)' : 'none' %>';">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">AI Interview Result 75%+</div>
     <div style="font-size:1.6rem;font-weight:700;color:#ef4444;"><%= fmt(_funnel.interviewPass) %></div>
-  </div>
+  </a>
 </div>
+
+<% if (_stage) {
+  const stageLabels = { applied: 'Applied', cvMatch: 'CV Match', interviewTaken: 'AI Interview Taken', interviewPass: 'AI Interview Result 75%+' };
+%>
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;font-size:0.85rem;">
+  <span style="color:var(--text-secondary);">Showing:</span>
+  <span style="font-weight:600;color:var(--text-primary);"><%= stageLabels[_stage] || _stage %></span>
+  <span style="color:var(--text-muted);">(<%= _candidates.length %> candidates)</span>
+  <a href="/admin/jobs/<%= _job.id %>?view=<%= _view %>" style="font-size:0.8rem;color:var(--accent-primary);text-decoration:none;margin-left:4px;">
+    <i data-lucide="x-circle" style="width:14px;height:14px;vertical-align:middle;"></i> Clear filter
+  </a>
+</div>
+<% } %>
 
 <!-- Selection Action Bar -->
 <div id="selection-bar" style="display:none;position:sticky;top:60px;z-index:45;background:linear-gradient(135deg,#1e293b,#334155);border-radius:var(--radius-lg);padding:12px 20px;margin-bottom:16px;box-shadow:var(--shadow-lg);">
