@@ -87,14 +87,15 @@
         <% if (candidate.total_score != null) { %>
           <div class="text-center">
             <% const hdrIvScore = parseFloat(candidate.total_score) || 0;
-               const hdrIvOff = hdrCirc - (hdrIvScore / 100) * hdrCirc;
+               const hdrIvCirc = 2 * Math.PI * 26;
+               const hdrIvOff = hdrIvCirc - (hdrIvScore / 100) * hdrIvCirc;
                const hdrIvCol = hdrIvScore >= 75 ? '#10b981' : hdrIvScore >= 50 ? '#f59e0b' : '#ef4444';
             %>
             <div style="position:relative;width:64px;height:64px;">
               <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
                 <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke="rgba(255,255,255,0.15)"></circle>
                 <circle cx="32" cy="32" r="26" fill="none" stroke-width="4" stroke="<%= hdrIvCol %>"
-                        stroke-linecap="round" stroke-dasharray="<%= hdrCirc %>" stroke-dashoffset="<%= hdrIvOff %>"></circle>
+                        stroke-linecap="round" stroke-dasharray="<%= hdrIvCirc %>" stroke-dashoffset="<%= hdrIvOff %>"></circle>
               </svg>
               <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
                 <span style="font-size:0.8rem;font-weight:700;color:<%= hdrIvCol %>;"><%= hdrIvScore %>%</span>
