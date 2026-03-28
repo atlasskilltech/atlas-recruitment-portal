@@ -163,14 +163,23 @@ const jobDetail = asyncHandler(async (req, res) => {
   `, [jobId, jobId]);
 
   const view = req.query.view || 'applied';
+  const stage = req.query.stage || null;
 
-  // Funnel stats - compute based on the active view's dataset
-  const funnelSource = view === 'matches' ? topMatches : appliedCandidates;
-  const funnelApplied = view === 'matches' ? topMatches.length : (applicant_count || 0);
-  const funnelCVMatch = funnelSource.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50).length;
-  const funnelInterviewTaken = funnelSource.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status)).length;
-  const funnelInterviewPass = funnelSource.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length;
-  const stage = req.query.stage || null; // Filter by funnel stage: applied, cvMatch, interviewTaken, interviewPass
+  // Funnel stats - separate for each view, never mixed
+  const appliedFunnel = {
+    total: applicant_count || 0,
+    cvMatch: appliedCandidates.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50).length,
+    interviewTaken: appliedCandidates.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status)).length,
+    interviewPass: appliedCandidates.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length,
+  };
+  const matchesFunnel = {
+    total: topMatches.length,
+    cvMatch: topMatches.filter(c => (parseFloat(c.match_score) || 0) >= 50).length,
+    interviewTaken: topMatches.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status)).length,
+    interviewPass: topMatches.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length,
+  };
+
+  const funnel = view === 'matches' ? matchesFunnel : appliedFunnel;
 
   res.render('super-admin/job-detail', {
     title: `${job.post_name} - Top Matches`,
@@ -182,10 +191,10 @@ const jobDetail = asyncHandler(async (req, res) => {
     view,
     stage,
     funnel: {
-      applied: funnelApplied,
-      cvMatch: funnelCVMatch,
-      interviewTaken: funnelInterviewTaken,
-      interviewPass: funnelInterviewPass,
+      applied: funnel.total,
+      cvMatch: funnel.cvMatch,
+      interviewTaken: funnel.interviewTaken,
+      interviewPass: funnel.interviewPass,
     },
   });
 });
