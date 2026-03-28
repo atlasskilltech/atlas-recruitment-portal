@@ -69,6 +69,69 @@
       setTimeout(function() { toast.style.opacity = '0'; setTimeout(function() { toast.remove(); }, 300); }, 4000);
     }
   </script>
+  <script>
+    // Searchable dropdown component
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.searchable-select').forEach(function(container) {
+        var input = container.querySelector('.searchable-select-input');
+        var hidden = container.querySelector('input[type="hidden"]');
+        var dropdown = container.querySelector('.searchable-select-dropdown');
+        var options = container.querySelectorAll('.searchable-select-option');
+
+        input.addEventListener('focus', function() {
+          dropdown.classList.add('open');
+          input.select();
+        });
+
+        input.addEventListener('input', function() {
+          var search = input.value.toLowerCase();
+          options.forEach(function(opt) {
+            var text = opt.textContent.toLowerCase();
+            if (text.indexOf(search) !== -1 || opt.dataset.value === '') {
+              opt.classList.remove('hidden');
+            } else {
+              opt.classList.add('hidden');
+            }
+          });
+          dropdown.classList.add('open');
+        });
+
+        options.forEach(function(opt) {
+          opt.addEventListener('click', function() {
+            var val = opt.dataset.value;
+            hidden.value = val;
+            input.value = val || '';
+            input.placeholder = opt.textContent;
+            options.forEach(function(o) { o.classList.remove('selected'); });
+            opt.classList.add('selected');
+            dropdown.classList.remove('open');
+            // Reset filter visibility
+            options.forEach(function(o) { o.classList.remove('hidden'); });
+          });
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!container.contains(e.target)) {
+            dropdown.classList.remove('open');
+            // Reset to selected value on blur
+            if (hidden.value) {
+              input.value = hidden.value;
+            } else {
+              input.value = '';
+            }
+            options.forEach(function(o) { o.classList.remove('hidden'); });
+          }
+        });
+
+        input.addEventListener('keydown', function(e) {
+          if (e.key === 'Escape') {
+            dropdown.classList.remove('open');
+            input.blur();
+          }
+        });
+      });
+    });
+  </script>
   <%- script %>
 </body>
 </html>
