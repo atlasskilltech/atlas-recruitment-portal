@@ -3,10 +3,10 @@
 <!-- Header Card -->
 <div class="gradient-header">
   <div class="flex items-center gap-sm mb-md">
-    <a href="/candidates">
-      <i data-lucide="arrow-left" style="width:20px;height:20px;"></i>
+    <a href="javascript:history.back()" style="display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:rgba(255,255,255,0.6);">
+      <i data-lucide="arrow-left" style="width:16px;height:16px;"></i>
+      <span class="text-sm">Back</span>
     </a>
-    <span class="text-sm" style="color:rgba(255,255,255,0.5);">Back to Candidates</span>
   </div>
 
   <div class="flex items-start justify-between flex-wrap gap-lg">
@@ -135,33 +135,33 @@
 
   <!-- Tab: Overview -->
   <div x-show="activeTab === 'overview'" x-transition>
-    <div class="grid-2 gap-lg">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:100%;overflow:hidden;">
       <!-- Personal Info -->
-      <div class="card">
+      <div class="card" style="min-width:0;overflow:hidden;">
         <div class="card-body">
           <h3 class="text-lg font-semibold mb-md">Personal Information</h3>
           <div style="display:flex;flex-direction:column;gap:12px;">
-            <div class="flex justify-between"><span class="text-secondary">Full Name</span><span class="font-medium"><%= candidate.appln_full_name || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Email</span><span class="font-medium"><%= candidate.appln_email || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Mobile</span><span class="font-medium"><%= candidate.appln_mobile_no || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Date of Birth</span><span class="font-medium"><%= candidate.appln_dob ? dateUtils.formatDate(candidate.appln_dob) : '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Age</span><span class="font-medium"><%= candidate.appln_age || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Marital Status</span><span class="font-medium"><%= candidate.appln_marital_status || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Category</span><span class="font-medium"><%= candidate.appln_category || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Specialization</span><span class="font-medium"><%= candidate.appln_specialization || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Full Name</span><span class="font-medium" style="text-align:right;overflow:hidden;text-overflow:ellipsis;"><%= candidate.appln_full_name || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Email</span><span class="font-medium" style="text-align:right;overflow:hidden;text-overflow:ellipsis;"><%= candidate.appln_email || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Mobile</span><span class="font-medium" style="text-align:right;"><%= candidate.appln_mobile_no || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Date of Birth</span><span class="font-medium" style="text-align:right;"><%= candidate.appln_dob ? dateUtils.formatDate(candidate.appln_dob) : '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Age</span><span class="font-medium" style="text-align:right;"><%= candidate.appln_age || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Marital Status</span><span class="font-medium" style="text-align:right;"><%= candidate.appln_marital_status || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Category</span><span class="font-medium" style="text-align:right;"><%= candidate.appln_category || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Specialization</span><span class="font-medium" style="text-align:right;overflow:hidden;text-overflow:ellipsis;"><%= candidate.appln_specialization || '-' %></span></div>
           </div>
         </div>
       </div>
 
       <!-- Current Employment -->
-      <div class="card">
+      <div class="card" style="min-width:0;overflow:hidden;">
         <div class="card-body">
           <h3 class="text-lg font-semibold mb-md">Current Employment</h3>
           <div style="display:flex;flex-direction:column;gap:12px;">
-            <div class="flex justify-between"><span class="text-secondary">Organization</span><span class="font-medium"><%= candidate.appln_current_organisation || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Designation</span><span class="font-medium"><%= candidate.appln_current_designation || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Current Salary</span><span class="font-medium"><%= candidate.appln_current_salary || '-' %></span></div>
-            <div class="flex justify-between"><span class="text-secondary">Notice Period</span><span class="font-medium"><%= candidate.appln_current_notice_period || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Organization</span><span class="font-medium" style="text-align:right;overflow:hidden;text-overflow:ellipsis;"><%= candidate.appln_current_organisation || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Designation</span><span class="font-medium" style="text-align:right;overflow:hidden;text-overflow:ellipsis;"><%= candidate.appln_current_designation || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Current Salary</span><span class="font-medium" style="text-align:right;"><%= candidate.appln_current_salary || '-' %></span></div>
+            <div style="display:flex;justify-content:space-between;gap:8px;"><span class="text-secondary" style="white-space:nowrap;">Notice Period</span><span class="font-medium" style="text-align:right;"><%= candidate.appln_current_notice_period || '-' %></span></div>
           </div>
 
           <h3 class="text-lg font-semibold mt-lg mb-md">Experience Summary</h3>

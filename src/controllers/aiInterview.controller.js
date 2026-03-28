@@ -85,9 +85,10 @@ const index = asyncHandler(async (req, res) => {
  */
 const show = asyncHandler(async (req, res) => {
   const interviewId = parseInt(req.params.id, 10);
+  const fallbackUrl = req.baseUrl.startsWith('/admin') ? '/admin/jobs' : '/ai-interview';
   if (!interviewId) {
     req.flash('error', 'Invalid interview ID.');
-    return res.redirect('/ai-interview');
+    return res.redirect(fallbackUrl);
   }
 
   try {
@@ -113,7 +114,7 @@ const show = asyncHandler(async (req, res) => {
   } catch (err) {
     logger.error(`Failed to load interview ${interviewId}`, { error: err.message });
     req.flash('error', err.message);
-    return res.redirect('/ai-interview');
+    return res.redirect(fallbackUrl);
   }
 });
 

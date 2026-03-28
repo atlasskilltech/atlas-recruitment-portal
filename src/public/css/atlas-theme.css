@@ -151,7 +151,7 @@ a:hover { color: var(--accent-primary-hover); }
 }
 
 /* Main Content */
-.main-content { flex: 1; min-height: 100vh; }
+.main-content { flex: 1; min-height: 100vh; overflow-x: hidden; }
 
 /* Header / Topbar */
 .main-header {

@@ -110,15 +110,16 @@ const index = asyncHandler(async (req, res) => {
  */
 const show = asyncHandler(async (req, res) => {
   const candidateId = parseInt(req.params.id, 10);
+  const fallbackUrl = req.baseUrl.startsWith('/admin') ? '/admin/jobs' : '/candidates';
   if (!candidateId) {
     req.flash('error', 'Invalid candidate ID.');
-    return res.redirect('/candidates');
+    return res.redirect(fallbackUrl);
   }
 
   const candidate = await candidateService.getCandidateById(candidateId);
   if (!candidate) {
     req.flash('error', 'Candidate not found.');
-    return res.redirect('/candidates');
+    return res.redirect(fallbackUrl);
   }
 
   // Fetch HR notes for the candidate
