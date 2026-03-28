@@ -141,12 +141,32 @@ const show = asyncHandler(async (req, res) => {
     [candidateId]
   );
 
+  // Fetch best job match score for this candidate (from the job they applied to)
+  const [[jobMatch]] = await pool.query(
+    `SELECT match_score, match_status, job_id
+     FROM atlas_rec_job_candidate_matches
+     WHERE candidate_id = ? AND job_id = COALESCE(?, 0)
+     LIMIT 1`,
+    [candidateId, candidate.job_id || candidate.appln_applied_for_sub]
+  );
+  // Fallback: get highest match score across all jobs
+  const [[bestJobMatch]] = jobMatch ? [[ jobMatch ]] : await pool.query(
+    `SELECT match_score, match_status, job_id
+     FROM atlas_rec_job_candidate_matches
+     WHERE candidate_id = ?
+     ORDER BY match_score DESC
+     LIMIT 1`,
+    [candidateId]
+  );
+
   res.render('candidates/detail', {
     title: `Candidate – ${candidate.appln_full_name}`,
     candidate,
     notes,
     activityLogs,
     statusHistory,
+    jobMatchScore: bestJobMatch ? parseFloat(bestJobMatch.match_score) : null,
+    jobMatchStatus: bestJobMatch ? bestJobMatch.match_status : null,
     success: req.flash('success'),
     error: req.flash('error'),
   });

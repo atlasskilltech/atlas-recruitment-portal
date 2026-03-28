@@ -64,12 +64,12 @@
     <!-- Right: Scores & Actions -->
     <div class="flex flex-col items-start" style="align-items:flex-end;gap:16px;">
       <div class="flex items-center gap-lg">
-        <% if (candidate.ai_match_score != null) { %>
+        <% const hdrJobScore = typeof jobMatchScore !== 'undefined' && jobMatchScore != null ? jobMatchScore : null; %>
+        <% if (hdrJobScore != null) { %>
           <div class="text-center">
-            <% const hdrAiScore = parseFloat(candidate.ai_match_score) || 0;
-               const hdrCirc = 2 * Math.PI * 26;
-               const hdrOff = hdrCirc - (hdrAiScore / 100) * hdrCirc;
-               const hdrCol = hdrAiScore >= 75 ? '#10b981' : hdrAiScore >= 50 ? '#f59e0b' : '#ef4444';
+            <% const hdrCirc = 2 * Math.PI * 26;
+               const hdrOff = hdrCirc - (hdrJobScore / 100) * hdrCirc;
+               const hdrCol = hdrJobScore >= 75 ? '#10b981' : hdrJobScore >= 50 ? '#f59e0b' : '#ef4444';
             %>
             <div style="position:relative;width:64px;height:64px;">
               <svg width="64" height="64" viewBox="0 0 64 64" style="transform:rotate(-90deg);">
@@ -78,10 +78,10 @@
                         stroke-linecap="round" stroke-dasharray="<%= hdrCirc %>" stroke-dashoffset="<%= hdrOff %>"></circle>
               </svg>
               <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-                <span style="font-size:0.8rem;font-weight:700;color:<%= hdrCol %>;"><%= hdrAiScore %>%</span>
+                <span style="font-size:0.8rem;font-weight:700;color:<%= hdrCol %>;"><%= hdrJobScore %>%</span>
               </div>
             </div>
-            <p class="text-xs" style="color:rgba(255,255,255,0.7);margin-top:4px;">AI Screening</p>
+            <p class="text-xs" style="color:rgba(255,255,255,0.7);margin-top:4px;">Job Match</p>
           </div>
         <% } %>
         <% if (candidate.total_score != null) { %>
