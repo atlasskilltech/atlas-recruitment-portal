@@ -42,12 +42,17 @@
     <label style="display:flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">
       <i data-lucide="user-check" style="width:11px;height:11px;"></i> Job Role
     </label>
-    <select name="role" style="width:100%;padding:6px 10px;border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:0.8rem;font-family:inherit;background:var(--bg-primary);color:var(--text-primary);">
-      <option value="">All Roles</option>
-      <% _jobRoles.forEach(function(role) { %>
-        <option value="<%= role %>" <%= _filters.role === role ? 'selected' : '' %>><%= role %></option>
-      <% }); %>
-    </select>
+    <div class="searchable-select" data-name="role">
+      <input type="text" class="searchable-select-input" placeholder="All Roles" value="<%= _filters.role || '' %>" autocomplete="off">
+      <span class="searchable-select-arrow">&#9662;</span>
+      <input type="hidden" name="role" value="<%= _filters.role || '' %>">
+      <div class="searchable-select-dropdown">
+        <div class="searchable-select-option <%= !_filters.role ? 'selected' : '' %>" data-value="">All Roles</div>
+        <% _jobRoles.forEach(function(role) { %>
+          <div class="searchable-select-option <%= _filters.role === role ? 'selected' : '' %>" data-value="<%= role %>"><%= role %></div>
+        <% }); %>
+      </div>
+    </div>
   </div>
   <div style="flex:1;min-width:120px;">
     <label style="display:flex;align-items:center;gap:4px;font-size:0.65rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:2px;">
