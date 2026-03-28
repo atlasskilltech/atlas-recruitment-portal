@@ -26,7 +26,7 @@ function isAuthenticated(req, res, next) {
  */
 function isGuest(req, res, next) {
   if (req.session && req.session.user) {
-    return res.redirect('/dashboard');
+    return res.redirect('/admin/jobs');
   }
   return next();
 }

@@ -9,13 +9,17 @@
   const _stage = typeof stage !== 'undefined' && stage ? stage : null;
 
   // Filter candidates based on selected funnel stage
+  // NOTE: AI Resume Match thresholds: 50% for applied candidates, 90% for non-applied
   function filterByStage(candidates, stg) {
     if (!stg) return candidates;
     switch (stg) {
       case 'applied':
         return candidates; // All applied candidates
       case 'cvMatch':
-        return candidates.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50);
+        if (_view === 'matches') {
+          return candidates.filter(c => (parseFloat(c.match_score) || 0) >= 90);
+        }
+        return candidates.filter(c => (parseFloat(c.match_score) || 0) >= 50);
       case 'interviewTaken':
         return candidates.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status));
       case 'interviewPass':
@@ -81,6 +85,12 @@
     <option value="applied" <%= _view === 'applied' ? 'selected' : '' %>>Applied for Position (<%= _applied.length %>)</option>
     <option value="matches" <%= _view === 'matches' ? 'selected' : '' %>>AI Matches from Entire Database (<%= _matches.length %>)</option>
   </select>
+</div>
+
+<!-- AI Resume Match Info Note -->
+<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:var(--radius-md);margin-bottom:12px;font-size:0.75rem;color:var(--text-secondary);">
+  <i data-lucide="info" style="width:14px;height:14px;color:#3b82f6;flex-shrink:0;"></i>
+  <span><strong>CV Match criteria:</strong> Applied candidates with AI resume score <strong>50% &amp; above</strong> | Non-applied candidates with AI resume score <strong>90% &amp; above</strong></span>
 </div>
 
 <!-- Funnel Stats -->
