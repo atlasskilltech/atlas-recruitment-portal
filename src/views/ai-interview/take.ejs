@@ -59,8 +59,9 @@
       <svg style="width:40px;height:40px;color:#22c55e;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
     </div>
     <h2 style="font-size:24px;font-weight:bold;margin-bottom:8px;">Interview Already Completed</h2>
-    <p style="color:#94a3b8;margin-bottom:16px;">Thank you, <strong style="color:#fff;"><%= candidateName %></strong>. Your interview has been submitted and is being reviewed.</p>
-    <p style="color:#64748b;font-size:14px;margin-top:16px;">You may close this window.</p>
+    <p style="color:#94a3b8;margin-bottom:16px;">Thank you, <strong style="color:#fff;"><%= candidateName %></strong>, for successfully completing your 1st Round of interview.</p>
+    <p style="color:#94a3b8;font-size:14px;margin-bottom:16px;">Our HR team will connect with you shortly regarding the next steps.</p>
+    <p style="color:#64748b;font-size:14px;">You may now close this window.</p>
   </div>
 </div>
 
@@ -254,10 +255,10 @@
         <div style="width:80px;height:80px;border-radius:50%;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
           <svg style="width:40px;height:40px;color:#22c55e;" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
         </div>
-        <h2 style="font-size:24px;font-weight:bold;margin-bottom:8px;color:#e2e8f0;">Interview Submitted!</h2>
-        <p style="color:#94a3b8;margin-bottom:16px;">Thank you, <strong style="color:#fff;"><%= candidateName %></strong>. Your AI-powered report is being generated.</p>
-        <p style="color:#64748b;font-size:14px;margin-bottom:24px;">Scores for communication, domain knowledge, problem solving, and confidence will be available shortly.</p>
-        <p style="color:#94a3b8;font-size:14px;">You may now close this window.</p>
+        <h2 style="font-size:24px;font-weight:bold;margin-bottom:8px;color:#e2e8f0;">Interview Completed Successfully!</h2>
+        <p style="color:#94a3b8;margin-bottom:16px;">Thank you, <strong style="color:#fff;"><%= candidateName %></strong>, for successfully completing your 1st Round of interview.</p>
+        <p style="color:#94a3b8;font-size:14px;margin-bottom:24px;">Our HR team will connect with you shortly regarding the next steps.</p>
+        <p style="color:#64748b;font-size:14px;">You may now close this window.</p>
       </div>
     </div>
   </template>
@@ -267,6 +268,11 @@
 
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 <script>
+// Preload voices early (browsers load them asynchronously)
+if (window.speechSynthesis) {
+  speechSynthesis.getVoices();
+  speechSynthesis.onvoiceschanged = function() { speechSynthesis.getVoices(); };
+}
 function videoInterview() {
   var questionsData = <%- JSON.stringify((_questions || []).map(function(q) {
     return { id: q.id, text: q.question_text || q.question || q.text || '' };
@@ -287,6 +293,7 @@ function videoInterview() {
     _candidateName: '<%= candidateName.replace(/'/g, "\\'") %>',
     _jobTitle: '<%= jobTitle.replace(/'/g, "\\'") %>',
     _greetingDone: false,
+    _selectedVoice: null,
     questions: questionsData,
     currentIndex: 0,
     answers: {},
@@ -306,6 +313,30 @@ function videoInterview() {
       return Math.round((Date.now() - this.answerStartTime) / 1000);
     },
 
+    _pickVoice() {
+      var voices = speechSynthesis.getVoices();
+      if (!voices.length) return null;
+      // Prefer high-quality English voices (Google, Microsoft, Samantha for Mac)
+      var preferred = ['Google US English', 'Google UK English Female', 'Microsoft Zira', 'Samantha', 'Karen', 'Daniel', 'Moira', 'Tessa'];
+      for (var i = 0; i < preferred.length; i++) {
+        var found = voices.find(function(v) { return v.name.indexOf(preferred[i]) !== -1; });
+        if (found) return found;
+      }
+      // Fallback: any English voice
+      var english = voices.find(function(v) { return v.lang && v.lang.startsWith('en'); });
+      return english || voices[0];
+    },
+
+    _applyVoice(utterance) {
+      if (!this._selectedVoice) this._selectedVoice = this._pickVoice();
+      if (this._selectedVoice) utterance.voice = this._selectedVoice;
+      utterance.lang = 'en-US';
+      utterance.rate = 0.92;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      return utterance;
+    },
+
     async checkCamera() {
       this.permissionError = '';
       try {
@@ -323,6 +354,10 @@ function videoInterview() {
     },
 
     async startVideoInterview() {
+      // Preload voices (some browsers load asynchronously)
+      speechSynthesis.getVoices();
+      this._selectedVoice = this._pickVoice();
+
       // Request fullscreen
       try {
         var el = document.documentElement;
@@ -386,10 +421,7 @@ function videoInterview() {
         this._greetingDone = true;
         this.aiSpeaking = true;
         var greeting = 'Hello ' + this._candidateName + ', welcome to this AI interview for the position of ' + this._jobTitle + ' at ATLAS SkillTech University. I will ask you a series of questions. Please take your time and answer clearly. Let us begin with the first question.';
-        var greetUtterance = new SpeechSynthesisUtterance(greeting);
-        greetUtterance.rate = 0.95;
-        greetUtterance.pitch = 1;
-        greetUtterance.lang = 'en-US';
+        var greetUtterance = this._applyVoice(new SpeechSynthesisUtterance(greeting));
         var self2 = this;
         greetUtterance.onend = function() {
           self2.speakQuestion();
@@ -406,10 +438,7 @@ function videoInterview() {
       if (!text) return;
 
       this.aiSpeaking = true;
-      var utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.lang = 'en-US';
+      var utterance = this._applyVoice(new SpeechSynthesisUtterance(text));
       var self = this;
       utterance.onend = function() {
         self.aiSpeaking = false;
