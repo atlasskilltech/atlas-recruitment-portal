@@ -408,32 +408,7 @@
   <!-- Tab: AI Screening -->
   <div x-show="activeTab === 'screening'" x-transition>
     <% if (candidate.screening_id) { %>
-      <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;">
-        <div class="card text-center" style="padding:24px;">
-          <% const aiScore = parseFloat(candidate.ai_match_score) || 0;
-             const ringCirc = 2 * Math.PI * 40;
-             const ringOff = ringCirc - (aiScore / 100) * ringCirc;
-             const ringColor = aiScore >= 75 ? '#10b981' : aiScore >= 50 ? '#f59e0b' : '#ef4444';
-          %>
-          <div style="position:relative;width:96px;height:96px;margin:0 auto;">
-            <svg width="96" height="96" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
-              <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="var(--border-color)" opacity="0.2"></circle>
-              <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="<%= ringColor %>"
-                      stroke-linecap="round" stroke-dasharray="<%= ringCirc %>" stroke-dashoffset="<%= ringOff %>"></circle>
-            </svg>
-            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-              <span style="font-size:1.3rem;font-weight:800;color:<%= ringColor %>;"><%= aiScore %>%</span>
-            </div>
-          </div>
-          <p class="text-sm text-muted mt-sm">AI Screening Score</p>
-          <% if (candidate.ai_recommendation_tag) { %>
-            <span class="badge badge-<%= candidate.ai_recommendation_tag %> mt-sm"><%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
-          <% } %>
-          <% if (candidate.ai_status) { %>
-            <span class="badge badge-<%= candidate.ai_status %>" style="margin-top:4px;"><%= candidate.ai_status.replace(/\b\w/g, l => l.toUpperCase()) %></span>
-          <% } %>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:16px;">
+      <div style="display:flex;flex-direction:column;gap:16px;">
           <% if (candidate.extracted_skills) { %>
             <div class="card">
               <div class="card-body">
@@ -522,7 +497,6 @@
               </div>
             </div>
           <% } %>
-        </div>
       </div>
     <% } else { %>
       <div class="empty-state">
