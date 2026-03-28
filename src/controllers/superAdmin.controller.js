@@ -162,13 +162,14 @@ const jobDetail = asyncHandler(async (req, res) => {
     ORDER BY COALESCE(jcm.match_score, ais.ai_match_score, 0) DESC
   `, [jobId, jobId]);
 
-  // Funnel stats
-  const funnelApplied = applicant_count || 0;
-  const funnelCVMatch = appliedCandidates.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50).length;
-  const funnelInterviewTaken = appliedCandidates.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status)).length;
-  const funnelInterviewPass = appliedCandidates.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length;
-
   const view = req.query.view || 'applied';
+
+  // Funnel stats - compute based on the active view's dataset
+  const funnelSource = view === 'matches' ? topMatches : appliedCandidates;
+  const funnelApplied = view === 'matches' ? topMatches.length : (applicant_count || 0);
+  const funnelCVMatch = funnelSource.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50).length;
+  const funnelInterviewTaken = funnelSource.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status)).length;
+  const funnelInterviewPass = funnelSource.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length;
   const stage = req.query.stage || null; // Filter by funnel stage: applied, cvMatch, interviewTaken, interviewPass
 
   res.render('super-admin/job-detail', {

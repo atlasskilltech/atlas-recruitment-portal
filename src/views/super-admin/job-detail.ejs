@@ -87,7 +87,7 @@
 <% const stageUrl = (s) => `/admin/jobs/${_job.id}?view=${_view}&stage=${s}`; %>
 <div style="display:flex;align-items:stretch;gap:0;margin-bottom:24px;">
   <a href="<%= stageUrl('applied') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'applied' ? '#3b82f6' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'applied' ? 'box-shadow:0 0 0 3px rgba(59,130,246,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'applied' ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none' %>';">
-    <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Applied</div>
+    <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;"><%= _view === 'matches' ? 'Total Matches' : 'Applied' %></div>
     <div style="font-size:1.6rem;font-weight:700;color:#3b82f6;"><%= fmt(_funnel.applied) %></div>
   </a>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
