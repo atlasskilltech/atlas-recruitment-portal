@@ -9,13 +9,17 @@
   const _stage = typeof stage !== 'undefined' && stage ? stage : null;
 
   // Filter candidates based on selected funnel stage
+  // NOTE: AI Resume Match thresholds: 50% for applied candidates, 90% for non-applied
   function filterByStage(candidates, stg) {
     if (!stg) return candidates;
     switch (stg) {
       case 'applied':
         return candidates; // All applied candidates
       case 'cvMatch':
-        return candidates.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50);
+        if (_view === 'matches') {
+          return candidates.filter(c => (parseFloat(c.match_score) || 0) >= 90);
+        }
+        return candidates.filter(c => (parseFloat(c.match_score) || 0) >= 50);
       case 'interviewTaken':
         return candidates.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status));
       case 'interviewPass':
