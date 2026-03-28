@@ -48,10 +48,18 @@ const jobOpenings = asyncHandler(async (req, res) => {
     FROM isdi_admsn_applied_for job
     LEFT JOIN dice_staff_recruitment dsr ON dsr.appln_applied_for_sub = job.id
     LEFT JOIN (
-      SELECT job_id, COUNT(*) AS ai_matched
-      FROM atlas_rec_job_candidate_matches
-      WHERE match_score >= 50
-      GROUP BY job_id
+      /* AI Resume Matched count logic:
+         - Applied candidates (appln_applied_for_sub = job_id): match_score >= 50%
+         - Non-applied candidates: match_score >= 90% */
+      SELECT m.job_id, COUNT(*) AS ai_matched
+      FROM atlas_rec_job_candidate_matches m
+      LEFT JOIN dice_staff_recruitment dsr ON dsr.id = m.candidate_id
+      WHERE (
+        (dsr.appln_applied_for_sub = m.job_id AND m.match_score >= 50)
+        OR
+        (COALESCE(dsr.appln_applied_for_sub, 0) != m.job_id AND m.match_score >= 90)
+      )
+      GROUP BY m.job_id
     ) jcm ON jcm.job_id = job.id
     ${whereClause}
     GROUP BY job.id, job.applied_for_post_id, job.applied_for_post,
@@ -166,6 +174,7 @@ const jobDetail = asyncHandler(async (req, res) => {
   const stage = req.query.stage || null;
 
   // Funnel stats - separate for each view, never mixed
+  // NOTE: AI Resume Match thresholds: 50% for applied candidates, 90% for non-applied
   const appliedFunnel = {
     total: applicant_count || 0,
     cvMatch: appliedCandidates.filter(c => (parseFloat(c.match_score) || parseFloat(c.screening_score) || 0) >= 50).length,
@@ -174,7 +183,7 @@ const jobDetail = asyncHandler(async (req, res) => {
   };
   const matchesFunnel = {
     total: topMatches.length,
-    cvMatch: topMatches.filter(c => (parseFloat(c.match_score) || 0) >= 50).length,
+    cvMatch: topMatches.filter(c => (parseFloat(c.match_score) || 0) >= 90).length,
     interviewTaken: topMatches.filter(c => c.interview_status && ['evaluated', 'submitted', 'passed', 'failed'].includes(c.interview_status)).length,
     interviewPass: topMatches.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length,
   };
