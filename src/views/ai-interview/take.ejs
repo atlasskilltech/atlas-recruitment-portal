@@ -125,7 +125,7 @@
   </template>
 
   <!-- ═══ INTERVIEW SESSION ═══ -->
-  <div x-show="phase === 'session'" style="display:none;min-height:100vh;flex-direction:column;">
+  <div x-show="phase === 'session'" x-transition style="min-height:100vh;display:flex;flex-direction:column;">
       <!-- Top Bar -->
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid #334155;background:rgba(15,23,42,0.9);backdrop-filter:blur(8px);">
         <div>
@@ -456,29 +456,51 @@ function videoInterview() {
     startListening() {
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
-        console.warn('Speech recognition not supported — use text input');
+        console.warn('Speech recognition not supported');
         return;
       }
 
       this.isRecording = true;
+      this._recognitionRetries = 0;
       this._initRecognition();
+
+      // Keepalive: check every 5s if recognition is still active, restart if not
+      var self = this;
+      if (this._keepAliveInterval) clearInterval(this._keepAliveInterval);
+      this._keepAliveInterval = setInterval(function() {
+        if (self.phase !== 'session' || !self.isRecording) {
+          clearInterval(self._keepAliveInterval);
+          return;
+        }
+        // If recognition object is gone or not active, reinitialize
+        if (!self.recognition) {
+          console.log('[MIC] Keepalive: recognition lost, reinitializing');
+          self._initRecognition();
+        }
+      }, 5000);
     },
 
     _initRecognition() {
       var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (this.recognition) {
         try { this.recognition.abort(); } catch(e) {}
+        this.recognition = null;
       }
 
-      this.recognition = new SpeechRecognition();
-      this.recognition.continuous = true;
-      this.recognition.interimResults = true;
-      this.recognition.lang = 'en-US';
-      this.recognition.maxAlternatives = 1;
+      var rec = new SpeechRecognition();
+      this.recognition = rec;
+
+      // Safari doesn't support continuous well — use it anyway but handle restarts
+      rec.continuous = true;
+      rec.interimResults = true;
+      rec.lang = 'en-US';
+      rec.maxAlternatives = 1;
 
       var self = this;
+      var lastResultTime = Date.now();
 
-      this.recognition.onresult = function(event) {
+      rec.onresult = function(event) {
+        lastResultTime = Date.now();
         var interim = '';
         var currentAnswer = self.answers[self.currentIndex] || '';
         for (var i = event.resultIndex; i < event.results.length; i++) {
@@ -494,40 +516,65 @@ function videoInterview() {
         self.liveCaption = interim || '';
       };
 
-      this.recognition.onerror = function(e) {
-        console.warn('Speech error:', e.error);
-        // Auto-restart on recoverable errors
-        if (e.error === 'no-speech' || e.error === 'audio-capture' || e.error === 'network') {
-          if (self.phase === 'session' && self.isRecording) {
-            setTimeout(function() { self._initRecognition(); }, 500);
+      rec.onerror = function(e) {
+        console.warn('[MIC] Error:', e.error);
+        // All errors: try to restart if still in session
+        if (self.phase === 'session' && self.isRecording) {
+          var delay = e.error === 'not-allowed' ? 3000 : 800;
+          if (e.error === 'not-allowed') {
+            console.error('[MIC] Microphone permission denied');
+            return; // Don't retry if permission denied
           }
+          self._recognitionRetries = (self._recognitionRetries || 0) + 1;
+          if (self._recognitionRetries > 20) {
+            console.error('[MIC] Too many retries, stopping');
+            return;
+          }
+          setTimeout(function() { self._initRecognition(); }, delay);
         }
       };
 
-      this.recognition.onend = function() {
-        // Chrome stops after ~60s — auto-restart
+      rec.onend = function() {
+        console.log('[MIC] Recognition ended, isRecording:', self.isRecording);
+        // Always restart if we should still be recording
         if (self.phase === 'session' && self.isRecording) {
+          self._recognitionRetries = (self._recognitionRetries || 0) + 1;
+          if (self._recognitionRetries > 50) {
+            console.error('[MIC] Too many restarts, giving up');
+            return;
+          }
+          // Short delay then create fresh instance
           setTimeout(function() {
-            try {
-              self.recognition.start();
-            } catch(e) {
-              // If start fails, reinitialize
-              setTimeout(function() { self._initRecognition(); }, 300);
+            if (self.phase === 'session' && self.isRecording) {
+              self._initRecognition();
             }
-          }, 200);
+          }, 300);
         }
+      };
+
+      rec.onaudiostart = function() {
+        self._recognitionRetries = 0; // Reset retries on successful audio
       };
 
       try {
-        this.recognition.start();
+        rec.start();
+        console.log('[MIC] Recognition started');
       } catch(e) {
-        console.warn('Recognition start failed:', e);
-        setTimeout(function() { self._initRecognition(); }, 500);
+        console.warn('[MIC] Start failed:', e.message);
+        setTimeout(function() {
+          if (self.phase === 'session' && self.isRecording) {
+            self._initRecognition();
+          }
+        }, 1000);
       }
     },
 
     stopListening() {
       this.isRecording = false;
+      if (this._keepAliveInterval) {
+        clearInterval(this._keepAliveInterval);
+        this._keepAliveInterval = null;
+      }
       if (this.recognition) {
         try { this.recognition.stop(); } catch(e) {}
         this.recognition = null;
