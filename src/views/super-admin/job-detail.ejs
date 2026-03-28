@@ -77,31 +77,30 @@
 <!-- View Selector Dropdown (after header, before funnel) -->
 <div style="margin-bottom:16px;display:flex;align-items:center;gap:12px;">
   <label style="font-size:0.8rem;font-weight:600;color:var(--text-secondary);white-space:nowrap;">Show Candidates:</label>
-  <select onchange="window.location.href='/admin/jobs/<%= _job.id %>?view='+this.value+'<%= _stage ? '&stage=' + _stage : '' %>'" style="padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:0.85rem;font-family:inherit;background:var(--bg-secondary);color:var(--text-primary);min-width:280px;cursor:pointer;">
+  <select id="view-selector" style="padding:8px 14px;border:1px solid var(--border-color);border-radius:var(--radius-md);font-size:0.85rem;font-family:inherit;background:var(--bg-secondary);color:var(--text-primary);min-width:280px;cursor:pointer;">
     <option value="applied" <%= _view === 'applied' ? 'selected' : '' %>>Applied for Position (<%= _applied.length %>)</option>
     <option value="matches" <%= _view === 'matches' ? 'selected' : '' %>>AI Matches from Entire Database (<%= _matches.length %>)</option>
   </select>
 </div>
 
 <!-- Funnel Stats -->
-<% const stageUrl = (s) => `/admin/jobs/${_job.id}?view=${_view}&stage=${s}`; %>
 <div style="display:flex;align-items:stretch;gap:0;margin-bottom:24px;">
-  <a href="<%= stageUrl('applied') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'applied' ? '#3b82f6' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'applied' ? 'box-shadow:0 0 0 3px rgba(59,130,246,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'applied' ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none' %>';">
+  <a href="/admin/jobs/<%= _job.id %>?view=<%= _view %>&stage=applied" class="funnel-card" data-stage="applied" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'applied' ? '#3b82f6' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'applied' ? 'box-shadow:0 0 0 3px rgba(59,130,246,0.15);' : '' %>">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;"><%= _view === 'matches' ? 'Total Matches' : 'Applied' %></div>
     <div style="font-size:1.6rem;font-weight:700;color:#3b82f6;"><%= fmt(_funnel.applied) %></div>
   </a>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
-  <a href="<%= stageUrl('cvMatch') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'cvMatch' ? '#10b981' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'cvMatch' ? 'box-shadow:0 0 0 3px rgba(16,185,129,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'cvMatch' ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none' %>';">
+  <a href="/admin/jobs/<%= _job.id %>?view=<%= _view %>&stage=cvMatch" class="funnel-card" data-stage="cvMatch" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'cvMatch' ? '#10b981' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'cvMatch' ? 'box-shadow:0 0 0 3px rgba(16,185,129,0.15);' : '' %>">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">CV Match</div>
     <div style="font-size:1.6rem;font-weight:700;color:#10b981;"><%= fmt(_funnel.cvMatch) %></div>
   </a>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
-  <a href="<%= stageUrl('interviewTaken') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'interviewTaken' ? '#f59e0b' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'interviewTaken' ? 'box-shadow:0 0 0 3px rgba(245,158,11,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'interviewTaken' ? '0 0 0 3px rgba(245,158,11,0.15)' : 'none' %>';">
+  <a href="/admin/jobs/<%= _job.id %>?view=<%= _view %>&stage=interviewTaken" class="funnel-card" data-stage="interviewTaken" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'interviewTaken' ? '#f59e0b' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'interviewTaken' ? 'box-shadow:0 0 0 3px rgba(245,158,11,0.15);' : '' %>">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">AI Interview Taken</div>
     <div style="font-size:1.6rem;font-weight:700;color:#f59e0b;"><%= fmt(_funnel.interviewTaken) %></div>
   </a>
   <div style="display:flex;align-items:center;padding:0 4px;color:var(--border-color);font-size:1.2rem;">&rsaquo;</div>
-  <a href="<%= stageUrl('interviewPass') %>" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'interviewPass' ? '#ef4444' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'interviewPass' ? 'box-shadow:0 0 0 3px rgba(239,68,68,0.15);' : '' %>" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='var(--shadow-md)';" onmouseout="this.style.transform='none';this.style.boxShadow='<%= _stage === 'interviewPass' ? '0 0 0 3px rgba(239,68,68,0.15)' : 'none' %>';">
+  <a href="/admin/jobs/<%= _job.id %>?view=<%= _view %>&stage=interviewPass" class="funnel-card" data-stage="interviewPass" style="flex:1;background:var(--bg-secondary);border:2px solid <%= _stage === 'interviewPass' ? '#ef4444' : 'var(--border-color)' %>;border-radius:var(--radius-lg);padding:16px 12px;text-align:center;text-decoration:none;cursor:pointer;transition:all 0.15s ease;<%= _stage === 'interviewPass' ? 'box-shadow:0 0 0 3px rgba(239,68,68,0.15);' : '' %>">
     <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">AI Interview Result 75%+</div>
     <div style="font-size:1.6rem;font-weight:700;color:#ef4444;"><%= fmt(_funnel.interviewPass) %></div>
   </a>
@@ -146,9 +145,7 @@
         const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
         const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#64748b,#475569)';
       %>
-      <div style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;position:relative;"
-           onmouseover="this.style.boxShadow='var(--shadow-md)';this.style.transform='translateY(-2px)';"
-           onmouseout="this.style.boxShadow='none';this.style.transform='none';">
+      <div class="candidate-card" style="background:var(--bg-secondary);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:20px;transition:all 0.15s ease;position:relative;">
         <div style="position:absolute;top:12px;right:12px;">
           <input type="checkbox" name="candidate_ids" value="<%= m.candidate_id %>" class="candidate-checkbox" style="width:18px;height:18px;accent-color:var(--accent-primary);cursor:pointer;">
         </div>
@@ -198,6 +195,47 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // View selector dropdown
+  var viewSelector = document.getElementById('view-selector');
+  if (viewSelector) {
+    viewSelector.addEventListener('change', function() {
+      var stage = '<%= _stage || '' %>';
+      var url = '/admin/jobs/<%= _job.id %>?view=' + this.value;
+      if (stage) url += '&stage=' + stage;
+      window.location.href = url;
+    });
+  }
+
+  // Funnel card hover effects
+  document.querySelectorAll('.funnel-card').forEach(function(card) {
+    var activeStage = '<%= _stage || '' %>';
+    var cardStage = card.getAttribute('data-stage');
+    var colors = { applied: 'rgba(59,130,246,0.15)', cvMatch: 'rgba(16,185,129,0.15)', interviewTaken: 'rgba(245,158,11,0.15)', interviewPass: 'rgba(239,68,68,0.15)' };
+    var defaultShadow = (cardStage === activeStage) ? '0 0 0 3px ' + (colors[cardStage] || 'none') : 'none';
+
+    card.addEventListener('mouseover', function() {
+      this.style.transform = 'translateY(-2px)';
+      this.style.boxShadow = 'var(--shadow-md)';
+    });
+    card.addEventListener('mouseout', function() {
+      this.style.transform = 'none';
+      this.style.boxShadow = defaultShadow;
+    });
+  });
+
+  // Candidate card hover effects
+  document.querySelectorAll('.candidate-card').forEach(function(card) {
+    card.addEventListener('mouseover', function() {
+      this.style.boxShadow = 'var(--shadow-md)';
+      this.style.transform = 'translateY(-2px)';
+    });
+    card.addEventListener('mouseout', function() {
+      this.style.boxShadow = 'none';
+      this.style.transform = 'none';
+    });
+  });
+
+  // Selection bar
   var bar = document.getElementById('selection-bar');
   var countEl = document.getElementById('selected-count');
   var selectAllEl = document.getElementById('select-all');
