@@ -382,7 +382,21 @@
     <% if (candidate.screening_id) { %>
       <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;">
         <div class="card text-center" style="padding:24px;">
-          <div style="width:96px;height:96px;margin:0 auto;" data-score="<%= candidate.ai_match_score || 0 %>" data-size="96" data-stroke="6"></div>
+          <% const aiScore = parseFloat(candidate.ai_match_score) || 0;
+             const ringCirc = 2 * Math.PI * 40;
+             const ringOff = ringCirc - (aiScore / 100) * ringCirc;
+             const ringColor = aiScore >= 75 ? '#10b981' : aiScore >= 50 ? '#f59e0b' : '#ef4444';
+          %>
+          <div style="position:relative;width:96px;height:96px;margin:0 auto;">
+            <svg width="96" height="96" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
+              <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="var(--border-color)" opacity="0.2"></circle>
+              <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="<%= ringColor %>"
+                      stroke-linecap="round" stroke-dasharray="<%= ringCirc %>" stroke-dashoffset="<%= ringOff %>"></circle>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <span style="font-size:1.3rem;font-weight:800;color:<%= ringColor %>;"><%= aiScore %>%</span>
+            </div>
+          </div>
           <p class="text-sm text-muted mt-sm">AI Match Score</p>
           <% if (candidate.ai_recommendation_tag) { %>
             <span class="badge badge-<%= candidate.ai_recommendation_tag %> mt-sm"><%= candidate.ai_recommendation_tag.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
@@ -477,27 +491,35 @@
           </div>
 
           <% if (interview.total_score != null) { %>
-            <div class="stats-row mb-md" style="grid-template-columns:repeat(5,1fr);">
-              <div class="text-center">
-                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.total_score %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted" style="margin-top:4px;">Total</p>
-              </div>
-              <div class="text-center">
-                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.communication_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted" style="margin-top:4px;">Communication</p>
-              </div>
-              <div class="text-center">
-                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.domain_knowledge_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted" style="margin-top:4px;">Domain</p>
-              </div>
-              <div class="text-center">
-                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.problem_solving_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted" style="margin-top:4px;">Problem Solving</p>
-              </div>
-              <div class="text-center">
-                <div style="width:56px;height:56px;margin:0 auto;" data-score="<%= interview.confidence_score || 0 %>" data-size="56" data-stroke="4"></div>
-                <p class="text-xs text-muted" style="margin-top:4px;">Confidence</p>
-              </div>
+            <%
+              const ivScores = [
+                { label: 'Total', val: parseFloat(interview.total_score) || 0 },
+                { label: 'Communication', val: parseFloat(interview.communication_score) || 0 },
+                { label: 'Domain', val: parseFloat(interview.domain_knowledge_score) || 0 },
+                { label: 'Problem Solving', val: parseFloat(interview.problem_solving_score) || 0 },
+                { label: 'Confidence', val: parseFloat(interview.confidence_score) || 0 },
+              ];
+              const ivCirc = 2 * Math.PI * 22;
+            %>
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;">
+              <% ivScores.forEach(function(sc) {
+                const ivOff = ivCirc - (sc.val / 100) * ivCirc;
+                const ivCol = sc.val >= 75 ? '#10b981' : sc.val >= 50 ? '#f59e0b' : '#ef4444';
+              %>
+                <div style="text-align:center;">
+                  <div style="position:relative;width:56px;height:56px;margin:0 auto;">
+                    <svg width="56" height="56" viewBox="0 0 56 56" style="transform:rotate(-90deg);">
+                      <circle cx="28" cy="28" r="22" fill="none" stroke-width="4" stroke="var(--border-color)" opacity="0.2"></circle>
+                      <circle cx="28" cy="28" r="22" fill="none" stroke-width="4" stroke="<%= ivCol %>"
+                              stroke-linecap="round" stroke-dasharray="<%= ivCirc %>" stroke-dashoffset="<%= ivOff %>"></circle>
+                    </svg>
+                    <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                      <span style="font-size:0.7rem;font-weight:700;color:<%= ivCol %>;"><%= sc.val %>%</span>
+                    </div>
+                  </div>
+                  <p class="text-xs text-muted" style="margin-top:4px;"><%= sc.label %></p>
+                </div>
+              <% }); %>
             </div>
           <% } %>
 

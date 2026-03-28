@@ -136,9 +136,15 @@
 </div>
 
 <!-- ═══ AI RECOMMENDATION + INSIGHTS (2-column) ═══ -->
-<% if (recommendation || performanceSummary || plainFeedback) { %>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+<% if (recommendation || performanceSummary || plainFeedback || totalScore > 0) { %>
+<% const hasRecommendationContent = recommendation || recommendationJustification || performanceSummary || plainFeedback;
+   const hasInsights = strengthAreas.length > 0 || improvementAreas.length > 0;
+   const showTwoCol = hasRecommendationContent && hasInsights;
+%>
+<% if (hasRecommendationContent || hasInsights) { %>
+<div style="display:grid;grid-template-columns:<%= showTwoCol ? '1fr 1fr' : '1fr' %>;gap:16px;margin-bottom:20px;">
 
+  <% if (hasRecommendationContent) { %>
   <!-- Recommendation -->
   <div class="card" style="padding:20px;border-left:4px solid <%= recColor(recommendation) %>;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
@@ -163,8 +169,10 @@
       </div>
     <% } %>
   </div>
+  <% } %>
 
   <!-- Strengths & Improvements -->
+  <% if (hasInsights) { %>
   <div class="card" style="padding:20px;">
     <% if (strengthAreas.length > 0) { %>
       <div style="margin-bottom:<%= improvementAreas.length > 0 ? '16px' : '0' %>;">
@@ -210,7 +218,9 @@
       <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin:0;"><%= plainFeedback.substring(0, 500) %></p>
     <% } %>
   </div>
+  <% } %>
 </div>
+<% } %>
 
 <!-- Competency Ratings (compact horizontal) -->
 <% if (Object.keys(competencyRatings).length > 0) { %>
