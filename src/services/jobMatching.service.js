@@ -156,10 +156,11 @@ class JobMatchingService {
         AND ais.id = (SELECT MAX(s.id) FROM atlas_rec_candidate_ai_screening s WHERE s.candidate_id = dsr.id)
       LEFT JOIN atlas_rec_ai_interviews aint ON aint.candidate_id = dsr.id
         AND aint.id = (SELECT MAX(i.id) FROM atlas_rec_ai_interviews i WHERE i.candidate_id = dsr.id)
-      WHERE m.job_id = ? AND m.match_score > 0
+      WHERE m.job_id = ? AND m.match_score >= 50
+        AND (dsr.appln_applied_for_sub IS NULL OR dsr.appln_applied_for_sub != ?)
       ORDER BY m.match_score DESC
       LIMIT ?
-    `, [jobId, jobId, limit]);
+    `, [jobId, jobId, jobId, limit]);
 
     return rows;
   }
