@@ -169,6 +169,7 @@ const jobDetail = asyncHandler(async (req, res) => {
   const funnelInterviewPass = appliedCandidates.filter(c => (parseFloat(c.interview_score) || 0) >= 75).length;
 
   const view = req.query.view || 'applied';
+  const stage = req.query.stage || null; // Filter by funnel stage: applied, cvMatch, interviewTaken, interviewPass
 
   res.render('super-admin/job-detail', {
     title: `${job.post_name} - Top Matches`,
@@ -178,6 +179,7 @@ const jobDetail = asyncHandler(async (req, res) => {
     topMatches,
     appliedCandidates,
     view,
+    stage,
     funnel: {
       applied: funnelApplied,
       cvMatch: funnelCVMatch,
