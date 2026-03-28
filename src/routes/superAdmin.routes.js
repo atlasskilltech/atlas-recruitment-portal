@@ -7,6 +7,9 @@ const superAdminController = require('../controllers/superAdmin.controller');
 const candidateController = require('../controllers/candidates.controller');
 const aiInterviewController = require('../controllers/aiInterview.controller');
 
+// GET /admin/interviews – All AI interviews taken
+router.get('/interviews', superAdminController.allInterviews);
+
 // GET /admin/jobs – Job openings card view
 router.get('/jobs', superAdminController.jobOpenings);
 

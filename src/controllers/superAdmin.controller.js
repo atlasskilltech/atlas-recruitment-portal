@@ -291,8 +291,103 @@ const bulkInvite = asyncHandler(async (req, res) => {
   return res.redirect(`/admin/jobs/${jobId}`);
 });
 
+/**
+ * GET /admin/interviews
+ * All AI interviews taken – card view with filters.
+ */
+const allInterviews = asyncHandler(async (req, res) => {
+  const roleFilter = req.query.role || '';
+  const statusFilter = req.query.status || '';
+  const dateFrom = req.query.date_from || '';
+  const dateTo = req.query.date_to || '';
+  const searchFilter = req.query.search || '';
+
+  let where = ["aint.interview_status IN ('evaluated','submitted','passed','failed','in_progress')"];
+  let params = [];
+
+  if (roleFilter) {
+    where.push('job.applied_for_post = ?');
+    params.push(roleFilter);
+  }
+  if (statusFilter) {
+    where.push('aint.interview_status = ?');
+    params.push(statusFilter);
+  }
+  if (dateFrom) {
+    where.push('aint.started_at >= ?');
+    params.push(dateFrom);
+  }
+  if (dateTo) {
+    where.push('aint.started_at <= ?');
+    params.push(dateTo + ' 23:59:59');
+  }
+  if (searchFilter) {
+    where.push('(dsr.appln_full_name LIKE ? OR dsr.appln_email LIKE ?)');
+    params.push(`%${searchFilter}%`, `%${searchFilter}%`);
+  }
+
+  const whereClause = where.length > 0 ? 'WHERE ' + where.join(' AND ') : '';
+
+  const [interviews] = await pool.query(`
+    SELECT
+      aint.id AS interview_id,
+      aint.candidate_id,
+      aint.interview_status,
+      aint.total_score,
+      aint.communication_score,
+      aint.domain_knowledge_score,
+      aint.problem_solving_score,
+      aint.confidence_score,
+      aint.started_at,
+      aint.completed_at,
+      aint.interview_type,
+      dsr.appln_full_name,
+      dsr.appln_email,
+      dsr.appln_high_qualification,
+      dsr.appln_total_experience,
+      COALESCE(job.applied_for_post, job.applied_job_short_desc_new, 'N/A') AS job_role,
+      jcm.match_score AS job_match_score,
+      jcm.match_status
+    FROM atlas_rec_ai_interviews aint
+    LEFT JOIN dice_staff_recruitment dsr ON aint.candidate_id = dsr.id
+    LEFT JOIN isdi_admsn_applied_for job ON dsr.appln_applied_for_sub = job.id
+    LEFT JOIN atlas_rec_job_candidate_matches jcm ON jcm.candidate_id = dsr.id AND jcm.job_id = job.id
+    ${whereClause}
+    ORDER BY aint.started_at DESC
+  `, params);
+
+  // Stats
+  const totalInterviews = interviews.length;
+  const evaluated = interviews.filter(i => i.interview_status === 'evaluated').length;
+  const passed = interviews.filter(i => (parseFloat(i.total_score) || 0) >= 75).length;
+  const avgScore = totalInterviews > 0
+    ? Math.round(interviews.reduce((s, i) => s + (parseFloat(i.total_score) || 0), 0) / totalInterviews * 10) / 10
+    : 0;
+
+  // Unique job roles for filter
+  const [allRoles] = await pool.query(`
+    SELECT DISTINCT COALESCE(applied_for_post, applied_job_short_desc_new) AS role_name
+    FROM isdi_admsn_applied_for
+    WHERE applied_for_post IS NOT NULL AND applied_for_post != ''
+    ORDER BY applied_for_post
+  `);
+  const jobRoles = allRoles.map(r => r.role_name);
+
+  res.render('super-admin/interviews', {
+    title: 'AI Interview Taken',
+    interviews,
+    totalInterviews,
+    evaluated,
+    passed,
+    avgScore,
+    jobRoles,
+    filters: req.query,
+  });
+});
+
 module.exports = {
   jobOpenings,
   jobDetail,
   bulkInvite,
+  allInterviews,
 };
