@@ -127,7 +127,7 @@
   <!-- ═══ INTERVIEW SESSION ═══ -->
   <div x-show="phase === 'session'" x-transition style="height:100vh;display:flex;flex-direction:column;overflow:hidden;">
       <!-- Top Bar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid #334155;background:rgba(15,23,42,0.9);backdrop-filter:blur(8px);">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 24px;border-bottom:1px solid #334155;background:rgba(15,23,42,0.9);backdrop-filter:blur(8px);flex-shrink:0;">
         <div>
           <span style="font-weight:700;color:#fff;">HR Interview</span>
           <span style="font-size:12px;color:#94a3b8;margin-left:8px;"><%= jobTitle %></span>
@@ -142,7 +142,7 @@
       <!-- Main Content -->
       <div style="flex:1;display:flex;gap:0;min-height:0;overflow:hidden;">
         <!-- LEFT: Video -->
-        <div style="width:40%;min-width:320px;padding:12px;display:flex;flex-direction:column;">
+        <div style="width:40%;min-width:280px;padding:12px;display:flex;flex-direction:column;overflow:hidden;">
           <div class="video-container" style="flex:1;aspect-ratio:auto;width:100%;height:100%;">
             <video x-ref="sessionVideo" autoplay muted playsinline style="transform:scaleX(-1);"></video>
             <div class="video-overlay">
@@ -216,7 +216,7 @@
       </div>
 
       <!-- Bottom Action Bar -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-top:1px solid #334155;background:rgba(15,23,42,0.9);backdrop-filter:blur(8px);">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 24px;border-top:1px solid #334155;background:rgba(15,23,42,0.9);backdrop-filter:blur(8px);flex-shrink:0;">
         <div style="display:flex;align-items:center;gap:12px;">
           <template x-if="currentIndex < questions.length - 1">
             <button @click="submitAnswer()" class="btn-action btn-submit" :disabled="saving || !(answers[currentIndex] || '').trim()">
@@ -228,6 +228,9 @@
               ✈ Submit &amp; Finish
             </button>
           </template>
+          <button @click="if(confirm('Are you sure you want to end the interview? All answered questions will be submitted.')) endInterview()" class="btn-action btn-end" style="background:rgba(239,68,68,0.15);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">
+            ✕ End Interview
+          </button>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span style="font-size:12px;color:#475569;" x-text="answeredCount + ' of ' + questions.length + ' answered'"></span>

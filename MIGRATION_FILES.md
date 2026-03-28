@@ -2,7 +2,7 @@
 
 ## Summary of Changes Made
 This document lists all files modified during this session for migration to another project.
-**Total modified files: 17** | **New files created: 1** | **Dependency files: 21+**
+**Total modified files: 18** | **New files created: 1** | **Dependency files: 21+**
 
 ---
 
@@ -61,7 +61,7 @@ This document lists all files modified during this session for migration to anot
 ### `src/views/super-admin/jobs.ejs`
 - Job listings card grid
 - AI Resume Matched info note (50%/90% thresholds)
-- Filter bar (search, scope, job role)
+- Filter bar (search, scope, job role with searchable dropdown)
 - Stats bar (total positions, academics, admin, applicants)
 
 ### `src/views/super-admin/job-detail.ejs`
@@ -74,7 +74,7 @@ This document lists all files modified during this session for migration to anot
 
 ### `src/views/super-admin/interviews.ejs` *(NEW FILE)*
 - **Page**: All AI interviews taken at `/admin/interviews`
-- **Filter bar**: Search (name/email), Job Role dropdown, Status dropdown (Evaluated/Submitted/In Progress/Passed/Failed), Date From, Date To
+- **Filter bar**: Search (name/email), Job Role searchable dropdown, Status dropdown (Evaluated/Submitted/In Progress/Passed/Failed), Date From, Date To
 - **Stats bar**: Total Interviews, Evaluated count, Score 75%+ count, Avg Score
 - **Card grid**: Each card shows candidate name + avatar (color-coded by score), job role, status badge, 4 score columns (Total/Comm/Domain/Problem), Job Match score, qualification, email, interview date, fit badge
 - Cards link to `/admin/interviews/:id`
@@ -129,14 +129,19 @@ This document lists all files modified during this session for migration to anot
 
 ### `src/public/css/atlas-theme.css`
 - `.main-content`: Added `overflow-x: hidden` to prevent horizontal scroll
+- `.searchable-select` component: Reusable searchable dropdown with input, dropdown panel, option items, filtering, and selected state styles
 
 ---
 
-## 7. SIDEBAR (1 file)
+## 7. SIDEBAR & LAYOUT (2 files)
 
 ### `src/views/layouts/partials/sidebar.ejs`
 - Added "AI Interview Taken" menu item with `mic` icon linking to `/admin/interviews`
 - Menu items: Job Openings, AI Interview Taken
+
+### `src/views/layouts/main.ejs`
+- Added searchable dropdown JS component (auto-initializes all `.searchable-select` elements)
+- Features: type-to-filter, click to select, click-outside to close, Escape to close, selected state highlighting
 
 ---
 
@@ -263,7 +268,7 @@ This document lists all files modified during this session for migration to anot
 
 ## 13. FILES QUICK REFERENCE (for copy)
 
-### Modified files (17):
+### Modified files (18):
 ```
 src/routes/superAdmin.routes.js
 src/routes/web.routes.js
@@ -278,6 +283,7 @@ src/views/super-admin/job-detail.ejs
 src/views/candidates/detail.ejs
 src/views/ai-interview/detail.ejs
 src/views/ai-interview/take.ejs
+src/views/layouts/main.ejs
 src/middlewares/auth.middleware.js
 src/public/css/atlas-theme.css
 src/views/layouts/partials/sidebar.ejs
