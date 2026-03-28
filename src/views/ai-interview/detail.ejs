@@ -10,18 +10,13 @@
   const jobTitle = interview.job_title || job.title || 'N/A';
 
   const ivStatus = interview.interview_status || interview.status || 'invited';
-  const ivStatusBadge = ivStatus === 'evaluated' ? 'badge badge-success'
-    : ivStatus === 'submitted' ? 'badge badge-info'
-    : ivStatus === 'passed' ? 'badge badge-success'
-    : ivStatus === 'failed' ? 'badge badge-danger'
-    : ivStatus === 'in_progress' ? 'badge badge-info'
-    : ivStatus === 'invited' ? 'badge badge-warning'
-    : 'badge badge-muted';
+  const ivStatusLabel = ivStatus.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+  const ivStatusColor = ivStatus === 'evaluated' || ivStatus === 'passed' ? '#10b981'
+    : ivStatus === 'failed' ? '#ef4444'
+    : ivStatus === 'submitted' || ivStatus === 'in_progress' ? '#3b82f6'
+    : '#f59e0b';
 
-  const ivType = interview.interview_type || interview.type || 'hr';
-  const typeBadgeClass = 'badge badge-muted';
-
-  // Parse JSON feedback safely, handling nested { raw: "..." } structures
+  // Parse JSON feedback safely
   function safeParse(val) {
     if (!val) return null;
     if (typeof val === 'object' && val !== null) {
@@ -39,12 +34,9 @@
     } catch(e) { return null; }
   }
 
-  const feedbackRaw = interview.ai_feedback || '';
-  const summaryRaw = interview.ai_summary || '';
-  const feedbackObj = safeParse(feedbackRaw);
-  const summaryObj = safeParse(summaryRaw);
+  const feedbackObj = safeParse(interview.ai_feedback || '');
+  const summaryObj = safeParse(interview.ai_summary || '');
 
-  // Try DB columns first, then fall back to parsed feedback scores
   const fbScores = feedbackObj?.competencyRatings || summaryObj?.competencyRatings || {};
   const fbOverall = parseFloat(feedbackObj?.overallScore || feedbackObj?.averageScore || summaryObj?.overallScore || summaryObj?.averageScore) || 0;
 
@@ -54,362 +46,290 @@
   const problemScore = parseFloat(interview.problem_solving_score) || (parseFloat(fbScores.problemSolving) / 5 * 100) || 0;
   const confidenceScore = parseFloat(interview.confidence_score) || (parseFloat(fbScores.leadership || fbScores.adaptability) / 5 * 100) || 0;
 
-  // Extract readable fields from JSON
-  const performanceSummary = feedbackObj?.performanceSummary || summaryObj?.performanceSummary || '';
   const recommendation = feedbackObj?.recommendation || summaryObj?.recommendation || '';
   const recommendationJustification = feedbackObj?.recommendationJustification || summaryObj?.recommendationJustification || '';
+  const performanceSummary = feedbackObj?.performanceSummary || summaryObj?.performanceSummary || '';
   const strengthAreas = feedbackObj?.strengthAreas || summaryObj?.strengthAreas || [];
   const improvementAreas = feedbackObj?.improvementAreas || summaryObj?.improvementAreas || [];
   const competencyRatings = feedbackObj?.competencyRatings || summaryObj?.competencyRatings || {};
   const redFlags = feedbackObj?.redFlags || summaryObj?.redFlags || [];
   const culturalFit = feedbackObj?.culturalFitAssessment || summaryObj?.culturalFitAssessment || '';
-  const plainFeedback = typeof feedbackRaw === 'string' && !feedbackObj ? feedbackRaw : '';
-  const plainSummary = typeof summaryRaw === 'string' && !summaryObj ? summaryRaw : '';
+  const plainFeedback = typeof (interview.ai_feedback || '') === 'string' && !feedbackObj ? (interview.ai_feedback || '') : '';
 
-  function scoreColor(s) {
-    return s >= 75 ? 'text-success' : s >= 50 ? 'text-warning' : 'text-danger';
-  }
-  function strokeColorHex(s) {
-    return s >= 75 ? 'var(--accent-primary)' : s >= 50 ? 'var(--accent-warning)' : 'var(--accent-danger)';
-  }
-  function barColorClass(s) {
-    return s >= 75 ? 'green' : s >= 50 ? 'yellow' : 'red';
-  }
+  function scoreColor(s) { return s >= 75 ? '#10b981' : s >= 50 ? '#f59e0b' : '#ef4444'; }
+  function scoreLabel(s) { return s >= 75 ? 'Strong' : s >= 50 ? 'Average' : 'Weak'; }
+  function recColor(r) { return r === 'Strong Hire' || r === 'Hire' ? '#10b981' : r === 'No Hire' ? '#ef4444' : '#f59e0b'; }
+  function recBg(r) { return r === 'Strong Hire' || r === 'Hire' ? 'rgba(16,185,129,0.08)' : r === 'No Hire' ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)'; }
 
-  const circumference = 2 * Math.PI * 40;
-  function ringOffset(s) {
-    return circumference - (s / 100) * circumference;
-  }
+  const compLabels = { technicalKnowledge: 'Technical Knowledge', problemSolving: 'Problem Solving', communication: 'Communication', teamwork: 'Teamwork', leadership: 'Leadership', adaptability: 'Adaptability', domainExpertise: 'Domain Expertise' };
+  const circumference = 2 * Math.PI * 42;
+  function ringOffset(s) { return circumference - (s / 100) * circumference; }
 %>
 
-<!-- Back Button -->
-<div class="mb-lg">
-  <a href="/ai-interview" class="btn btn-outline btn-sm">
-    <i data-lucide="arrow-left"></i>
-    Back to Interviews
+<!-- Back -->
+<div style="margin-bottom:20px;">
+  <a href="/ai-interview" style="display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);text-decoration:none;font-size:0.85rem;">
+    <i data-lucide="arrow-left" style="width:16px;height:16px;"></i> Back to Interviews
   </a>
 </div>
 
-<!-- Candidate Info Header -->
-<div class="card p-lg mb-lg">
-  <div class="flex items-center justify-between gap-md" style="flex-wrap: wrap;">
-    <div class="flex items-center gap-md">
-      <div class="avatar avatar-lg avatar-gradient">
+<!-- ═══ HERO CARD: Candidate + Overall Score ═══ -->
+<div class="card" style="padding:0;margin-bottom:20px;overflow:hidden;">
+  <div style="display:flex;align-items:stretch;flex-wrap:wrap;">
+    <!-- Left: Candidate Info -->
+    <div style="flex:1;min-width:280px;padding:24px 28px;display:flex;align-items:center;gap:16px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:#fff;flex-shrink:0;">
         <%= candidateName.charAt(0).toUpperCase() %>
       </div>
       <div>
-        <h1 class="text-2xl font-bold"><%= candidateName %></h1>
-        <p class="text-sm text-secondary mt-sm">
-          <i data-lucide="briefcase" style="width:14px;height:14px;display:inline-block;vertical-align:middle;margin-right:4px;"></i>
-          <%= jobTitle %>
-        </p>
-        <div class="flex items-center gap-sm mt-sm">
-          <span class="<%= ivStatusBadge %>">
-            <%= ivStatus.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); }) %>
-          </span>
-          <span class="<%= typeBadgeClass %>">
-            <%= ivType.charAt(0).toUpperCase() + ivType.slice(1) %>
-          </span>
+        <h1 style="font-size:1.3rem;font-weight:700;margin:0;color:var(--text-primary);"><%= candidateName %></h1>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin:4px 0 8px;"><%= jobTitle %></p>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:0.7rem;font-weight:600;background:<%= ivStatusColor %>22;color:<%= ivStatusColor %>;"><%= ivStatusLabel %></span>
+          <% if (recommendation) { %>
+            <span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;background:<%= recBg(recommendation) %>;color:<%= recColor(recommendation) %>;"><%= recommendation %></span>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Big Score Ring -->
+    <div style="display:flex;align-items:center;justify-content:center;padding:24px 40px;background:var(--bg-tertiary);border-left:1px solid var(--border-color);min-width:180px;">
+      <div style="position:relative;width:100px;height:100px;">
+        <svg width="100" height="100" viewBox="0 0 100 100" style="transform:rotate(-90deg);">
+          <circle cx="50" cy="50" r="42" fill="none" stroke-width="7" stroke="var(--border-color)" opacity="0.2"></circle>
+          <circle cx="50" cy="50" r="42" fill="none" stroke-width="7" stroke="<%= scoreColor(totalScore) %>"
+                  stroke-linecap="round" stroke-dasharray="<%= circumference %>" stroke-dashoffset="<%= ringOffset(totalScore) %>"></circle>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <span style="font-size:1.6rem;font-weight:800;color:<%= scoreColor(totalScore) %>;"><%= totalScore %>%</span>
+          <span style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Overall</span>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Score Rings Row -->
-<div class="stats-row mb-lg">
+<!-- ═══ SCORE CARDS ROW ═══ -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
   <%
-    const scoreRings = [
-      { label: 'Total Score', value: totalScore },
-      { label: 'Communication', value: commScore },
-      { label: 'Domain Knowledge', value: domainScore },
-      { label: 'Problem Solving', value: problemScore },
-      { label: 'Confidence', value: confidenceScore },
+    const scoreCards = [
+      { label: 'Communication', value: commScore, icon: 'message-circle' },
+      { label: 'Domain Knowledge', value: domainScore, icon: 'book-open' },
+      { label: 'Problem Solving', value: problemScore, icon: 'lightbulb' },
+      { label: 'Confidence', value: confidenceScore, icon: 'shield' },
     ];
   %>
-  <% scoreRings.forEach(function(ring) { %>
-    <div class="card p-md flex flex-col items-center" style="justify-content: center;">
-      <div class="score-ring" style="width:96px;height:96px;margin-bottom:8px;">
-        <svg width="96" height="96" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="var(--border-color)" opacity="0.2"></circle>
-          <circle cx="50" cy="50" r="40" fill="none" stroke-width="6" stroke="<%= strokeColorHex(ring.value) %>"
-                  stroke-linecap="round"
-                  stroke-dasharray="<%= circumference %>"
-                  stroke-dashoffset="<%= ringOffset(ring.value) %>"></circle>
-        </svg>
-        <div class="score-value">
-          <span class="text-xl font-bold <%= scoreColor(ring.value) %>"><%= ring.value %>%</span>
-        </div>
+  <% scoreCards.forEach(function(card) { %>
+    <div class="card" style="padding:16px;text-align:center;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:10px;">
+        <i data-lucide="<%= card.icon %>" style="width:14px;height:14px;color:var(--text-muted);"></i>
+        <span style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;letter-spacing:0.03em;"><%= card.label %></span>
       </div>
-      <p class="text-xs text-secondary text-center font-medium"><%= ring.label %></p>
+      <!-- Mini bar -->
+      <div style="height:8px;background:var(--border-color);border-radius:4px;overflow:hidden;margin-bottom:8px;">
+        <div style="height:100%;width:<%= card.value %>%;background:<%= scoreColor(card.value) %>;border-radius:4px;transition:width 0.5s;"></div>
+      </div>
+      <span style="font-size:1.1rem;font-weight:700;color:<%= scoreColor(card.value) %>;"><%= card.value %>%</span>
     </div>
   <% }); %>
 </div>
 
-<!-- Score Breakdown Progress Bars -->
-<div class="card p-lg mb-lg">
-  <h2 class="text-lg font-semibold mb-md flex items-center gap-sm">
-    <i data-lucide="bar-chart-3" style="width:20px;height:20px;color:var(--accent-secondary);"></i>
-    Score Breakdown
-  </h2>
-  <div style="display:flex;flex-direction:column;gap:16px;">
-    <%
-      const breakdowns = [
-        { label: 'Communication', value: commScore },
-        { label: 'Domain Knowledge', value: domainScore },
-        { label: 'Problem Solving', value: problemScore },
-        { label: 'Confidence', value: confidenceScore },
-      ];
-    %>
-    <% breakdowns.forEach(function(b) { %>
+<!-- ═══ AI RECOMMENDATION + INSIGHTS (2-column) ═══ -->
+<% if (recommendation || performanceSummary || plainFeedback) { %>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+
+  <!-- Recommendation -->
+  <div class="card" style="padding:20px;border-left:4px solid <%= recColor(recommendation) %>;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <i data-lucide="sparkles" style="width:18px;height:18px;color:<%= recColor(recommendation) %>;"></i>
+      <h3 style="font-size:0.95rem;font-weight:700;margin:0;">AI Recommendation</h3>
+    </div>
+    <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.6;margin:0;"><%= recommendationJustification || performanceSummary || plainFeedback %></p>
+    <% if (culturalFit) { %>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);">
+        <p style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:4px;">Cultural Fit</p>
+        <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin:0;"><%= culturalFit %></p>
+      </div>
+    <% } %>
+    <% if (redFlags.length > 0) { %>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border-color);">
+        <p style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:6px;">Red Flags</p>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <% redFlags.forEach(function(f) { %>
+            <span class="badge badge-danger" style="font-size:0.7rem;"><%= f %></span>
+          <% }); %>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Strengths & Improvements -->
+  <div class="card" style="padding:20px;">
+    <% if (strengthAreas.length > 0) { %>
+      <div style="margin-bottom:<%= improvementAreas.length > 0 ? '16px' : '0' %>;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="width:22px;height:22px;border-radius:50%;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="trending-up" style="width:12px;height:12px;color:#10b981;"></i>
+          </span>
+          <h3 style="font-size:0.85rem;font-weight:700;margin:0;">Strengths</h3>
+        </div>
+        <% strengthAreas.forEach(function(s) { %>
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:0.8rem;">
+            <span style="color:#10b981;margin-top:1px;font-weight:700;">&#10003;</span>
+            <span style="color:var(--text-secondary);"><%= typeof s === 'string' ? s : s.area || '' %></span>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <% if (improvementAreas.length > 0) { %>
       <div>
-        <div class="flex items-center justify-between mb-sm">
-          <span class="text-sm font-medium"><%= b.label %></span>
-          <span class="text-sm font-semibold <%= scoreColor(b.value) %>"><%= b.value %>%</span>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <span style="width:22px;height:22px;border-radius:50%;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="alert-triangle" style="width:12px;height:12px;color:#f59e0b;"></i>
+          </span>
+          <h3 style="font-size:0.85rem;font-weight:700;margin:0;">Areas for Improvement</h3>
         </div>
-        <div class="progress-bar">
-          <div class="progress-fill <%= barColorClass(b.value) %>" style="width: <%= b.value %>%"></div>
+        <% improvementAreas.forEach(function(a) { %>
+          <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;font-size:0.8rem;">
+            <span style="color:#f59e0b;margin-top:1px;font-weight:700;">!</span>
+            <div>
+              <span style="color:var(--text-secondary);"><%= typeof a === 'string' ? a : a.area || '' %></span>
+              <% if (a.severity) { %>
+                <span class="badge badge-warning" style="margin-left:6px;font-size:0.65rem;"><%= a.severity %></span>
+              <% } %>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <% if (strengthAreas.length === 0 && improvementAreas.length === 0 && plainFeedback) { %>
+      <h3 style="font-size:0.85rem;font-weight:700;margin:0 0 8px;">AI Analysis</h3>
+      <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin:0;"><%= plainFeedback.substring(0, 500) %></p>
+    <% } %>
+  </div>
+</div>
+
+<!-- Competency Ratings (compact horizontal) -->
+<% if (Object.keys(competencyRatings).length > 0) { %>
+<div class="card" style="padding:20px;margin-bottom:20px;">
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+    <i data-lucide="bar-chart-3" style="width:16px;height:16px;color:var(--text-muted);"></i>
+    <h3 style="font-size:0.9rem;font-weight:700;margin:0;">Competency Ratings</h3>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;">
+    <% Object.entries(competencyRatings).forEach(function([key, val]) { %>
+      <% const pct = Math.round((parseFloat(val) / 5) * 100); %>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:0.78rem;color:var(--text-secondary);min-width:110px;"><%= compLabels[key] || key %></span>
+        <div style="flex:1;height:6px;background:var(--border-color);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:<%= pct %>%;background:<%= scoreColor(pct) %>;border-radius:3px;"></div>
         </div>
+        <span style="font-size:0.75rem;font-weight:700;color:<%= scoreColor(pct) %>;min-width:28px;text-align:right;"><%= val %>/5</span>
       </div>
     <% }); %>
   </div>
 </div>
+<% } %>
 
-<!-- AI Analysis Dashboard -->
-<% if (recommendation || performanceSummary || plainFeedback) { %>
-
-<!-- Recommendation Banner -->
-<div class="card p-lg mb-lg flex items-center justify-between" style="border-left: 4px solid <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? 'var(--accent-primary)' : recommendation === 'No Hire' ? 'var(--accent-danger)' : 'var(--accent-warning)' %>;">
-  <div>
-    <h3 class="text-lg font-bold">AI Recommendation</h3>
-    <p class="text-sm text-secondary mt-sm"><%= recommendationJustification || performanceSummary || plainFeedback %></p>
-  </div>
-  <span class="badge <%= recommendation === 'Strong Hire' || recommendation === 'Hire' ? 'badge-success' :
-     recommendation === 'No Hire' ? 'badge-danger' :
-     'badge-warning' %>" style="padding: 8px 16px; font-size: 0.85rem;">
-    <%= recommendation || 'Pending' %>
-  </span>
-</div>
-
-<div class="grid-2 mb-lg" style="gap:24px;">
-
-  <!-- Competency Ratings -->
-  <% if (Object.keys(competencyRatings).length > 0) { %>
-  <div class="card p-lg">
-    <h2 class="text-sm font-semibold mb-md flex items-center gap-sm">
-      <i data-lucide="bar-chart-3" style="width:20px;height:20px;color:var(--accent-secondary);"></i>
-      Competency Ratings
-    </h2>
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <% const compLabels = { technicalKnowledge: 'Technical Knowledge', problemSolving: 'Problem Solving', communication: 'Communication', teamwork: 'Teamwork', leadership: 'Leadership', adaptability: 'Adaptability', domainExpertise: 'Domain Expertise' }; %>
-      <% Object.entries(competencyRatings).forEach(function([key, val]) { %>
-        <% const pct = Math.round((parseFloat(val) / 5) * 100); %>
-        <div>
-          <div class="flex justify-between text-sm mb-sm">
-            <span class="font-medium"><%= compLabels[key] || key %></span>
-            <span class="font-bold <%= scoreColor(pct) %>"><%= val %>/5</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill <%= barColorClass(pct) %>" style="width: <%= pct %>%"></div>
-          </div>
-        </div>
-      <% }); %>
-    </div>
-  </div>
-  <% } %>
-
-  <!-- Strengths & Improvements -->
-  <div class="card p-lg">
-    <% if (strengthAreas.length > 0) { %>
-    <div class="mb-md">
-      <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
-        <span style="width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,0.1);display:inline-flex;align-items:center;justify-content:center;">
-          <i data-lucide="trending-up" style="width:12px;height:12px;color:var(--accent-primary);"></i>
-        </span>
-        Strengths
-      </h3>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <% strengthAreas.forEach(function(s) { %>
-          <div class="flex items-start gap-sm text-sm" style="padding:8px;border-radius:var(--radius-md);background:rgba(16,185,129,0.05);">
-            <span style="color:var(--accent-primary);margin-top:2px;">&#10003;</span>
-            <div>
-              <span class="font-medium"><%= typeof s === 'string' ? s : s.area || '' %></span>
-              <% if (s.evidence) { %><p class="text-xs text-muted mt-sm"><%= s.evidence %></p><% } %>
-            </div>
-          </div>
-        <% }); %>
-      </div>
-    </div>
-    <% } %>
-
-    <% if (improvementAreas.length > 0) { %>
-    <div>
-      <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
-        <span style="width:20px;height:20px;border-radius:50%;background:rgba(245,158,11,0.1);display:inline-flex;align-items:center;justify-content:center;">
-          <i data-lucide="alert-triangle" style="width:12px;height:12px;color:var(--accent-warning);"></i>
-        </span>
-        Areas for Improvement
-      </h3>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <% improvementAreas.forEach(function(a) { %>
-          <div class="flex items-start gap-sm text-sm" style="padding:8px;border-radius:var(--radius-md);background:rgba(245,158,11,0.05);">
-            <span style="color:var(--accent-warning);margin-top:2px;">!</span>
-            <div>
-              <span class="font-medium"><%= typeof a === 'string' ? a : a.area || '' %></span>
-              <% if (a.severity) { %><span class="badge badge-warning" style="margin-left:8px;"><%= a.severity %></span><% } %>
-              <% if (a.evidence) { %><p class="text-xs text-muted mt-sm"><%= a.evidence %></p><% } %>
-            </div>
-          </div>
-        <% }); %>
-      </div>
-    </div>
-    <% } %>
-
-    <% if (strengthAreas.length === 0 && improvementAreas.length === 0 && plainFeedback) { %>
-      <h3 class="text-sm font-semibold mb-sm">AI Analysis</h3>
-      <p class="text-sm text-secondary" style="line-height:1.6;"><%= plainFeedback.substring(0, 500) %></p>
-    <% } %>
-  </div>
-
-  <% if (redFlags.length > 0) { %>
-  <div class="card p-lg" style="grid-column: 1 / -1;">
-    <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
-      <span style="width:20px;height:20px;border-radius:50%;background:rgba(239,68,68,0.1);display:inline-flex;align-items:center;justify-content:center;">
-        <i data-lucide="flag" style="width:12px;height:12px;color:var(--accent-danger);"></i>
-      </span>
-      Red Flags
-    </h3>
-    <div class="flex flex-wrap gap-sm">
-      <% redFlags.forEach(function(f) { %>
-        <span class="badge badge-danger"><%= f %></span>
-      <% }); %>
-    </div>
-  </div>
-  <% } %>
-
-  <% if (culturalFit) { %>
-  <div class="card p-lg" style="grid-column: 1 / -1;">
-    <h3 class="text-sm font-semibold mb-sm flex items-center gap-sm">
-      <i data-lucide="users" style="width:16px;height:16px;color:var(--text-muted);"></i> Cultural Fit Assessment
-    </h3>
-    <p class="text-sm text-secondary"><%= culturalFit %></p>
-  </div>
-  <% } %>
-
-</div>
 <% } else { %>
-<div class="card p-lg mb-lg text-center text-sm text-secondary">
-  <p>AI evaluation is in progress or not yet available.</p>
+<div class="card" style="padding:32px;text-align:center;margin-bottom:20px;">
+  <i data-lucide="loader" style="width:24px;height:24px;color:var(--text-muted);margin:0 auto 8px;display:block;"></i>
+  <p style="font-size:0.85rem;color:var(--text-secondary);margin:0;">AI evaluation is in progress or not yet available.</p>
 </div>
 <% } %>
 
-<!-- Questions & Answers -->
-<div class="card p-lg mb-lg">
-  <h2 class="text-lg font-semibold mb-lg flex items-center gap-sm">
-    <i data-lucide="help-circle" style="width:20px;height:20px;color:var(--accent-secondary);"></i>
-    Questions & Answers
-  </h2>
+<!-- ═══ QUESTIONS & ANSWERS (Compact Accordion Style) ═══ -->
+<div class="card" style="padding:20px;margin-bottom:20px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <i data-lucide="list-ordered" style="width:16px;height:16px;color:var(--text-muted);"></i>
+      <h3 style="font-size:0.9rem;font-weight:700;margin:0;">Questions & Answers</h3>
+    </div>
+    <span style="font-size:0.75rem;color:var(--text-muted);"><%= questions.length %> questions</span>
+  </div>
 
   <% if (questions.length > 0) { %>
-    <div style="display:flex;flex-direction:column;gap:24px;">
+    <div style="display:flex;flex-direction:column;gap:12px;">
       <% questions.forEach(function(q, idx) { %>
         <%
-          const answer = q.answer || answers.find(function(a) {
-            return a.question_id === q.id || a.questionId === q.id;
-          }) || {};
+          const answer = q.answer || answers.find(function(a) { return a.question_id === q.id || a.questionId === q.id; }) || {};
           const answerText = answer.answer_text || answer.answer || '';
           const answerScore = parseFloat(answer.score) || parseFloat(answer.answer_score) || parseFloat(answer.ai_score) || 0;
           const answerFeedback = answer.ai_feedback || answer.feedback || '';
           const keywordRelevance = parseFloat(answer.keyword_relevance) || parseFloat(answer.keyword_relevance_score) || 0;
         %>
-        <div style="border:1px solid var(--border-color);border-radius:var(--radius-lg);overflow:hidden;">
-          <!-- Question Header -->
-          <div style="background:var(--bg-tertiary);padding:16px 20px;border-bottom:1px solid var(--border-color);">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-sm">
-                <span class="avatar avatar-sm avatar-gradient" style="width:28px;height:28px;font-size:0.7rem;">
-                  <%= idx + 1 %>
-                </span>
-                <h3 class="text-sm font-semibold"><%= q.question_text || q.question || q.text || '' %></h3>
-              </div>
-              <% if (answerScore > 0) { %>
-                <span class="text-sm font-bold <%= scoreColor(answerScore) %>"><%= answerScore %>%</span>
-              <% } %>
-            </div>
+        <div style="border:1px solid var(--border-color);border-radius:var(--radius-md);overflow:hidden;">
+          <!-- Question row -->
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--bg-tertiary);">
+            <span style="width:24px;height:24px;border-radius:50%;background:<%= scoreColor(answerScore) %>;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;color:#fff;flex-shrink:0;"><%= idx + 1 %></span>
+            <p style="flex:1;font-size:0.82rem;font-weight:500;color:var(--text-primary);margin:0;line-height:1.4;"><%= q.question_text || q.question || q.text || '' %></p>
+            <% if (answerScore > 0) { %>
+              <span style="font-size:0.8rem;font-weight:700;color:<%= scoreColor(answerScore) %>;white-space:nowrap;"><%= answerScore %>%</span>
+            <% } %>
           </div>
 
-          <!-- Answer -->
-          <div style="padding:16px 20px;">
+          <!-- Answer + Scores -->
+          <div style="padding:12px 16px;">
             <% if (answerText) { %>
-              <div class="mb-md">
-                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">Candidate's Answer</p>
-                <div class="text-sm" style="line-height:1.6;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:16px;white-space:pre-line;"><%= answerText %></div>
+              <div style="background:var(--bg-tertiary);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;">
+                <p style="font-size:0.8rem;color:var(--text-secondary);line-height:1.5;margin:0;white-space:pre-line;"><%= answerText %></p>
               </div>
             <% } else { %>
-              <p class="text-sm text-secondary mb-md" style="font-style:italic;">No answer provided.</p>
+              <p style="font-size:0.8rem;color:var(--text-muted);font-style:italic;margin:0 0 10px;">No answer provided.</p>
             <% } %>
 
-            <!-- Score & Keyword Relevance -->
-            <div class="grid-2 mb-md" style="gap:16px;">
-              <div>
-                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">Answer Score</p>
-                <div class="flex items-center gap-sm">
-                  <div class="progress-bar flex-1">
-                    <div class="progress-fill <%= barColorClass(answerScore) %>" style="width: <%= answerScore %>%"></div>
-                  </div>
-                  <span class="text-sm font-semibold <%= scoreColor(answerScore) %>"><%= answerScore %>%</span>
+            <!-- Score bars inline -->
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:<%= answerFeedback ? '10px' : '0' %>;">
+              <div style="flex:1;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;white-space:nowrap;">Answer</span>
+                <div style="flex:1;height:5px;background:var(--border-color);border-radius:3px;overflow:hidden;">
+                  <div style="height:100%;width:<%= answerScore %>%;background:<%= scoreColor(answerScore) %>;border-radius:3px;"></div>
                 </div>
+                <span style="font-size:0.7rem;font-weight:600;color:<%= scoreColor(answerScore) %>;"><%= answerScore %>%</span>
               </div>
-              <div>
-                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">Keyword Relevance</p>
-                <div class="flex items-center gap-sm">
-                  <div class="progress-bar flex-1">
-                    <div class="progress-fill <%= barColorClass(keywordRelevance) %>" style="width: <%= keywordRelevance %>%"></div>
-                  </div>
-                  <span class="text-sm font-semibold <%= scoreColor(keywordRelevance) %>"><%= keywordRelevance %>%</span>
+              <div style="flex:1;display:flex;align-items:center;gap:8px;">
+                <span style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;white-space:nowrap;">Keywords</span>
+                <div style="flex:1;height:5px;background:var(--border-color);border-radius:3px;overflow:hidden;">
+                  <div style="height:100%;width:<%= keywordRelevance %>%;background:<%= scoreColor(keywordRelevance) %>;border-radius:3px;"></div>
                 </div>
+                <span style="font-size:0.7rem;font-weight:600;color:<%= scoreColor(keywordRelevance) %>;"><%= keywordRelevance %>%</span>
               </div>
             </div>
 
-            <!-- AI Feedback for Answer -->
             <% if (answerFeedback) { %>
-              <div>
-                <p class="text-xs text-muted uppercase tracking-wide mb-sm font-medium">AI Feedback</p>
-                <div class="text-sm text-secondary" style="white-space:pre-line;line-height:1.6;"><%= answerFeedback %></div>
-              </div>
+              <p style="font-size:0.78rem;color:var(--text-muted);line-height:1.5;margin:0;padding-top:8px;border-top:1px solid var(--border-light);"><%= answerFeedback %></p>
             <% } %>
           </div>
         </div>
       <% }); %>
     </div>
   <% } else { %>
-    <p class="text-sm text-secondary text-center" style="padding:32px 0;">No questions available for this interview.</p>
+    <p style="font-size:0.85rem;color:var(--text-secondary);text-align:center;padding:24px 0;margin:0;">No questions available.</p>
   <% } %>
 </div>
 
-<!-- Action Buttons -->
-<div class="flex flex-wrap items-center gap-sm">
-  <form action="/ai-interview/<%= interview.id %>/shortlist" method="POST" class="inline">
-    <button type="submit" class="btn btn-primary">
-      <i data-lucide="star"></i>
-      Shortlist
+<!-- ═══ ACTION BUTTONS (Sticky Bottom) ═══ -->
+<div style="display:flex;align-items:center;gap:10px;padding:16px 0;">
+  <form action="/ai-interview/<%= interview.id %>/shortlist" method="POST" style="display:inline;">
+    <button type="submit" class="btn btn-primary btn-sm">
+      <i data-lucide="star" style="width:14px;height:14px;"></i> Shortlist
     </button>
   </form>
-  <a href="/schedules/create/<%= interview.candidate_id %>" class="btn btn-outline">
-    <i data-lucide="calendar"></i>
-    Schedule Interview
+  <a href="/schedules/create/<%= interview.candidate_id %>" class="btn btn-outline btn-sm">
+    <i data-lucide="calendar" style="width:14px;height:14px;"></i> Schedule Interview
   </a>
-  <form action="/ai-interview/<%= interview.id %>/reject" method="POST" class="inline"
+  <form action="/ai-interview/<%= interview.id %>/reject" method="POST" style="display:inline;"
         onsubmit="return confirm('Are you sure you want to reject this candidate?')">
-    <button type="submit" class="btn btn-danger">
-      <i data-lucide="x-circle"></i>
-      Reject
+    <button type="submit" class="btn btn-sm" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);">
+      <i data-lucide="x-circle" style="width:14px;height:14px;"></i> Reject
     </button>
   </form>
-  <form action="/ai-interview/<%= interview.id %>/pool" method="POST" class="inline">
-    <button type="submit" class="btn btn-outline">
-      <i data-lucide="archive"></i>
-      Keep in Pool
+  <form action="/ai-interview/<%= interview.id %>/pool" method="POST" style="display:inline;">
+    <button type="submit" class="btn btn-outline btn-sm">
+      <i data-lucide="archive" style="width:14px;height:14px;"></i> Keep in Pool
     </button>
   </form>
 </div>
