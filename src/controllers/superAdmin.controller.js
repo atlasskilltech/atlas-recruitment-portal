@@ -235,31 +235,22 @@ const bulkInvite = asyncHandler(async (req, res) => {
 
   for (const candidateId of candidateIds) {
     try {
-      // Check for existing active interview
+      // Delete ALL existing interviews for this candidate (answers, questions, then interview)
       const interviewRepository = require('../repositories/interview.repository');
       const existing = await interviewRepository.findByCandidateId(candidateId);
-      const active = existing.find(iv => {
-        const s = iv.interview_status || iv.status;
-        return ['in_progress', 'evaluated', 'passed', 'submitted'].includes(s);
-      });
-
-      let interviewLink;
-      if (active) {
-        interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${active.invitation_token}`;
-      } else {
-        // Delete old pending/invited interviews
-        for (const old of existing) {
-          const s = old.interview_status || old.status;
-          if (['invited', 'expired', 'pending', 'failed'].includes(s)) {
-            await pool.query('DELETE FROM atlas_rec_ai_interview_answers WHERE interview_id = ?', [old.id]);
-            await pool.query('DELETE FROM atlas_rec_ai_interview_questions WHERE interview_id = ?', [old.id]);
-            await pool.query('DELETE FROM atlas_rec_ai_interviews WHERE id = ?', [old.id]);
-          }
+      for (const old of existing) {
+        try {
+          await pool.query('DELETE FROM atlas_rec_ai_interview_answers WHERE interview_id = ?', [old.id]);
+          await pool.query('DELETE FROM atlas_rec_ai_interview_questions WHERE interview_id = ?', [old.id]);
+          await pool.query('DELETE FROM atlas_rec_ai_interviews WHERE id = ?', [old.id]);
+        } catch (delErr) {
+          logger.warn(`[BULK_INVITE] Error deleting old interview ${old.id}: ${delErr.message}`);
         }
-        // Create new interview
-        const result = await interviewService.createInterview(candidateId, null, 'hr');
-        interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${result.token}`;
       }
+
+      // Create new interview
+      const result = await interviewService.createInterview(candidateId, null, 'hr');
+      const interviewLink = `${process.env.APP_URL || 'https://recruitment.atlasskilltech.app'}/ai/interview/${result.token}`;
 
       // Send email notification
       const candidate = await candidateRepo.findById(candidateId);
