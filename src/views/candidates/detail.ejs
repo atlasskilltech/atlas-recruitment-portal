@@ -513,7 +513,10 @@
               } catch(e) { fbObj = null; }
               if (fbObj && typeof fbObj === 'object') {
                 // Try to get raw.performanceSummary first
-                const inner = fbObj.raw ? (typeof fbObj.raw === 'string' ? JSON.parse(fbObj.raw) : fbObj.raw) : fbObj;
+                let inner = fbObj;
+                if (fbObj.raw) {
+                  try { inner = typeof fbObj.raw === 'string' ? JSON.parse(fbObj.raw) : fbObj.raw; } catch(e2) { inner = fbObj; }
+                }
                 feedbackDisplay = inner.performanceSummary || fbObj.performanceSummary || '';
                 recDisplay = inner.recommendation || fbObj.recommendation || '';
                 strengthsDisplay = inner.strengthAreas || fbObj.strengthAreas || [];
