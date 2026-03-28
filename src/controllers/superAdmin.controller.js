@@ -147,7 +147,7 @@ const jobDetail = asyncHandler(async (req, res) => {
   // Get all matches from entire database (score > 0)
   const topMatches = await jobMatchingService.getTopMatches(jobId, 10000);
 
-  // Get candidates who APPLIED for this specific job (only those with match_score >= 50% or with interview taken)
+  // Get ALL candidates who APPLIED for this specific job
   const [appliedCandidates] = await pool.query(`
     SELECT dsr.id AS candidate_id, dsr.appln_full_name, dsr.appln_email, dsr.appln_mobile_no,
            dsr.appln_high_qualification, dsr.appln_total_experience,
@@ -167,7 +167,6 @@ const jobDetail = asyncHandler(async (req, res) => {
     ) aint ON dsr.id = aint.candidate_id
     LEFT JOIN atlas_rec_job_candidate_matches jcm ON jcm.candidate_id = dsr.id AND jcm.job_id = ?
     WHERE dsr.appln_applied_for_sub = ?
-      AND (COALESCE(jcm.match_score, 0) >= 50 OR aint.total_score IS NOT NULL)
     ORDER BY COALESCE(jcm.match_score, 0) DESC
   `, [jobId, jobId]);
 
