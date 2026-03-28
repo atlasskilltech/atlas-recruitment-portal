@@ -302,7 +302,7 @@ const allInterviews = asyncHandler(async (req, res) => {
   const dateTo = req.query.date_to || '';
   const searchFilter = req.query.search || '';
 
-  let where = ["aint.interview_status IN ('evaluated','submitted','passed','failed','in_progress')"];
+  let where = ["aint.status IN ('evaluated','submitted','passed','failed','in_progress')"];
   let params = [];
 
   if (roleFilter) {
@@ -310,7 +310,7 @@ const allInterviews = asyncHandler(async (req, res) => {
     params.push(roleFilter);
   }
   if (statusFilter) {
-    where.push('aint.interview_status = ?');
+    where.push('aint.status = ?');
     params.push(statusFilter);
   }
   if (dateFrom) {
@@ -332,14 +332,14 @@ const allInterviews = asyncHandler(async (req, res) => {
     SELECT
       aint.id AS interview_id,
       aint.candidate_id,
-      aint.interview_status,
+      aint.status AS interview_status,
       aint.total_score,
       aint.communication_score,
       aint.domain_knowledge_score,
       aint.problem_solving_score,
       aint.confidence_score,
       aint.started_at,
-      aint.completed_at,
+      aint.evaluated_at,
       aint.interview_type,
       dsr.appln_full_name,
       dsr.appln_email,
