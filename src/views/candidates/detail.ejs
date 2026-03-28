@@ -449,7 +449,40 @@
             <div class="card">
               <div class="card-body">
                 <h4 class="font-semibold mb-sm">Skill Gap Analysis</h4>
-                <p class="text-sm text-muted"><%= candidate.skill_gap_analysis %></p>
+                <%
+                  let sgaParsed = null;
+                  try { sgaParsed = typeof candidate.skill_gap_analysis === 'string' ? JSON.parse(candidate.skill_gap_analysis) : candidate.skill_gap_analysis; } catch(e) { sgaParsed = null; }
+                %>
+                <% if (sgaParsed && typeof sgaParsed === 'object') { %>
+                  <div style="display:flex;flex-direction:column;gap:12px;">
+                    <% if (sgaParsed.matched && sgaParsed.matched.length > 0) { %>
+                      <div>
+                        <p class="text-xs font-semibold mb-sm" style="color:#10b981;">Matched Skills</p>
+                        <div class="flex flex-wrap gap-sm">
+                          <% sgaParsed.matched.forEach(function(s) { %><span class="badge badge-success"><%= s %></span><% }); %>
+                        </div>
+                      </div>
+                    <% } %>
+                    <% if (sgaParsed.missing && sgaParsed.missing.length > 0) { %>
+                      <div>
+                        <p class="text-xs font-semibold mb-sm" style="color:#ef4444;">Missing Skills</p>
+                        <div class="flex flex-wrap gap-sm">
+                          <% sgaParsed.missing.forEach(function(s) { %><span class="badge badge-danger"><%= s %></span><% }); %>
+                        </div>
+                      </div>
+                    <% } %>
+                    <% if (sgaParsed.additional && sgaParsed.additional.length > 0) { %>
+                      <div>
+                        <p class="text-xs font-semibold mb-sm" style="color:#3b82f6;">Additional Skills</p>
+                        <div class="flex flex-wrap gap-sm">
+                          <% sgaParsed.additional.forEach(function(s) { %><span class="badge badge-info"><%= s %></span><% }); %>
+                        </div>
+                      </div>
+                    <% } %>
+                  </div>
+                <% } else { %>
+                  <p class="text-sm text-muted"><%= candidate.skill_gap_analysis %></p>
+                <% } %>
               </div>
             </div>
           <% } %>

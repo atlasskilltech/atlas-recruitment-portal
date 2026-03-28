@@ -148,9 +148,9 @@
   <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
     <% _candidates.forEach(function(m) { %>
       <%
-        const mScore = parseFloat(m.match_score) || parseFloat(m.screening_score) || 0;
+        const mScore = parseFloat(m.match_score) || 0;
         const iScore = parseFloat(m.interview_score) || 0;
-        const aiStatus = m.match_status || m.screening_status || null;
+        const aiStatus = m.match_status || null;
         const parts = (m.appln_full_name || '').trim().split(/\s+/);
         const initials = (parts[0] ? parts[0].charAt(0).toUpperCase() : '?') + (parts.length > 1 ? parts[parts.length-1].charAt(0).toUpperCase() : '');
         const avatarBg = mScore >= 75 ? 'linear-gradient(135deg,#10b981,#059669)' : mScore >= 50 ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#64748b,#475569)';
