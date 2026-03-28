@@ -225,7 +225,7 @@
             </button>
           </template>
           <template x-if="currentIndex >= questions.length - 1">
-            <button @click="submitAndEnd()" class="btn-action btn-submit" style="background:#16a34a;" :disabled="saving">
+            <button @click="submitAndEnd()" class="btn-action btn-submit" style="background:#16a34a;" :disabled="saving || !(answers[currentIndex] || '').trim()">
               ✈ Submit &amp; Finish
             </button>
           </template>
@@ -537,6 +537,7 @@ function videoInterview() {
       this.stopListening();
       speechSynthesis.cancel();
       var answer = (this.answers[this.currentIndex] || '').trim();
+      if (!answer) { alert('Please provide an answer before submitting.'); return; }
       if (answer) {
         this.saving = true;
         try {
